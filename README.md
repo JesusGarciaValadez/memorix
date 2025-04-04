@@ -1,66 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Objective
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Develop an interactive command-line flashcard application using Laravel, which utilizes the module pattern for better code organization. The application should allow users to create, manage, and practice flashcards. The goal is to assess your comfort level and proficiency with modern software development practices, including module usage, and automated testing in a Laravel environment.
 
-## About Laravel
+## Tasks
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+You may use any plugins you want to complete this assignment. Some requirements may be intentionally vague, so use your best judgement and knowledge of industry standards to implement. You are not expected to complete all required and optional features within the alloted timeframe. If you have additional time after completing the required features, work on optional features that you feel will best showcase your existing skills first.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### (Required) Flashcard Application
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+You **must** complete the tasks outlined in this section, which form the basis of the assessment.
 
-## Learning Laravel
+* **Application Setup**
+   * Set up a new Laravel [11.x](https://laravel.com/docs/11.x/installation) project and add all assessment code to a `Flashcard` module.
+   * If you are unfamiliar with the Module pattern, use the guidelines [here](https://techsemicolon.github.io/blog/2019/01/06/laravel-module-pattern/) to get yourself started.
+   * Implement the flashcard functionality as a CLI tool.
+   * Incorporate simple authentication to support multiple users.
+* **Functionality**: The features listed below must support multiple users. *You can safely assume that users will not share their cards with others, so each user should only be able to view or otherwise interact with their own cards.*
+   * **Interactive Menu**: Display a main menu of available Flashcard options using the command `php artisan flashcard:interactive`.
+   * **List Flashcards**: Display all flashcards along with their answers.
+   * **Create Flashcard**: Allow users to input a question and its answer, storing this data in the database.
+   * **Delete Flashcard**: Allow users to delete a question and its answer, removing the data from the database.
+   * **Practice Mode**: Users can practice their flashcards.
+      * First, show the current progress: The user will be presented with a table listing all questions, and their practice status for each question: Not answered, Correct, Incorrect.
+      * As a table footer, we want to present the percent of completion (all questions vs correctly answered).
+      * Then, the user will pick the question they want to practice. We should not allow answering questions that are already correct.
+      * Upon answering, store the answer in the database and print correct/incorrect.
+      * Finally, show the first step again (the current progress) and allow the user to keep practicing until they explicitly decide to stop.
+   * **Statistics**: Show total questions, percentage of questions answered, and percentage correctly answered.
+   * **Reset**: Enable users to reset all practice progress.
+   * **Exit**: Provide a mechanism to exit the application safely.
+* **Application Setup**
+   * Write comprehensive feature and unit tests to cover the functionality. Testing may be done in [either PHPUnit or Pest](https://laravel.com/docs/11.x/testing).
+   * Maintain clear documentation on how to set up and run the project, along with any necessary explanations of the architecture and decisions.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### (Optional) Flashcard Application Upgrades
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+These tasks are **optional** and can be completed to demonstrate additional skills.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Implement an API**
+   * Implement the same Flashcard features as an API (except interactive menu and exit) for third party applications to implement.
+   * You may use any authentication method, or a combination.
+   * API docuementation, including authentication method, **must** be provided to be considered complete.
+* **Docker Integration**
+   * Create a Dockerfile and docker-compose.yml to containerize the application, making it easy to set up and run in any environment.
+   * Note that you may utilize [Laravel Sail](https://laravel.com/docs/11.x/sail).
+* **CI/CD Pipeline Description**
+   * Write a description of how you would set up a CI/CD pipeline for this project, including stages for build, test, and deployment.
+   * Mention specific tools and practices you would use.
+   * You may provide diagram(s), configuration files, or any other documentation you find relevant.
+* **Comprehensive Logging**
+   * Upgrade the Flashcard Application to log all actions taken on the server.
+   * Include the method of access (API or CLI), action taken, user who performed the action, and appropriate level of log (debug, warning, error, etc.).
+* **Change History**
+   * Upgrade the Flashcard Application to store a history of all changes to Flashcards. This means implementing the following additional features:
+      * Allow users to view previous versions of Flashcards, if available.
+      * Allow users to restore previous versions of Flashcards, if available.
+* **Soft Delete**
+   * Upgrade the Flashcard Application to soft delete Flashcards. This means implementing the following additional features:
+      * **Restore**: Allow users to restore any deleted Flashcard.
+      * **Permanently Delete**: Allow users to permanently delete any soft deleted Flashcard.
+* **New Project Requirement**
+   * Do you have a better idea for an optional requirement that will make you stand out from the crowd? At Solar Insure, we pride ourselves on giving every team member a voice in projects. Consider this your opportunity to define a project requirement that best suites your custom skillset.
+      * Include a brief description of the feature in your README file, similar to what is written above for other optional features.
+      * Build something cool!
+      * (Optional) Tell us about this feature in a video response. You will have the option to record yourself after you submit your assignment.
 
-## Laravel Sponsors
+## Evaluation Criteria
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+* **Assignment Completeness**: The application must function as described, fulfilling all requirements.
+* **Code Elegance**: Code should be concise, minimizing complexity. It should be easily handover-able to another developer of reasonable skill without requiring significant explanation.
+* **Code Readability**: Use meaningful names for variables and functions. Organize code logically into functions and modules. Maintain consistent indentation and use white space judiciously for better readability.
+   * Note that it is highly recommended to use a tool like [Laravel Pint](https://laravel.com/docs/11.x/pint).
+* **Documentation**: Ensure the codebase is well-commented, but avoid excessive comments. The documentation should clearly explain the setup process, usage, and any important architectural choices. Git history should be meaningful and informative.
 
-### Premium Partners
+## CodeSubmit
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Please organize, design, test, and document your code as if it were going into production - then push your changes to the `main` branch.
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Have fun coding! 🚀
