@@ -15,7 +15,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-final class FlashcardInteractiveCommand extends Command implements Isolatable, PromptsForMissingInput
+final class FlashcardInteractiveCommand extends Command implements Isolatable
 {
     protected $signature = 'flashcard:interactive
         {email? : The email of the user}
@@ -47,6 +47,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable, P
             validate: ['email' => 'required|email|exists:users,email'],
             transform: fn (string $value) => mb_trim($value)
         );
+        $user = User::where('email', $email);
 
         $password = $this->argument('password') ?? password(
             label: 'Enter your password:',
@@ -55,16 +56,16 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable, P
             validate: fn (string $value) => match (true) {
                 ! Hash::check(
                     $value,
-                    User::where('email', $email)->pluck('users.password')->first()
+                    $user->pluck('password')->first()
                 ) => 'Invalid password. Please try again.',
                 default => null,
             },
             transform: fn (string $value) => mb_trim($value)
         );
 
-        $this->info('Flashcard Interactive Command');
+        $this->info("Hi {$user->first()->name}, welcome to your flashcards");
         select(
-            label: 'Select an option:',
+            label: 'Please, select an option:',
             options: [
                 'list' => 'List Flashcards',
                 'create' => 'Create Flashcard',
@@ -111,34 +112,5 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable, P
     public function isolatableId(): string
     {
         return $this->argument('email');
-    }
-
-    /**
-     * Prompt for missing input arguments using the returned questions.
-     *
-     * @return array<string, string>
-     */
-    protected function promptForMissingArgumentsUsing(): array
-    {
-        return [
-            'email' => fn () => text(
-                label: 'Enter your user email:',
-                placeholder: 'john@doe.com',
-                validate: ['email' => 'required|email|exists:users,email'],
-                transform: fn (string $value) => mb_trim($value)
-            ),
-            'password' => fn () => password(
-                label: 'Enter your password:',
-                placeholder: '********',
-                validate: fn (string $value) => match (true) {
-                    ! Hash::check(
-                        $value,
-                        User::where('email', $this->argument('email'))->pluck('users.password')->first()
-                    ) => 'Invalid password. Please try again.',
-                    default => null,
-                },
-                transform: fn (string $value) => mb_trim($value)
-            ),
-        ];
     }
 }

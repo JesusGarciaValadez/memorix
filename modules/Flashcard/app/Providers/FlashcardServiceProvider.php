@@ -22,8 +22,8 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->loadViewsFrom(__DIR__.'/../../Resources/views', 'flashcard');
         $this->commands([
             \Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand::class,
-            /*\Modules\Flashcard\app\Console\Commands\FlashcardCreateCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardDeleteCommand::class,
+            \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
+            /*\Modules\Flashcard\app\Console\Commands\FlashcardDeleteCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardEditCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardListCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardReviewCommand::class,
