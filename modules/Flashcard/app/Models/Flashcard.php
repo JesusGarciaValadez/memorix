@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Flashcard\database\factories\FlashcardFactory;
 
 final class Flashcard extends Model
 {
+    /** @use HasFactory<FlashcardFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     /**
@@ -50,5 +54,13 @@ final class Flashcard extends Model
     {
         // Implementation will depend on future study session tracking
         return false;
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return FlashcardFactory::new();
     }
 }

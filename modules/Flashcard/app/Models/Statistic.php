@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Flashcard\database\factories\StatisticFactory;
 
 final class Statistic extends Model
 {
+    /** @use HasFactory<StatisticFactory> */
     use HasFactory;
 
     /**
@@ -111,5 +114,13 @@ final class Statistic extends Model
         $this->save();
 
         return $this;
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return StatisticFactory::new();
     }
 }

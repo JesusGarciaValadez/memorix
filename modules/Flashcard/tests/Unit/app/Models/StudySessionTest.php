@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Flashcard\tests\app\Unit\Models;
+namespace Modules\Flashcard\tests\Unit\app\Models;
 
 use App\Models\User;
 use Carbon\CarbonInterface;
