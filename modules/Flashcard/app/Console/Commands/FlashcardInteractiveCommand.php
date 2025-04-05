@@ -7,13 +7,13 @@ namespace Modules\Flashcard\app\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
-use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\Hash;
 
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
+use function Termwind\render;
 
 final class FlashcardInteractiveCommand extends Command implements Isolatable
 {
@@ -34,7 +34,6 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     public function handle(): void
     {
         if ($this->option('register')) {
-            $this->info('Register a new user');
             $this->call('flashcard:register');
 
             return;
@@ -62,8 +61,9 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             },
             transform: fn (string $value) => mb_trim($value)
         );
+        $user = $user->first();
 
-        $this->info("Hi {$user->first()->name}, welcome to your flashcards");
+        render('<p class="p-3 bg-green-600 text-white font-bold">Hi '.$user->name.', welcome to your flashcards</p>');
         select(
             label: 'Please, select an option:',
             options: [

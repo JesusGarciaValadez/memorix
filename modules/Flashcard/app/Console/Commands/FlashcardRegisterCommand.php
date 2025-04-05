@@ -7,11 +7,13 @@ namespace Modules\Flashcard\app\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
+use function Termwind\render;
 
 final class FlashcardRegisterCommand extends Command implements PromptsForMissingInput
 {
@@ -29,17 +31,19 @@ final class FlashcardRegisterCommand extends Command implements PromptsForMissin
         $email = $this->argument('email');
         $password = $this->argument('password');
 
-        User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-        ]);
+        try {
+            User::create([
+                'name' => $name,
+                'email' => $email,
+                'password' => Hash::make($password),
+            ]);
 
-        $this->info("User {$name} registered successfully with email {$email}.");
-        $this->call('flashcard:interactive', [
-            'email' => $email,
-            'password' => $password,
-        ]);
+            render('<p class="p-3 bg-green-600 text-white font-bold">User '.$name.' registered successfully with email '.$email.'.</p>');
+        } catch (QueryException $exception) {
+            render('<p class="p-3 bg-red-600 text-white font-bold">An error occurred: '.$exception->getMessage().'</p>');
+
+            return;
+        }
     }
 
     /**
