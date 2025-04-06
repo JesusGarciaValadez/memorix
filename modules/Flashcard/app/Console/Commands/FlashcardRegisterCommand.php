@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 use function Termwind\render;
 
-final class FlashcardRegisterCommand extends Command implements PromptsForMissingInput
+final class FlashcardRegisterCommand extends Command implements Isolatable, PromptsForMissingInput
 {
     protected $signature = 'flashcard:register
         {name : The name of the user}
@@ -66,7 +67,7 @@ final class FlashcardRegisterCommand extends Command implements PromptsForMissin
         return [
             'name' => fn () => text(
                 label: 'Enter your user name:',
-                placeholder: 'John Doe',
+                placeholder: 'John_Doe',
                 required: true,
                 validate: ['string' => 'required|string|min:2|max:255'],
                 transform: fn (string $value) => mb_trim($value)
@@ -94,5 +95,13 @@ final class FlashcardRegisterCommand extends Command implements PromptsForMissin
                 transform: fn (string $value) => mb_trim($value)
             ),
         ];
+    }
+
+    /**
+     * Get the isolatable ID for the command.
+     */
+    public function isolatableId(): string
+    {
+        return $this->argument('email');
     }
 }

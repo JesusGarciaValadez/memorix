@@ -43,12 +43,14 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     {
         $this->trap([SIGTERM, SIGABRT, SIGQUIT], fn () => $this->shouldKeepRunning = false);
 
+        // Handle primary command options first
         if ($this->option('register')) {
             $this->call('flashcard:register');
 
             return;
         }
 
+        // Get email and password
         $email = $this->argument('email') ?? text(
             label: 'Enter your user email:',
             placeholder: 'john@doe.com',
@@ -74,7 +76,91 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         $user = $this->userRepository->findByEmail($email);
 
         render('<p class="p-3 bg-green-600 text-white font-bold">Hi '.$user->name.', welcome to your flashcards</p>');
-        $option = select(
+
+        // Check for direct action options
+        if ($this->option('list')) {
+            $this->listFlashcards();
+
+            return;
+        }
+
+        if ($this->option('create')) {
+            $this->createFlashcard();
+
+            return;
+        }
+
+        if ($this->option('delete')) {
+            $this->deleteFlashcard();
+
+            return;
+        }
+
+        if ($this->option('practice')) {
+            $this->editFlashcard();
+
+            return;
+        }
+
+        if ($this->option('statistics')) {
+            $this->statisticsFlashcards();
+
+            return;
+        }
+
+        if ($this->option('reset')) {
+            $this->resetFlashcard();
+
+            return;
+        }
+
+        // If no specific action option was provided, enter the interactive menu
+        while ($this->shouldKeepRunning) {
+            $option = $this->select();
+
+            // Handle the command logic here based on selected option
+            switch ($option) {
+                case 'list':
+                    $this->listFlashcards();
+                    break;
+                case 'create':
+                    $this->createFlashcard();
+                    break;
+                case 'delete':
+                    $this->deleteFlashcard();
+                    break;
+                case 'practice':
+                    $this->editFlashcard();
+                    break;
+                case 'statistics':
+                    $this->statisticsFlashcards();
+                    break;
+                case 'reset':
+                    $this->resetFlashcard();
+                    break;
+                case 'exit':
+                    $this->exitCommand();
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Get the isolatable ID for the command.
+     */
+    public function isolatableId(): string
+    {
+        return $this->argument('email');
+    }
+
+    /**
+     * Display a select menu for flashcard options.
+     *
+     * This method can be mocked in tests.
+     */
+    protected function select(): string
+    {
+        return select(
             label: 'Please, select an option:',
             options: [
                 'list' => 'List Flashcards',
@@ -89,40 +175,68 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             scroll: 8,
             hint: 'Use arrow keys to navigate and press Enter to select an option.',
         );
-
-        while ($this->shouldKeepRunning) {
-            // Handle the command logic here
-            // For example, you can call other methods based on the options provided
-            if ($option('list')) {
-                // Call the method to list all flashcards
-                $this->listFlashcards();
-            } elseif ($option('create')) {
-                // Call the method to create a new flashcard
-                $this->createFlashcard();
-            } elseif ($option('delete')) {
-                // Call the method to delete a flashcard
-                $this->deleteFlashcard();
-            } elseif ($option('practice')) {
-                // Call the method to practices the flashcards
-                $this->editFlashcard();
-            } elseif ($option('statistics')) {
-                // Call the method to show the statistics
-                $this->statisticsFlashcards();
-            } elseif ($option('reset')) {
-                // Call the method to reset all the statistics
-                $this->resetFlashcard();
-            } elseif ($this->option('exit')) {
-                render('<p class="p-3 bg-red-600 text-white font-bold">See you!</p>');
-                $this->shouldKeepRunning = false;
-            }
-        }
     }
 
     /**
-     * Get the isolatable ID for the command.
+     * List all flashcards.
      */
-    public function isolatableId(): string
+    protected function listFlashcards(): void
     {
-        return $this->argument('email');
+        $this->info('Listing all flashcards...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Create a new flashcard.
+     */
+    protected function createFlashcard(): void
+    {
+        $this->info('Creating a new flashcard...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Delete a flashcard.
+     */
+    protected function deleteFlashcard(): void
+    {
+        $this->info('Deleting a flashcard...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Edit/practice flashcards.
+     */
+    protected function editFlashcard(): void
+    {
+        $this->info('Practicing flashcards...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Show statistics.
+     */
+    protected function statisticsFlashcards(): void
+    {
+        $this->info('Showing statistics...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Reset flashcard practice data.
+     */
+    protected function resetFlashcard(): void
+    {
+        $this->info('Resetting flashcard data...');
+        // Implementation will be added later
+    }
+
+    /**
+     * Exit the Flashcard interactive command.
+     */
+    protected function exitCommand(): void
+    {
+        render('<p class="p-3 bg-red-600 text-white font-bold">See you!</p>');
+        $this->shouldKeepRunning = false;
     }
 }
