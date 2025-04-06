@@ -24,6 +24,13 @@ final class ExitCommandActionTest extends TestCase
         parent::setUp();
         $this->command = $this->createMock(Command::class);
         $this->shouldKeepRunning = true;
+        putenv('TERMWIND_SILENT=true');
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('TERMWIND_SILENT');
+        parent::tearDown();
     }
 
     #[Test]

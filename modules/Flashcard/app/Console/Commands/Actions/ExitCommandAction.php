@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
-
-use function Termwind\render;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
 
 final class ExitCommandAction implements FlashcardActionInterface
 {
@@ -17,7 +16,7 @@ final class ExitCommandAction implements FlashcardActionInterface
 
     public function execute(): void
     {
-        render('<p class="p-3 bg-red-600 text-white font-bold">See you!</p>');
+        ConsoleRenderer::error('See you!');
         $this->shouldKeepRunning = false;
     }
 }

@@ -10,11 +10,11 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
-use function Termwind\render;
 
 final class FlashcardRegisterCommand extends Command implements Isolatable, PromptsForMissingInput
 {
@@ -44,9 +44,9 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
                 'password' => Hash::make($password),
             ]);
 
-            render('<p class="p-3 bg-green-600 text-white font-bold">User '.$name.' registered successfully with email '.$email.'.</p>');
+            ConsoleRenderer::success('User '.$name.' registered successfully with email '.$email.'.');
         } catch (QueryException $exception) {
-            render('<p class="p-3 bg-red-600 text-white font-bold">An error occurred: '.$exception->getMessage().'</p>');
+            ConsoleRenderer::error('An error occurred: '.$exception->getMessage());
 
             return;
         }

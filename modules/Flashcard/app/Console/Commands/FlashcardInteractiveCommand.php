@@ -9,12 +9,12 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Facades\Hash;
 use Modules\Flashcard\app\Console\Commands\Actions\FlashcardActionFactory;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
-use function Termwind\render;
 
 #[AllowDynamicProperties]
 final class FlashcardInteractiveCommand extends Command implements Isolatable
@@ -76,7 +76,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         $user = $this->userRepository->findByEmail($email);
 
-        render('<p class="p-3 bg-green-600 text-white font-bold">Hi '.$user->name.', welcome to your flashcards</p>');
+        ConsoleRenderer::success('Hi '.$user->name.', welcome to your flashcards');
 
         // Check for direct action options
         if ($this->option('list')) {
