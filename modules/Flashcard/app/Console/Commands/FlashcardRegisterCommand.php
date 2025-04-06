@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Console\Commands;
 
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
@@ -25,14 +25,19 @@ final class FlashcardRegisterCommand extends Command implements PromptsForMissin
 
     protected $description = 'Register a new user';
 
+    public function __construct(private readonly UserRepositoryInterface $userRepository)
+    {
+        parent::__construct();
+    }
+
     public function handle(): void
     {
-        $name = $this->argument('name');
+        $name = str_replace('_', ' ', $this->argument('name'));
         $email = $this->argument('email');
         $password = $this->argument('password');
 
         try {
-            User::create([
+            $this->userRepository->create([
                 'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($password),
@@ -44,6 +49,11 @@ final class FlashcardRegisterCommand extends Command implements PromptsForMissin
 
             return;
         }
+
+        $this->call('flashcard:interactive', [
+            'email' => $email,
+            'password' => $password,
+        ]);
     }
 
     /**

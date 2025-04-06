@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Flashcard\database\factories\FlashcardFactory;
 
@@ -36,6 +37,14 @@ final class Flashcard extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the practice results for this flashcard.
+     */
+    public function practiceResults(): HasMany
+    {
+        return $this->hasMany(PracticeResult::class);
     }
 
     /**
