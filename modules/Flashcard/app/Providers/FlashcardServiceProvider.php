@@ -8,9 +8,26 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Modules\Flashcard\app\Models\Flashcard;
+use Modules\Flashcard\app\Models\Log;
+use Modules\Flashcard\app\Models\Statistic;
+use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\app\Policies\FlashcardPolicy;
+use Modules\Flashcard\app\Policies\LogPolicy;
+use Modules\Flashcard\app\Policies\StatisticPolicy;
+use Modules\Flashcard\app\Policies\StudySessionPolicy;
+use Modules\Flashcard\app\Repositories\Eloquent\FlashcardRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\StatisticRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\StudySessionRepository;
+use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
+use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
+use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
+use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
 final class FlashcardServiceProvider extends BaseServiceProvider
 {
@@ -32,6 +49,8 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
         $this->loadMigrationsFrom(__DIR__.'/../../Database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
+
+        $this->registerPolicies();
     }
 
     /**
@@ -44,6 +63,7 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->configureDates();
         $this->configureUrls();
         $this->configureVite();
+        $this->registerRepositories();
     }
 
     /**
@@ -88,5 +108,27 @@ final class FlashcardServiceProvider extends BaseServiceProvider
     private function configureVite(): void
     {
         Vite::useAggressivePrefetching();
+    }
+
+    /**
+     * Register repositories.
+     */
+    private function registerRepositories(): void
+    {
+        $this->app->bind(FlashcardRepositoryInterface::class, FlashcardRepository::class);
+        $this->app->bind(LogRepositoryInterface::class, LogRepository::class);
+        $this->app->bind(StatisticRepositoryInterface::class, StatisticRepository::class);
+        $this->app->bind(StudySessionRepositoryInterface::class, StudySessionRepository::class);
+    }
+
+    /**
+     * Register the module's policies.
+     */
+    private function registerPolicies(): void
+    {
+        Gate::policy(Flashcard::class, FlashcardPolicy::class);
+        Gate::policy(Log::class, LogPolicy::class);
+        Gate::policy(Statistic::class, StatisticPolicy::class);
+        Gate::policy(StudySession::class, StudySessionPolicy::class);
     }
 }
