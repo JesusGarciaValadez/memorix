@@ -106,38 +106,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         return $this->argument('email');
     }
 
-    /**
-     * Display a select menu for flashcard options.
-     */
-    protected function selectMenuOption(): string
-    {
-        return select(
-            label: 'Please, select an option:',
-            options: [
-                'list' => 'List Flashcards',
-                'create' => 'Create Flashcard',
-                'delete' => 'Delete Flashcard',
-                'practice' => 'Practice Study Mode',
-                'statistics' => 'Statistics',
-                'reset' => 'Reset the flashcards data',
-                'exit' => 'Exit',
-            ],
-            default: 'practice',
-            scroll: 8,
-            hint: 'Use arrow keys to navigate and press Enter to select an option.',
-        );
-    }
-
-    /**
-     * Execute a flashcard action.
-     */
-    protected function executeAction(string $action): void
-    {
-        $flashcardAction = FlashcardActionFactory::create($action, $this, $this->shouldKeepRunning);
-        $flashcardAction->execute();
-    }
-
-    protected function validateUserInformation(): User
+    public function validateUserInformation(): User
     {
         // Get email and password
         $email = $this->argument('email') ?? text(
@@ -167,5 +136,36 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         ConsoleRenderer::success('Hi '.$user?->name.', welcome to your flashcards');
 
         return $user;
+    }
+
+    /**
+     * Display a select menu for flashcard options.
+     */
+    protected function selectMenuOption(): string
+    {
+        return select(
+            label: 'Please, select an option:',
+            options: [
+                'list' => 'List Flashcards',
+                'create' => 'Create Flashcard',
+                'delete' => 'Delete Flashcard',
+                'practice' => 'Practice Study Mode',
+                'statistics' => 'Statistics',
+                'reset' => 'Reset the flashcards data',
+                'exit' => 'Exit',
+            ],
+            default: 'practice',
+            scroll: 8,
+            hint: 'Use arrow keys to navigate and press Enter to select an option.',
+        );
+    }
+
+    /**
+     * Execute a flashcard action.
+     */
+    protected function executeAction(string $action): void
+    {
+        $flashcardAction = FlashcardActionFactory::create($action, $this, $this->shouldKeepRunning);
+        $flashcardAction->execute();
     }
 }

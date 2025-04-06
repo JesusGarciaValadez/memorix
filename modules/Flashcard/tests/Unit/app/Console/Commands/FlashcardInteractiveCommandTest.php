@@ -69,7 +69,17 @@ final class FlashcardInteractiveCommandTest extends TestCase
             '--create' => true,
         ])
             ->expectsOutput('Creating a new flashcard...')
-            ->assertExitCode(0);
+            ->expectsQuestion('Enter the flashcard question:', 'Sample Question')
+            ->expectsQuestion('Enter the flashcard answer:', 'Sample Answer')
+            ->expectsOutput('Question: Sample Question')
+            ->expectsOutput('Answer: Sample Answer')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('flashcards', [
+            'user_id' => $this->user->id,
+            'question' => 'Sample Question',
+            'answer' => 'Sample Answer',
+        ]);
     }
 
     #[Test]
