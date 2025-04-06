@@ -58,6 +58,14 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
     }
 
     /**
+     * Get the isolatable ID for the command.
+     */
+    public function isolatableId(): string
+    {
+        return $this->argument('email');
+    }
+
+    /**
      * Prompt for missing input arguments using the returned questions.
      *
      * @return array<string, string>
@@ -95,13 +103,5 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
                 transform: fn (string $value) => mb_trim($value)
             ),
         ];
-    }
-
-    /**
-     * Get the isolatable ID for the command.
-     */
-    public function isolatableId(): string
-    {
-        return $this->argument('email');
     }
 }

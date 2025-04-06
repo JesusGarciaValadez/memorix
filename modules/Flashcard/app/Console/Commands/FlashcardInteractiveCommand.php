@@ -8,6 +8,7 @@ use AllowDynamicProperties;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Facades\Hash;
+use Modules\Flashcard\app\Console\Commands\Actions\FlashcardActionFactory;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
@@ -79,69 +80,45 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         // Check for direct action options
         if ($this->option('list')) {
-            $this->listFlashcards();
+            $this->executeAction('list');
 
             return;
         }
 
         if ($this->option('create')) {
-            $this->createFlashcard();
+            $this->executeAction('create');
 
             return;
         }
 
         if ($this->option('delete')) {
-            $this->deleteFlashcard();
+            $this->executeAction('delete');
 
             return;
         }
 
         if ($this->option('practice')) {
-            $this->editFlashcard();
+            $this->executeAction('practice');
 
             return;
         }
 
         if ($this->option('statistics')) {
-            $this->statisticsFlashcards();
+            $this->executeAction('statistics');
 
             return;
         }
 
         if ($this->option('reset')) {
-            $this->resetFlashcard();
+            $this->executeAction('reset');
 
             return;
         }
 
         // If no specific action option was provided, enter the interactive menu
         while ($this->shouldKeepRunning) {
-            $option = $this->select();
-
-            // Handle the command logic here based on selected option
-            switch ($option) {
-                case 'list':
-                    $this->listFlashcards();
-                    break;
-                case 'create':
-                    $this->createFlashcard();
-                    break;
-                case 'delete':
-                    $this->deleteFlashcard();
-                    break;
-                case 'practice':
-                    $this->editFlashcard();
-                    break;
-                case 'statistics':
-                    $this->statisticsFlashcards();
-                    break;
-                case 'reset':
-                    $this->resetFlashcard();
-                    break;
-                case 'exit':
-                    $this->exitCommand();
-                    break;
-            }
+            $selectedOption = $this->selectMenuOption();
+            $this->executeAction($selectedOption);
         }
     }
 
@@ -155,10 +132,8 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
     /**
      * Display a select menu for flashcard options.
-     *
-     * This method can be mocked in tests.
      */
-    protected function select(): string
+    protected function selectMenuOption(): string
     {
         return select(
             label: 'Please, select an option:',
@@ -178,65 +153,11 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     }
 
     /**
-     * List all flashcards.
+     * Execute a flashcard action.
      */
-    protected function listFlashcards(): void
+    protected function executeAction(string $action): void
     {
-        $this->info('Listing all flashcards...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Create a new flashcard.
-     */
-    protected function createFlashcard(): void
-    {
-        $this->info('Creating a new flashcard...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Delete a flashcard.
-     */
-    protected function deleteFlashcard(): void
-    {
-        $this->info('Deleting a flashcard...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Edit/practice flashcards.
-     */
-    protected function editFlashcard(): void
-    {
-        $this->info('Practicing flashcards...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Show statistics.
-     */
-    protected function statisticsFlashcards(): void
-    {
-        $this->info('Showing statistics...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Reset flashcard practice data.
-     */
-    protected function resetFlashcard(): void
-    {
-        $this->info('Resetting flashcard data...');
-        // Implementation will be added later
-    }
-
-    /**
-     * Exit the Flashcard interactive command.
-     */
-    protected function exitCommand(): void
-    {
-        render('<p class="p-3 bg-red-600 text-white font-bold">See you!</p>');
-        $this->shouldKeepRunning = false;
+        $flashcardAction = FlashcardActionFactory::create($action, $this, $this->shouldKeepRunning);
+        $flashcardAction->execute();
     }
 }
