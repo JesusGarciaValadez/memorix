@@ -24,6 +24,7 @@ final class FlashcardActionFactory
             'practice' => new PracticeFlashcardAction($command),
             'statistics' => new StatisticsFlashcardAction($command),
             'reset' => new ResetFlashcardAction($command),
+            'register' => new RegisterUserAction($command),
             'exit' => new ExitCommandAction($command, $shouldKeepRunning),
             default => throw new InvalidArgumentException("Invalid action: {$action}"),
         };

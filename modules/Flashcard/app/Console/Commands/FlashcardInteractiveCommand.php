@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands;
 
 use AllowDynamicProperties;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Facades\Hash;
@@ -46,37 +47,12 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         // Handle primary command options first
         if ($this->option('register')) {
-            $this->call('flashcard:register');
+            $this->executeAction('register');
 
             return;
         }
 
-        // Get email and password
-        $email = $this->argument('email') ?? text(
-            label: 'Enter your user email:',
-            placeholder: 'john@doe.com',
-            required: true,
-            validate: ['email' => 'required|email|exists:users,email'],
-            transform: fn (string $value) => mb_trim($value)
-        );
-
-        $password = $this->argument('password') ?? password(
-            label: 'Enter your password:',
-            placeholder: '********',
-            required: true,
-            validate: fn (string $value) => match (true) {
-                ! Hash::check(
-                    $value,
-                    $this->userRepository->getPasswordByEmail($email)
-                ) => 'Invalid password. Please try again.',
-                default => null,
-            },
-            transform: fn (string $value) => mb_trim($value)
-        );
-
-        $user = $this->userRepository->findByEmail($email);
-
-        ConsoleRenderer::success('Hi '.$user->name.', welcome to your flashcards');
+        [$user] = $this->validateUserInformation();
 
         // Check for direct action options
         if ($this->option('list')) {
@@ -159,5 +135,37 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     {
         $flashcardAction = FlashcardActionFactory::create($action, $this, $this->shouldKeepRunning);
         $flashcardAction->execute();
+    }
+
+    protected function validateUserInformation(): User
+    {
+        // Get email and password
+        $email = $this->argument('email') ?? text(
+            label: 'Enter your user email:',
+            placeholder: 'john@doe.com',
+            required: true,
+            validate: ['email' => 'required|email|exists:users,email'],
+            transform: fn (string $value) => mb_trim($value)
+        );
+
+        $this->argument('password') ?? password(
+            label: 'Enter your password:',
+            placeholder: '********',
+            required: true,
+            validate: fn (string $value) => match (true) {
+                ! Hash::check(
+                    $value,
+                    $this->userRepository->getPasswordByEmail($email)
+                ) => 'Invalid password. Please try again.',
+                default => null,
+            },
+            transform: fn (string $value) => mb_trim($value)
+        );
+
+        $user = $this->userRepository->findByEmail($email);
+
+        ConsoleRenderer::success('Hi '.$user?->name.', welcome to your flashcards');
+
+        return $user;
     }
 }
