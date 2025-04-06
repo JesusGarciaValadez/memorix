@@ -16,6 +16,7 @@ final class DatabaseSeeder extends Seeder
         $this->call([
             FlashcardSeeder::class,
             StudySessionSeeder::class,
+            PracticeResultSeeder::class,
             StatisticSeeder::class,
             LogSeeder::class,
         ]);

@@ -22,11 +22,13 @@ use Modules\Flashcard\app\Policies\StatisticPolicy;
 use Modules\Flashcard\app\Policies\StudySessionPolicy;
 use Modules\Flashcard\app\Repositories\Eloquent\FlashcardRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\PracticeResultRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\StatisticRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\StudySessionRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\UserRepository;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
+use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
@@ -119,6 +121,7 @@ final class FlashcardServiceProvider extends BaseServiceProvider
     {
         $this->app->bind(FlashcardRepositoryInterface::class, FlashcardRepository::class);
         $this->app->bind(LogRepositoryInterface::class, LogRepository::class);
+        $this->app->bind(PracticeResultRepositoryInterface::class, PracticeResultRepository::class);
         $this->app->bind(StatisticRepositoryInterface::class, StatisticRepository::class);
         $this->app->bind(StudySessionRepositoryInterface::class, StudySessionRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);

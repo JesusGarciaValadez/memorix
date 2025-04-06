@@ -6,10 +6,12 @@ namespace Modules\Flashcard\tests\Unit\app\Repositories\Eloquent;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Mockery;
+use Mockery\MockInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\Eloquent\StudySessionRepository;
+use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -19,13 +21,23 @@ final class StudySessionRepositoryTest extends TestCase
 
     private StudySessionRepository $repository;
 
+    private MockInterface $practiceResultRepository;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new StudySessionRepository();
+
+        $this->practiceResultRepository = Mockery::mock(PracticeResultRepositoryInterface::class);
+        $this->repository = new StudySessionRepository($this->practiceResultRepository);
         $this->user = User::factory()->create();
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     #[Test]
@@ -146,6 +158,20 @@ final class StudySessionRepositoryTest extends TestCase
     public function it_gets_flashcards_for_practice(): void
     {
         // Arrange
+        $incorrectFlashcards = [
+            [
+                'id' => 1,
+                'question' => 'Question 1',
+                'answer' => 'Answer 1',
+            ],
+        ];
+
+        // Mock the practice result repository to return incorrect flashcards
+        $this->practiceResultRepository->shouldReceive('getRecentlyIncorrectFlashcards')
+            ->once()
+            ->with($this->user->id)
+            ->andReturn($incorrectFlashcards);
+
         Flashcard::factory()->count(5)->create([
             'user_id' => $this->user->id,
         ]);
@@ -156,11 +182,10 @@ final class StudySessionRepositoryTest extends TestCase
         // Assert
         $this->assertIsArray($result);
         $this->assertNotEmpty($result);
-
-        // Since this is a complex query that uses DB directly, we'll just check structure
         $this->assertArrayHasKey('id', $result[0]);
         $this->assertArrayHasKey('question', $result[0]);
         $this->assertArrayHasKey('answer', $result[0]);
+        $this->assertEquals(1, $result[0]['id']);
     }
 
     #[Test]
@@ -176,17 +201,17 @@ final class StudySessionRepositoryTest extends TestCase
             'ended_at' => null,
         ]);
 
+        // Mock the practice result repository
+        $this->practiceResultRepository->shouldReceive('create')
+            ->once()
+            ->with($this->user->id, $flashcard->id, $studySession->id, true)
+            ->andReturn(true);
+
         // Act
         $result = $this->repository->recordPracticeResult($this->user->id, $flashcard->id, true);
 
         // Assert
         $this->assertTrue($result);
-        $this->assertDatabaseHas('practice_results', [
-            'user_id' => $this->user->id,
-            'flashcard_id' => $flashcard->id,
-            'study_session_id' => $studySession->id,
-            'is_correct' => true,
-        ]);
     }
 
     #[Test]
@@ -196,6 +221,20 @@ final class StudySessionRepositoryTest extends TestCase
         $flashcard = Flashcard::factory()->create([
             'user_id' => $this->user->id,
         ]);
+
+        // No active session should exist
+
+        // Mock the practice result repository
+        $this->practiceResultRepository->shouldReceive('create')
+            ->once()
+            ->andReturnUsing(function ($userId, $flashcardId, $sessionId, $isCorrect) {
+                // Check that we have a valid session ID
+                $this->assertNotNull($sessionId);
+                // Verify the session exists
+                $this->assertDatabaseHas('study_sessions', ['id' => $sessionId]);
+
+                return true;
+            });
 
         // Act
         $result = $this->repository->recordPracticeResult($this->user->id, $flashcard->id, true);
@@ -209,14 +248,6 @@ final class StudySessionRepositoryTest extends TestCase
             ->first();
 
         $this->assertNotNull($session);
-
-        // Should have recorded the practice result
-        $this->assertDatabaseHas('practice_results', [
-            'user_id' => $this->user->id,
-            'flashcard_id' => $flashcard->id,
-            'study_session_id' => $session->id,
-            'is_correct' => true,
-        ]);
     }
 
     #[Test]
@@ -228,19 +259,11 @@ final class StudySessionRepositoryTest extends TestCase
             'ended_at' => null,
         ]);
 
-        $flashcard = Flashcard::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
-
-        // Insert a practice result
-        DB::table('practice_results')->insert([
-            'user_id' => $this->user->id,
-            'flashcard_id' => $flashcard->id,
-            'study_session_id' => $studySession->id,
-            'is_correct' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Mock the practice result repository
+        $this->practiceResultRepository->shouldReceive('deleteForUser')
+            ->once()
+            ->with($this->user->id)
+            ->andReturn(true);
 
         // Act
         $result = $this->repository->resetPracticeProgress($this->user->id);
@@ -248,48 +271,26 @@ final class StudySessionRepositoryTest extends TestCase
         // Assert
         $this->assertTrue($result);
 
-        // Should have ended the active session
+        // Session should be ended
         $studySession->refresh();
         $this->assertNotNull($studySession->ended_at);
-
-        // Should have deleted the practice results
-        $this->assertDatabaseMissing('practice_results', [
-            'user_id' => $this->user->id,
-        ]);
     }
 
     #[Test]
     public function it_resets_practice_progress_without_active_session(): void
     {
-        // Arrange
-        $completedSession = StudySession::factory()->create([
-            'user_id' => $this->user->id,
-            'ended_at' => now()->subDay(),
-        ]);
+        // Arrange - no active session
 
-        $flashcard = Flashcard::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
-
-        // Insert a practice result
-        DB::table('practice_results')->insert([
-            'user_id' => $this->user->id,
-            'flashcard_id' => $flashcard->id,
-            'study_session_id' => $completedSession->id,
-            'is_correct' => true,
-            'created_at' => now()->subDay(),
-            'updated_at' => now()->subDay(),
-        ]);
+        // Mock the practice result repository
+        $this->practiceResultRepository->shouldReceive('deleteForUser')
+            ->once()
+            ->with($this->user->id)
+            ->andReturn(true);
 
         // Act
         $result = $this->repository->resetPracticeProgress($this->user->id);
 
         // Assert
         $this->assertTrue($result);
-
-        // Should have deleted the practice results
-        $this->assertDatabaseMissing('practice_results', [
-            'user_id' => $this->user->id,
-        ]);
     }
 }

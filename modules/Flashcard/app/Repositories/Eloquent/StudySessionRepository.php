@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Repositories\Eloquent;
 
-use Illuminate\Support\Facades\DB;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
 final class StudySessionRepository implements StudySessionRepositoryInterface
 {
+    public function __construct(
+        private readonly PracticeResultRepositoryInterface $practiceResultRepository
+    ) {}
+
     /**
      * Start a new study session.
      */
@@ -60,44 +64,50 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
     public function getFlashcardsForPractice(int $userId): array
     {
         // First get recently incorrect answers
-        $incorrectFlashcards = DB::table('flashcards')
-            ->join('practice_results', 'flashcards.id', '=', 'practice_results.flashcard_id')
-            ->where('flashcards.user_id', $userId)
-            ->where('practice_results.is_correct', false)
-            ->where('practice_results.created_at', '>', now()->subDays(7))
-            ->select('flashcards.*')
-            ->orderBy('practice_results.created_at', 'desc')
-            ->limit(10)
-            ->get();
+        $incorrectFlashcards = $this->practiceResultRepository->getRecentlyIncorrectFlashcards($userId);
+
+        $incorrectIds = array_column($incorrectFlashcards, 'id');
 
         // Then get cards that haven't been practiced recently
         $unpracticedFlashcards = Flashcard::where('user_id', $userId)
-            ->whereNotIn('id', $incorrectFlashcards->pluck('id'))
-            ->whereDoesntHave('practiceResults', function ($query) {
-                $query->where('created_at', '>', now()->subDays(7));
+            ->whereNotIn('id', $incorrectIds)
+            ->whereNot(function ($query) {
+                $query->whereHas('practiceResults', function ($query) {
+                    $query->where('created_at', '>', now()->subDays(7));
+                });
             })
             ->inRandomOrder()
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($flashcard) {
+                return [
+                    'id' => $flashcard->id,
+                    'question' => $flashcard->question,
+                    'answer' => $flashcard->answer,
+                ];
+            })
+            ->toArray();
 
         // Combine both sets
-        $flashcards = $incorrectFlashcards->merge($unpracticedFlashcards);
+        $flashcards = array_merge($incorrectFlashcards, $unpracticedFlashcards);
 
-        if ($flashcards->isEmpty()) {
+        if (empty($flashcards)) {
             // If no specific cards to practice, get 10 random cards
             $flashcards = Flashcard::where('user_id', $userId)
                 ->inRandomOrder()
                 ->limit(10)
-                ->get();
+                ->get()
+                ->map(function ($flashcard) {
+                    return [
+                        'id' => $flashcard->id,
+                        'question' => $flashcard->question,
+                        'answer' => $flashcard->answer,
+                    ];
+                })
+                ->toArray();
         }
 
-        return $flashcards->map(function ($flashcard) {
-            return [
-                'id' => $flashcard->id,
-                'question' => $flashcard->question,
-                'answer' => $flashcard->answer,
-            ];
-        })->toArray();
+        return $flashcards;
     }
 
     /**
@@ -111,14 +121,12 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
             $session = $this->startSession($userId);
         }
 
-        return DB::table('practice_results')->insert([
-            'user_id' => $userId,
-            'flashcard_id' => $flashcardId,
-            'study_session_id' => $session->id,
-            'is_correct' => $isCorrect,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        return $this->practiceResultRepository->create(
+            $userId,
+            $flashcardId,
+            $session->id,
+            $isCorrect
+        );
     }
 
     /**
@@ -133,8 +141,6 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
         }
 
         // Delete practice results
-        return DB::table('practice_results')
-            ->where('user_id', $userId)
-            ->delete() >= 0;
+        return $this->practiceResultRepository->deleteForUser($userId);
     }
 }
