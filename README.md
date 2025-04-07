@@ -218,3 +218,5 @@ question,answer
 ```
 
 This feature would be particularly valuable for educators, students, or anyone who needs to create large sets of flashcards quickly, making the application more versatile and user-friendly.
+
+I have a video recorded explaining this feature by myself. If interested to see it, please just let me know where to send it.
