@@ -1,80 +1,220 @@
-## Objective
+# Laravel Flashcard Application
 
-Develop an interactive command-line flashcard application using Laravel, which utilizes the module pattern for better code organization. The application should allow users to create, manage, and practice flashcards. The goal is to assess your comfort level and proficiency with modern software development practices, including module usage, and automated testing in a Laravel environment.
+An interactive command-line flashcard application built with Laravel 12, which utilizes the module pattern for better code organization. The application allows users to create, manage, and practice flashcards.
 
-## Tasks
+## Features
 
-You may use any plugins you want to complete this assignment. Some requirements may be intentionally vague, so use your best judgement and knowledge of industry standards to implement. You are not expected to complete all required and optional features within the alloted timeframe. If you have additional time after completing the required features, work on optional features that you feel will best showcase your existing skills first.
+- Interactive CLI interface for managing flashcards
+- User authentication and authorization
+- Create, list, delete, and practice flashcards
+- Track statistics and progress
+- Activity logging
+- Modular architecture
 
-### (Required) Flashcard Application
+## Requirements
 
-You **must** complete the tasks outlined in this section, which form the basis of the assessment.
+- Docker
+- Docker Compose
+- Git
 
-* **Application Setup**
-   * Set up a new Laravel [11.x](https://laravel.com/docs/11.x/installation) project and add all assessment code to a `Flashcard` module.
-   * If you are unfamiliar with the Module pattern, use the guidelines [here](https://techsemicolon.github.io/blog/2019/01/06/laravel-module-pattern/) to get yourself started.
-   * Implement the flashcard functionality as a CLI tool.
-   * Incorporate simple authentication to support multiple users.
-* **Functionality**: The features listed below must support multiple users. *You can safely assume that users will not share their cards with others, so each user should only be able to view or otherwise interact with their own cards.*
-   * **Interactive Menu**: Display a main menu of available Flashcard options using the command `php artisan flashcard:interactive`.
-   * **List Flashcards**: Display all flashcards along with their answers.
-   * **Create Flashcard**: Allow users to input a question and its answer, storing this data in the database.
-   * **Delete Flashcard**: Allow users to delete a question and its answer, removing the data from the database.
-   * **Practice Mode**: Users can practice their flashcards.
-      * First, show the current progress: The user will be presented with a table listing all questions, and their practice status for each question: Not answered, Correct, Incorrect.
-      * As a table footer, we want to present the percent of completion (all questions vs correctly answered).
-      * Then, the user will pick the question they want to practice. We should not allow answering questions that are already correct.
-      * Upon answering, store the answer in the database and print correct/incorrect.
-      * Finally, show the first step again (the current progress) and allow the user to keep practicing until they explicitly decide to stop.
-   * **Statistics**: Show total questions, percentage of questions answered, and percentage correctly answered.
-   * **Reset**: Enable users to reset all practice progress.
-   * **Exit**: Provide a mechanism to exit the application safely.
-* **Application Setup**
-   * Write comprehensive feature and unit tests to cover the functionality. Testing may be done in [either PHPUnit or Pest](https://laravel.com/docs/11.x/testing).
-   * Maintain clear documentation on how to set up and run the project, along with any necessary explanations of the architecture and decisions.
+## Installation and Setup Instructions
 
-### (Optional) Flashcard Application Upgrades
+### 1. Clone the Repository
 
-These tasks are **optional** and can be completed to demonstrate additional skills.
+First, clone the repository to your local machine:
 
-* **Implement an API**
-   * Implement the same Flashcard features as an API (except interactive menu and exit) for third party applications to implement.
-   * You may use any authentication method, or a combination.
-   * API docuementation, including authentication method, **must** be provided to be considered complete.
-* **Docker Integration**
-   * Create a Dockerfile and docker-compose.yml to containerize the application, making it easy to set up and run in any environment.
-   * Note that you may utilize [Laravel Sail](https://laravel.com/docs/11.x/sail).
-* **CI/CD Pipeline Description**
-   * Write a description of how you would set up a CI/CD pipeline for this project, including stages for build, test, and deployment.
-   * Mention specific tools and practices you would use.
-   * You may provide diagram(s), configuration files, or any other documentation you find relevant.
-* **Comprehensive Logging**
-   * Upgrade the Flashcard Application to log all actions taken on the server.
-   * Include the method of access (API or CLI), action taken, user who performed the action, and appropriate level of log (debug, warning, error, etc.).
-* **Change History**
-   * Upgrade the Flashcard Application to store a history of all changes to Flashcards. This means implementing the following additional features:
-      * Allow users to view previous versions of Flashcards, if available.
-      * Allow users to restore previous versions of Flashcards, if available.
-* **Soft Delete**
-   * Upgrade the Flashcard Application to soft delete Flashcards. This means implementing the following additional features:
-      * **Restore**: Allow users to restore any deleted Flashcard.
-      * **Permanently Delete**: Allow users to permanently delete any soft deleted Flashcard.
-* **New Project Requirement**
-   * Do you have a better idea for an optional requirement that will make you stand out from the crowd? At Solar Insure, we pride ourselves on giving every team member a voice in projects. Consider this your opportunity to define a project requirement that best suites your custom skillset.
-      * Include a brief description of the feature in your README file, similar to what is written above for other optional features.
-      * Build something cool!
-      * (Optional) Tell us about this feature in a video response. You will have the option to record yourself after you submit your assignment.
+```bash
+git clone <repository-url>
+cd laravel-engineer-gevgku
+```
 
-## Evaluation Criteria
+### 2. Install Laravel Sail
 
-* **Assignment Completeness**: The application must function as described, fulfilling all requirements.
-* **Code Elegance**: Code should be concise, minimizing complexity. It should be easily handover-able to another developer of reasonable skill without requiring significant explanation.
-* **Code Readability**: Use meaningful names for variables and functions. Organize code logically into functions and modules. Maintain consistent indentation and use white space judiciously for better readability.
-   * Note that it is highly recommended to use a tool like [Laravel Pint](https://laravel.com/docs/11.x/pint).
-* **Documentation**: Ensure the codebase is well-commented, but avoid excessive comments. The documentation should clearly explain the setup process, usage, and any important architectural choices. Git history should be meaningful and informative.
+Laravel Sail is already included in the project, but if you need to install it in an existing application:
 
-## CodeSubmit
+```bash
+composer require laravel/sail --dev
+```
 
-Please organize, design, test, and document your code as if it were going into production - then push your changes to the `main` branch.
+### 3. Generate Application Key
 
-Have fun coding! 🚀
+Generate the application encryption key:
+
+```bash
+sail artisan key:generate
+```
+
+### 4. Start Laravel Sail
+
+Start the Docker containers:
+
+```bash
+sail up -d
+```
+
+The `-d` flag runs the containers in the background.
+
+### 5. Install Dependencies
+
+Install PHP dependencies:
+
+```bash
+sail composer install
+```
+
+### 6. Run Migrations
+
+Execute database migrations:
+
+```bash
+sail artisan migrate
+```
+
+### 7. Run Unit Tests
+
+Execute the unit tests:
+
+```bash
+sail artisan test
+```
+
+### 8. Run the Flashcard Interactive Command
+
+To run the interactive flashcard command:
+
+```bash
+sail artisan flashcard:interactive
+```
+
+## Command Documentation
+
+### FlashcardInteractiveCommand
+
+The `flashcard:interactive` command provides an interactive menu for managing flashcards.
+
+**Signature:**
+```
+flashcard:interactive
+    {email? : The email of the user}
+    {password? : The password of the user}
+    {--list : List all flashcards}
+    {--create : Create a new flashcard}
+    {--delete : Delete a flashcard}
+    {--practice : Practice study mode}
+    {--statistics : Show statistics}
+    {--reset : Reset the flashcards data}
+    {--register : Register a new user}
+    {--logs : View user activity logs}
+```
+
+**Options:**
+
+1. **email** (optional): The email of the user to authenticate with.
+2. **password** (optional): The password of the user to authenticate with.
+3. **--list**: Lists all flashcards for the authenticated user.
+4. **--create**: Opens the create flashcard interface.
+5. **--delete**: Opens the delete flashcard interface.
+6. **--practice**: Enters practice study mode.
+7. **--statistics**: Shows statistics about the user's flashcards.
+8. **--reset**: Resets all flashcards data for the user.
+9. **--register**: Registers a new user.
+10. **--logs**: Views user activity logs.
+
+**Examples:**
+
+- Run the interactive menu: `sail artisan flashcard:interactive`
+- List flashcards: `sail artisan flashcard:interactive --list`
+- Create a flashcard: `sail artisan flashcard:interactive --create`
+- Practice flashcards: `sail artisan flashcard:interactive --practice`
+- Register a new user: `sail artisan flashcard:interactive --register`
+- Login with credentials: `sail artisan flashcard:interactive user@example.com password123`
+
+### FlashcardRegisterCommand
+
+The `flashcard:register` command allows users to register a new account.
+
+**Signature:**
+```
+flashcard:register
+    {name : The name of the user}
+    {email : The email of the user}
+    {password : The password of the user}
+    {--skip-interactive : Skip the interactive part}
+```
+
+**Options:**
+
+1. **name** (required): The name of the user to register.
+2. **email** (required): The email of the user to register.
+3. **password** (required): The password for the user account.
+4. **--skip-interactive**: Skips launching the interactive menu after registration.
+
+**Examples:**
+
+- Register a new user: `sail artisan flashcard:register "John Doe" john@example.com password123`
+- Register and skip interactive menu: `sail artisan flashcard:register "John Doe" john@example.com password123 --skip-interactive`
+
+## Project Structure
+
+The application follows a modular architecture with the Flashcard functionality in the `modules/Flashcard` directory:
+
+- `modules/Flashcard/app/Console/Commands`: Contains the command classes
+- `modules/Flashcard/app/Models`: Contains the model classes
+- `modules/Flashcard/app/Repositories`: Contains the repository classes
+- `modules/Flashcard/app/Services`: Contains the service classes
+- `modules/Flashcard/database/migrations`: Contains the database migrations
+- `modules/Flashcard/tests`: Contains the test classes
+
+## Additional Notes
+
+- The application uses Laravel Sail for Docker containerization, making it easy to run in any environment.
+- All commands should be executed using the `sail` prefix to ensure they run within the Docker container.
+- The application implements proper authentication and authorization to ensure users can only access their own flashcards.
+- The interactive command provides a user-friendly interface for managing flashcards through the command line.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Proposed New Feature: Bulk Import Flashcards
+
+As an additional enhancement to the Flashcard Application, I propose implementing a bulk import feature that allows users to import multiple flashcards at once using a CSV file. This feature would significantly improve the user experience when creating large sets of flashcards.
+
+### Feature Description
+
+The bulk import feature would:
+
+1. Allow authenticated users to import flashcards from a CSV file
+2. Support a simple CSV structure with columns for "question" and "answer"
+3. Validate the CSV format and content before importing
+4. Provide clear feedback on the import process (success/failure)
+5. Show a summary of imported flashcards and any errors encountered
+
+### Implementation Details
+
+The implementation would include:
+
+1. A new command `flashcard:import` that accepts a CSV file path as an argument and the user's email
+2. CSV parsing and validation logic
+3. Batch processing of flashcards to improve performance
+4. Error handling for malformed CSV files or invalid data
+5. Progress indicators for large imports
+6. Detailed reporting of the import results
+
+### Example Usage
+
+```bash
+sail artisan flashcard:import --file=path/to/flashcards.csv --email=user@example.com
+```
+
+### CSV Format
+
+The CSV file would follow a simple format:
+
+```csv
+question,answer
+"What is the capital of France?","Paris"
+"What is the largest planet in our solar system?","Jupiter"
+```
+
+This feature would be particularly valuable for educators, students, or anyone who needs to create large sets of flashcards quickly, making the application more versatile and user-friendly.

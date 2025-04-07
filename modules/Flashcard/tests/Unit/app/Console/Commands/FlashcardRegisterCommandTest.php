@@ -6,14 +6,8 @@ namespace Modules\Flashcard\tests\Unit\app\Console\Commands;
 
 use App\Models\User;
 use Exception;
-use Illuminate\Console\OutputStyle;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Mockery;
-use Mockery\MockInterface;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
-use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -23,60 +17,36 @@ final class FlashcardRegisterCommandTest extends TestCase
 
     private User $user;
 
-    private MockInterface $userRepositoryMock;
-
-    private User $testUser;
-
-    private OutputStyle $outputStyleMock;
-
     protected function setUp(): void
     {
         parent::setUp();
-        ConsoleRenderer::enableTestMode();
-        $this->userRepositoryMock = Mockery::mock(UserRepositoryInterface::class);
-        $this->app->instance(UserRepositoryInterface::class, $this->userRepositoryMock);
 
-        $this->outputStyleMock = Mockery::mock(OutputStyle::class);
-        $this->app->instance(OutputStyle::class, $this->outputStyleMock);
-
-        // Create a real User instance for testing
-        $this->testUser = new User([
-            'name' => 'John Wick',
-            'email' => 'john@wick.com',
-            'password' => Hash::make('Password123!'),
+        // Create a test user that can be reused in all tests
+        $this->user = User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
         ]);
     }
 
     #[Test]
     public function it_tests_the_flashcard_user_registration_option(): void
     {
-        $user = new User([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => Hash::make('Password123!'),
+        $name = 'John_Wick';
+        $email = 'john@wick.com';
+        $password = 'P4$$w0rd!';
+        $this->artisan('flashcard:register')
+            ->expectsQuestion('Enter your user name:', $name)
+            ->expectsQuestion('Enter your user email:', $email)
+            ->expectsQuestion('Enter your password:', $password)
+            ->expectsQuestion('Please, select an option:', 'exit')
+            ->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'name' => str_replace('_', ' ', $name),
+            'email' => $email,
         ]);
-
-        $this->userRepositoryMock
-            ->shouldReceive('create')
-            ->once()
-            ->with(Mockery::on(function ($args) {
-                return $args['name'] === 'Test User' &&
-                    $args['email'] === 'test@example.com' &&
-                    Hash::check('Password123!', $args['password']);
-            }))
-            ->andReturn($user);
-
-        $this->artisan('flashcard:register', [
-            'name' => 'Test_User',
-            'email' => 'test@example.com',
-            'password' => 'Password123!',
-            '--skip-interactive' => true,
-        ])->assertSuccessful();
-
-        $this->assertEquals(
-            'User Test User registered successfully with email test@example.com.',
-            mb_trim(ConsoleRenderer::getTestOutput())
-        );
+        $this->assertTrue(Hash::check($password, User::where('email', $email)->first()->password));
     }
 
     #[Test]
@@ -131,33 +101,29 @@ final class FlashcardRegisterCommandTest extends TestCase
     #[Test]
     public function it_handles_duplicate_email_error_gracefully(): void
     {
-        $exception = new QueryException(
-            'sqlite',
-            'insert into "users" ("email", "name", "password") values (?, ?, ?)',
-            ['test@example.com', 'Test User', 'hashed_password'],
-            new Exception('SQLSTATE[23000]')
-        );
+        // Create a mock for the UserRepository
+        $userRepositoryMock = $this->mock(\Modules\Flashcard\app\Repositories\UserRepositoryInterface::class);
 
-        $this->userRepositoryMock
-            ->shouldReceive('create')
+        // Set up the mock to throw a UniqueConstraintViolationException
+        $userRepositoryMock->shouldReceive('create')
             ->once()
-            ->with(Mockery::on(function ($args) {
-                return $args['name'] === 'Test User' &&
-                    $args['email'] === 'test@example.com' &&
-                    Hash::check('Password123!', $args['password']);
-            }))
-            ->andThrow($exception);
+            ->andThrow(new \Illuminate\Database\UniqueConstraintViolationException(
+                'sqlite',
+                'insert into "users"',
+                [],
+                new Exception('UNIQUE constraint failed: users.email')
+            ));
 
+        // Bind the mock to the container
+        $this->app->instance(\Modules\Flashcard\app\Repositories\UserRepositoryInterface::class, $userRepositoryMock);
+
+        // Try to register a user
         $this->artisan('flashcard:register', [
-            'name' => 'Test_User',
+            'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'Password123!',
-            '--skip-interactive' => true,
-        ])->assertFailed();
-
-        $this->assertEquals(
-            'A user with this email already exists. Please try logging in instead.',
-            mb_trim(ConsoleRenderer::getTestOutput())
-        );
+        ])
+            ->expectsOutput('A user with this email already exists. Please try logging in instead.')
+            ->assertFailed();
     }
 }
