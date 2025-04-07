@@ -22,6 +22,7 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
         {name : The name of the user}
         {email : The email of the user}
         {password : The password of the user}
+        {--skip-interactive : Skip the interactive part}
    ';
 
     protected $description = 'Register a new user';
@@ -31,7 +32,7 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(): int
     {
         $name = str_replace('_', ' ', $this->argument('name'));
         $email = $this->argument('email');
@@ -46,15 +47,30 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
 
             ConsoleRenderer::success('User '.$name.' registered successfully with email '.$email.'.');
         } catch (QueryException $exception) {
-            ConsoleRenderer::error('An error occurred: '.$exception->getMessage());
+            // Check for unique constraint violation
+            if (str_contains($exception->getMessage(), 'SQLSTATE[23000]')) {
+                ConsoleRenderer::error('A user with this email already exists. Please try logging in instead.');
 
-            return;
+                return Command::FAILURE;
+            }
+
+            ConsoleRenderer::error('An error occurred while registering the user. Please try again.');
+
+            return Command::FAILURE;
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $exception) {
+            ConsoleRenderer::error('A user with this email already exists. Please try logging in instead.');
+
+            return Command::FAILURE;
         }
 
-        $this->call('flashcard:interactive', [
-            'email' => $email,
-            'password' => $password,
-        ]);
+        if (! $this->option('skip-interactive')) {
+            $this->call('flashcard:interactive', [
+                'email' => $email,
+                'password' => $password,
+            ]);
+        }
+
+        return Command::SUCCESS;
     }
 
     /**

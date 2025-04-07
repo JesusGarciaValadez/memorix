@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Helpers;
 
-use function Termwind\render;
-
 /**
  * Helper class for rendering console output that can be suppressed during testing
  */
@@ -57,7 +55,7 @@ final class ConsoleRenderer
             return;
         }
 
-        render($html);
+        echo $html;
     }
 
     /**
@@ -66,11 +64,11 @@ final class ConsoleRenderer
     public static function success(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
+            self::render($message);
 
             return;
         }
-        self::render('<p class="p-3 bg-green-600 text-white font-bold">'.$message.'</p>');
+        echo "\033[32m".$message."\033[0m\n";
     }
 
     /**
@@ -79,11 +77,11 @@ final class ConsoleRenderer
     public static function error(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
+            self::render($message);
 
             return;
         }
-        self::render('<p class="p-3 bg-red-600 text-white font-bold">'.$message.'</p>');
+        echo "\033[31m".$message."\033[0m\n";
     }
 
     /**
@@ -92,11 +90,11 @@ final class ConsoleRenderer
     public static function info(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
+            self::render($message);
 
             return;
         }
-        self::render('<p class="p-3 bg-blue-600 text-white font-bold">'.$message.'</p>');
+        echo "\033[34m".$message."\033[0m\n";
     }
 
     /**
@@ -105,10 +103,43 @@ final class ConsoleRenderer
     public static function warning(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
+            self::render($message);
 
             return;
         }
-        self::render('<p class="p-3 bg-orange-500 text-white font-bold">'.$message.'</p>');
+        echo "\033[33m".$message."\033[0m\n";
+    }
+
+    public static function table(array $headers, array $rows): void
+    {
+        // Calculate column widths
+        $widths = [];
+        foreach ($headers as $i => $header) {
+            $widths[$i] = mb_strlen($header);
+            foreach ($rows as $row) {
+                $widths[$i] = max($widths[$i], mb_strlen((string) $row[$i]));
+            }
+        }
+
+        // Print headers
+        echo "\033[34m"; // Blue color for headers
+        foreach ($headers as $i => $header) {
+            echo mb_str_pad($header, $widths[$i] + 2);
+        }
+        echo "\033[0m\n"; // Reset color
+
+        // Print separator
+        foreach ($widths as $width) {
+            echo str_repeat('-', $width + 2);
+        }
+        echo "\n";
+
+        // Print rows
+        foreach ($rows as $row) {
+            foreach ($row as $i => $cell) {
+                echo mb_str_pad((string) $cell, $widths[$i] + 2);
+            }
+            echo "\n";
+        }
     }
 }

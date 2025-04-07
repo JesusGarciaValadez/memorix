@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Services;
 
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 
-final readonly class LogService
+final readonly class LogService implements LogServiceInterface
 {
     public function __construct(
         private LogRepositoryInterface $logRepository,
@@ -14,6 +14,8 @@ final readonly class LogService
 
     /**
      * Get logs for a user.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getLogsForUser(int $userId, int $limit = 50): array
     {
@@ -22,21 +24,11 @@ final readonly class LogService
 
     /**
      * Get latest activity for a user.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getLatestActivityForUser(int $userId, int $limit = 10): array
     {
-        $logs = $this->logRepository->getLogsForUser($userId, $limit);
-
-        $activities = [];
-        foreach ($logs as $log) {
-            $activities[] = [
-                'id' => $log->id,
-                'action' => $log->action,
-                'created_at' => $log->created_at->format('Y-m-d H:i:s'),
-                'details' => $log->details,
-            ];
-        }
-
-        return $activities;
+        return $this->logRepository->getLogsForUser($userId, $limit);
     }
 }

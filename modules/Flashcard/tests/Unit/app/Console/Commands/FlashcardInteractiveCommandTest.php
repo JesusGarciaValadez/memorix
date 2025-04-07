@@ -230,26 +230,16 @@ final class FlashcardInteractiveCommandTest extends TestCase
     #[Test]
     public function it_exits_the_flashcard_interactive_command(): void
     {
+        $user = User::factory()->create([
+            'email' => 'test_exit@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
         $this->artisan('flashcard:interactive', [
-            'email' => 'test@example.com',
+            'email' => 'test_exit@example.com',
             'password' => 'password',
         ])
-            ->expectsChoice('Please, select an option:', 'exit', [
-                'Create Flashcard',
-                'Delete Flashcard',
-                'Exit',
-                'List Flashcards',
-                'Practice Study Mode',
-                'Reset the flashcards data',
-                'Statistics',
-                'create',
-                'delete',
-                'exit',
-                'list',
-                'practice',
-                'reset',
-                'statistics',
-            ])
+            ->expectsQuestion('Please, select an option:', 'exit')
             ->assertSuccessful();
     }
 

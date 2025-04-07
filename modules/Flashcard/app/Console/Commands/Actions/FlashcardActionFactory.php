@@ -7,8 +7,10 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
+use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\LogService;
 use Modules\Flashcard\app\Services\StatisticService;
 use Modules\Flashcard\app\Services\StudySessionService;
 
@@ -23,7 +25,11 @@ final class FlashcardActionFactory
         ?bool &$shouldKeepRunning = null
     ): FlashcardActionInterface {
         return match ($action) {
-            'list' => new ListFlashcardsAction($command, app(FlashcardService::class)),
+            'list' => new ListFlashcardsAction(
+                $command,
+                app(FlashcardService::class),
+                app(LogRepositoryInterface::class)
+            ),
             'create' => new CreateFlashcardAction($command),
             'delete' => new DeleteFlashcardAction($command),
             'practice' => new PracticeFlashcardAction(
@@ -39,7 +45,16 @@ final class FlashcardActionFactory
             ),
             'reset' => new ResetFlashcardAction($command),
             'register' => new RegisterUserAction($command),
-            'exit' => new ExitCommandAction($command, $shouldKeepRunning),
+            'logs' => new ViewLogsAction(
+                $command,
+                $shouldKeepRunning,
+                app(LogService::class)
+            ),
+            'exit' => new ExitCommandAction(
+                $command,
+                $shouldKeepRunning,
+                app(LogRepositoryInterface::class)
+            ),
             default => throw new InvalidArgumentException("Invalid action: {$action}"),
         };
     }

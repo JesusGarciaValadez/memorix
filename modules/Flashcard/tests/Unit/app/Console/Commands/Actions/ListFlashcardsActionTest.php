@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Prompts\Prompt;
 use Modules\Flashcard\app\Console\Commands\Actions\ListFlashcardsAction;
 use Modules\Flashcard\app\Models\Flashcard;
+use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -24,6 +25,8 @@ final class ListFlashcardsActionTest extends TestCase
 
     private Command $command;
 
+    private LogRepositoryInterface $logRepository;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -33,6 +36,9 @@ final class ListFlashcardsActionTest extends TestCase
 
         // Get the real flashcard service from the container
         $this->flashcardService = app(FlashcardService::class);
+
+        // Get the real log repository from the container
+        $this->logRepository = app(LogRepositoryInterface::class);
 
         // Create a test command class that can be tested
         $this->command = new class extends Command
@@ -59,7 +65,7 @@ final class ListFlashcardsActionTest extends TestCase
     public function it_displays_info_message(): void
     {
         // Create and execute the action
-        $action = new ListFlashcardsAction($this->command, $this->flashcardService);
+        $action = new ListFlashcardsAction($this->command, $this->flashcardService, $this->logRepository);
         $action->execute();
 
         // Assert info message is displayed
@@ -73,7 +79,7 @@ final class ListFlashcardsActionTest extends TestCase
         // by checking what we can - that the table wasn't called
 
         // Create and execute the action
-        $action = new ListFlashcardsAction($this->command, $this->flashcardService);
+        $action = new ListFlashcardsAction($this->command, $this->flashcardService, $this->logRepository);
         $action->execute();
 
         // We should only see the info message and nothing related to table output
@@ -92,7 +98,7 @@ final class ListFlashcardsActionTest extends TestCase
         ]);
 
         // Create and execute the action
-        $action = new ListFlashcardsAction($this->command, $this->flashcardService);
+        $action = new ListFlashcardsAction($this->command, $this->flashcardService, $this->logRepository);
         $action->execute();
 
         // We can only assert that the info message was shown

@@ -7,6 +7,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 
 use function Laravel\Prompts\table;
@@ -15,7 +16,8 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
 {
     public function __construct(
         private Command $command,
-        private FlashcardService $flashcardService
+        private FlashcardService $flashcardService,
+        private LogRepositoryInterface $logRepository,
     ) {}
 
     public function execute(): void
@@ -37,6 +39,9 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
             return;
         }
 
+        // Log the action
+        $this->logRepository->logFlashcardList($user->id);
+
         // Get all flashcards for the current user
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
@@ -47,12 +52,11 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
         }
 
         // Prepare the data for the table
-        $headers = ['ID', 'Question', 'Answer'];
+        $headers = ['Question', 'Answer'];
         $rows = [];
 
         foreach ($flashcards as $flashcard) {
             $rows[] = [
-                'ID' => $flashcard->id,
                 'Question' => $flashcard->question,
                 'Answer' => $flashcard->answer,
             ];

@@ -32,6 +32,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         {--statistics : Show statistics}
         {--reset : Reset the flashcards data}
         {--register : Register a new user}
+        {--logs : View user activity logs}
     ';
 
     protected $description = 'Display a main menu of available Flashcard options';
@@ -160,6 +161,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
                 'practice' => 'Practice Study Mode',
                 'statistics' => 'Statistics',
                 'reset' => 'Reset the flashcards data',
+                'logs' => 'View Activity Logs',
                 'exit' => 'Exit',
             ],
             default: 'practice',

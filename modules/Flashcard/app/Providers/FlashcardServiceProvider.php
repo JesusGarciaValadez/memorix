@@ -32,6 +32,8 @@ use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
+use Modules\Flashcard\app\Services\LogService;
+use Modules\Flashcard\app\Services\LogServiceInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
 
 final class FlashcardServiceProvider extends BaseServiceProvider
@@ -145,6 +147,8 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     private function registerServices(): void
     {
+        $this->app->bind(LogServiceInterface::class, LogService::class);
+
         $this->app->bind(StudySessionService::class, function ($app) {
             return new StudySessionService(
                 $app->make(StudySessionRepositoryInterface::class),

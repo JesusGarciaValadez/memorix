@@ -23,6 +23,7 @@ final class LogTest extends TestCase
         $expectedFillable = [
             'user_id',
             'action',
+            'level',
             'details',
             'created_at',
         ];
@@ -64,7 +65,7 @@ final class LogTest extends TestCase
     public function it_can_create_entry(): void
     {
         $user = User::factory()->create();
-        $log = Log::createEntry($user, 'test_action', 'Test details');
+        $log = Log::createEntry($user, 'test_action', Log::LEVEL_INFO, 'Test details');
 
         $this->assertInstanceOf(Log::class, $log);
         $this->assertEquals($user->id, $log->user_id);
@@ -96,11 +97,7 @@ final class LogTest extends TestCase
     public function it_can_log_flashcard_deletion(): void
     {
         $user = User::factory()->create();
-        $flashcard = Flashcard::create([
-            'user_id' => $user->id,
-            'question' => 'Test question',
-            'answer' => 'Test answer',
-        ]);
+        $flashcard = Flashcard::factory()->create();
 
         $log = Log::logFlashcardDeletion($user, $flashcard);
 
@@ -115,10 +112,7 @@ final class LogTest extends TestCase
     public function it_can_log_study_session_start(): void
     {
         $user = User::factory()->create();
-        $studySession = StudySession::create([
-            'user_id' => $user->id,
-            'started_at' => now(),
-        ]);
+        $studySession = StudySession::factory()->create();
 
         $log = Log::logStudySessionStart($user, $studySession);
 
@@ -132,11 +126,7 @@ final class LogTest extends TestCase
     public function it_can_log_study_session_end(): void
     {
         $user = User::factory()->create();
-        $studySession = StudySession::create([
-            'user_id' => $user->id,
-            'started_at' => now()->subHour(),
-            'ended_at' => now(),
-        ]);
+        $studySession = StudySession::factory()->create();
 
         $log = Log::logStudySessionEnd($user, $studySession);
 

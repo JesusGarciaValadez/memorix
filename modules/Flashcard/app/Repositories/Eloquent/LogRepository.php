@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Repositories\Eloquent;
 
+use App\Models\User;
 use JsonException;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
@@ -14,6 +15,8 @@ final class LogRepository implements LogRepositoryInterface
 {
     /**
      * Get logs for a user.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getLogsForUser(int $userId, int $limit = 50): array
     {
@@ -21,7 +24,25 @@ final class LogRepository implements LogRepositoryInterface
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->toArray();
+            ->map(fn (Log $log) => [
+                'id' => $log->id,
+                'user_id' => $log->user_id,
+                'action' => $log->action,
+                'level' => $log->level,
+                'created_at' => $log->created_at->format('Y-m-d H:i:s'),
+                'details' => $log->details,
+            ])
+            ->all();
+    }
+
+    /**
+     * Log user login.
+     */
+    public function logUserLogin(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::logUserLogin($user);
     }
 
     /**
@@ -31,15 +52,14 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logFlashcardCreation(int $userId, Flashcard $flashcard): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'flashcard_created',
-            'details' => json_encode([
-                'flashcard_id' => $flashcard->id,
-                'question' => $flashcard->question,
-            ], JSON_THROW_ON_ERROR),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'created_flashcard',
+            Log::LEVEL_INFO,
+            "Created flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+        );
     }
 
     /**
@@ -47,15 +67,14 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logFlashcardUpdate(int $userId, Flashcard $flashcard): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'flashcard_updated',
-            'details' => json_encode([
-                'flashcard_id' => $flashcard->id,
-                'question' => $flashcard->question,
-            ], JSON_THROW_ON_ERROR),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'updated_flashcard',
+            Log::LEVEL_INFO,
+            "Updated flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+        );
     }
 
     /**
@@ -63,15 +82,29 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logFlashcardDeletion(int $userId, Flashcard $flashcard): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'flashcard_deleted',
-            'details' => json_encode([
-                'flashcard_id' => $flashcard->id,
-                'question' => $flashcard->question,
-            ], JSON_THROW_ON_ERROR),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'deleted_flashcard',
+            Log::LEVEL_WARNING,
+            "Deleted flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+        );
+    }
+
+    /**
+     * Log flashcard list view.
+     */
+    public function logFlashcardList(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'viewed_flashcard_list',
+            Log::LEVEL_DEBUG,
+            'User viewed flashcard list'
+        );
     }
 
     /**
@@ -79,15 +112,14 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logFlashcardRestoration(int $userId, Flashcard $flashcard): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'flashcard_restored',
-            'details' => json_encode([
-                'flashcard_id' => $flashcard->id,
-                'question' => $flashcard->question,
-            ]),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'restored_flashcard',
+            Log::LEVEL_INFO,
+            "Restored flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+        );
     }
 
     /**
@@ -95,15 +127,14 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logFlashcardPractice(int $userId, Flashcard $flashcard, bool $isCorrect): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => $isCorrect ? 'flashcard_answered_correctly' : 'flashcard_answered_incorrectly',
-            'details' => json_encode([
-                'flashcard_id' => $flashcard->id,
-                'question' => $flashcard->question,
-            ]),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            $isCorrect ? 'flashcard_answered_correctly' : 'flashcard_answered_incorrectly',
+            $isCorrect ? Log::LEVEL_INFO : Log::LEVEL_WARNING,
+            "Answered flashcard ID: {$flashcard->id}, Result: ".($isCorrect ? 'Correct' : 'Incorrect')
+        );
     }
 
     /**
@@ -111,15 +142,14 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logStudySessionStart(int $userId, StudySession $studySession): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'study_session_started',
-            'details' => json_encode([
-                'study_session_id' => $studySession->id,
-                'started_at' => $studySession->started_at,
-            ]),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'started_study_session',
+            Log::LEVEL_INFO,
+            "Started study session ID: {$studySession->id}"
+        );
     }
 
     /**
@@ -127,17 +157,24 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logStudySessionEnd(int $userId, StudySession $studySession): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'study_session_ended',
-            'details' => json_encode([
-                'study_session_id' => $studySession->id,
-                'started_at' => $studySession->started_at,
-                'ended_at' => $studySession->ended_at,
-                'duration' => $studySession->ended_at->diffInMinutes($studySession->started_at),
-            ]),
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'ended_study_session',
+            Log::LEVEL_INFO,
+            "Ended study session ID: {$studySession->id}"
+        );
+    }
+
+    /**
+     * Log statistics view.
+     */
+    public function logStatisticsView(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::logStatisticsView($user);
     }
 
     /**
@@ -145,11 +182,23 @@ final class LogRepository implements LogRepositoryInterface
      */
     public function logPracticeReset(int $userId): Log
     {
-        return Log::create([
-            'user_id' => $userId,
-            'action' => 'practice_reset',
-            'details' => null,
-            'created_at' => now(),
-        ]);
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'practice_reset',
+            Log::LEVEL_WARNING,
+            null
+        );
+    }
+
+    /**
+     * Log user exit.
+     */
+    public function logUserExit(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::logUserExit($user);
     }
 }

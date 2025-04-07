@@ -38,6 +38,7 @@ final class LogRepositoryTest extends TestCase
             DB::table('logs')->insert([
                 'user_id' => $this->user->id,
                 'action' => 'test_action',
+                'level' => Log::LEVEL_INFO,
                 'details' => json_encode(['test' => 'data']),
                 'created_at' => $now->subMinutes($i),
             ]);
@@ -49,6 +50,7 @@ final class LogRepositoryTest extends TestCase
             DB::table('logs')->insert([
                 'user_id' => $otherUser->id,
                 'action' => 'test_action',
+                'level' => Log::LEVEL_INFO,
                 'details' => json_encode(['test' => 'data']),
                 'created_at' => $now->subMinutes($i),
             ]);
@@ -101,7 +103,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('flashcard_created', $result->action);
+        $this->assertEquals('created_flashcard', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
         $this->assertStringContainsString($flashcard->question, $result->details);
         $this->assertNotNull($result->created_at);
@@ -121,7 +123,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('flashcard_updated', $result->action);
+        $this->assertEquals('updated_flashcard', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
         $this->assertStringContainsString($flashcard->question, $result->details);
         $this->assertNotNull($result->created_at);
@@ -141,7 +143,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('flashcard_deleted', $result->action);
+        $this->assertEquals('deleted_flashcard', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
         $this->assertStringContainsString($flashcard->question, $result->details);
         $this->assertNotNull($result->created_at);
@@ -161,7 +163,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('flashcard_restored', $result->action);
+        $this->assertEquals('restored_flashcard', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
         $this->assertStringContainsString($flashcard->question, $result->details);
         $this->assertNotNull($result->created_at);
@@ -183,7 +185,7 @@ final class LogRepositoryTest extends TestCase
         $this->assertEquals($this->user->id, $result->user_id);
         $this->assertEquals('flashcard_answered_correctly', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
-        $this->assertStringContainsString($flashcard->question, $result->details);
+        $this->assertStringContainsString('Correct', $result->details);
         $this->assertNotNull($result->created_at);
     }
 
@@ -203,7 +205,7 @@ final class LogRepositoryTest extends TestCase
         $this->assertEquals($this->user->id, $result->user_id);
         $this->assertEquals('flashcard_answered_incorrectly', $result->action);
         $this->assertStringContainsString((string) $flashcard->id, $result->details);
-        $this->assertStringContainsString($flashcard->question, $result->details);
+        $this->assertStringContainsString('Incorrect', $result->details);
         $this->assertNotNull($result->created_at);
     }
 
@@ -221,7 +223,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('study_session_started', $result->action);
+        $this->assertEquals('started_study_session', $result->action);
         $this->assertStringContainsString((string) $studySession->id, $result->details);
         $this->assertNotNull($result->created_at);
     }
@@ -232,7 +234,6 @@ final class LogRepositoryTest extends TestCase
         // Arrange
         $studySession = StudySession::factory()->create([
             'user_id' => $this->user->id,
-            'ended_at' => now(),
         ]);
 
         // Act
@@ -241,7 +242,7 @@ final class LogRepositoryTest extends TestCase
         // Assert
         $this->assertInstanceOf(Log::class, $result);
         $this->assertEquals($this->user->id, $result->user_id);
-        $this->assertEquals('study_session_ended', $result->action);
+        $this->assertEquals('ended_study_session', $result->action);
         $this->assertStringContainsString((string) $studySession->id, $result->details);
         $this->assertNotNull($result->created_at);
     }

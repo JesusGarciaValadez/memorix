@@ -12,8 +12,15 @@ interface LogRepositoryInterface
 {
     /**
      * Get logs for a user.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getLogsForUser(int $userId, int $limit = 50): array;
+
+    /**
+     * Log user login.
+     */
+    public function logUserLogin(int $userId): Log;
 
     /**
      * Log flashcard creation.
@@ -29,6 +36,11 @@ interface LogRepositoryInterface
      * Log flashcard deletion.
      */
     public function logFlashcardDeletion(int $userId, Flashcard $flashcard): Log;
+
+    /**
+     * Log flashcard list view.
+     */
+    public function logFlashcardList(int $userId): Log;
 
     /**
      * Log flashcard restoration.
@@ -51,7 +63,17 @@ interface LogRepositoryInterface
     public function logStudySessionEnd(int $userId, StudySession $studySession): Log;
 
     /**
+     * Log statistics view.
+     */
+    public function logStatisticsView(int $userId): Log;
+
+    /**
      * Log practice reset.
      */
     public function logPracticeReset(int $userId): Log;
+
+    /**
+     * Log user exit.
+     */
+    public function logUserExit(int $userId): Log;
 }
