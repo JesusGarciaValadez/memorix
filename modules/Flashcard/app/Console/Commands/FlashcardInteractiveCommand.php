@@ -56,7 +56,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         $this->user = $this->validateUserInformation();
 
-        if ($this->user === null) {
+        if (is_null($this->user)) {
             ConsoleRenderer::error('User not found. Please register first.');
 
             $this->executeAction('register');
@@ -118,7 +118,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         return $this->argument('email');
     }
 
-    public function validateUserInformation(): User
+    public function validateUserInformation(): ?User
     {
         // Get email and password
         $email = $this->argument('email') ?? text(

@@ -155,4 +155,29 @@ final class FlashcardInteractiveCommandTest extends TestCase
             ])
             ->assertSuccessful();
     }
+
+    #[Test]
+    public function it_tests_enter_the_command_for_the_first_time(): void
+    {
+        User::truncate();
+
+        $name = 'John_Wick';
+        $email = 'john@wick.com';
+        $password = 'P4$$w0rd!';
+        $this->artisan('flashcard:interactive', [
+            'email' => $email,
+            'password' => $password,
+        ])
+            ->expectsQuestion('Enter your user name:', $name)
+            ->expectsQuestion('Enter your user email:', $email)
+            ->expectsQuestion('Enter your password:', $password)
+            ->expectsQuestion('Please, select an option:', 'exit')
+            ->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'name' => str_replace('_', ' ', $name),
+            'email' => $email,
+        ]);
+        $this->assertTrue(Hash::check($password, User::where('email', $email)->first()->password));
+    }
 }
