@@ -7,6 +7,8 @@ namespace Modules\Flashcard\tests\Unit\app\Console\Commands\Actions;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Prompts\Prompt;
+use Laravel\Prompts\Table;
 use Modules\Flashcard\app\Console\Commands\Actions\PracticeFlashcardAction;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
@@ -53,16 +55,50 @@ final class PracticeFlashcardActionTest extends TestCase
             {
                 $this->output .= $string.PHP_EOL;
             }
+
+            public function line($string, $style = null, $verbosity = null)
+            {
+                $this->output .= $string.PHP_EOL;
+            }
+
+            public function table($headers, $rows, $tableStyle = 'default', array $columnStyles = [])
+            {
+                $this->output .= "Table Output:\n";
+                foreach ($headers as $header) {
+                    $this->output .= "{$header}\n";
+                }
+                foreach ($rows as $row) {
+                    $this->output .= implode(' | ', $row).PHP_EOL;
+                }
+            }
         };
 
         $this->command->user = $this->user;
+
+        // Configure prompts to use the fallback implementation in tests
+        Prompt::fallbackWhen(true);
+
+        // Enable test mode in ConsoleRenderer
+        \Modules\Flashcard\app\Helpers\ConsoleRenderer::enableTestMode();
+        \Modules\Flashcard\app\Helpers\ConsoleRenderer::resetTestOutput();
+    }
+
+    protected function tearDown(): void
+    {
+        // Get the captured output and append it to the command output
+        $testOutput = \Modules\Flashcard\app\Helpers\ConsoleRenderer::getTestOutput();
+        if ($testOutput !== null) {
+            $this->command->output = $testOutput.$this->command->output;
+        }
+
+        parent::tearDown();
     }
 
     #[Test]
     public function it_shows_message_when_no_flashcards_exist(): void
     {
         // Create an active study session
-        $studySession = StudySession::create([
+        StudySession::create([
             'user_id' => $this->user->id,
             'started_at' => now(),
             'ended_at' => null,
@@ -86,9 +122,10 @@ final class PracticeFlashcardActionTest extends TestCase
     #[Test]
     public function it_shows_progress_and_allows_practice(): void
     {
-        // Create flashcards for the test
+        // Create flashcards with specific questions
         $flashcards = Flashcard::factory()->count(3)->create([
             'user_id' => $this->user->id,
+            'question' => 'Test Question',
         ]);
 
         // Create the PracticeFlashcardAction
@@ -132,9 +169,20 @@ final class PracticeFlashcardActionTest extends TestCase
         // Pass the collection of flashcards (not array) to the showProgress method
         $showProgress->invoke($action, $flashcards->all(), $practiceResults);
 
-        // Verify the correct completion percentage (1/3 = 33.3%)
-        $this->assertDatabaseCount('flashcards', 3);
-        $this->assertDatabaseCount('practice_results', 1);
+        // Debug output
+        fwrite(STDERR, "Command output:\n".$this->command->output."\n");
+
+        // Verify that the output contains the expected information
+        $this->assertStringContainsString('Question', $this->command->output);
+        $this->assertStringContainsString('Flashcard Practice Progress', $this->command->output);
+        $this->assertStringContainsString('Completion: 1/3 cards', $this->command->output);
+        $this->assertStringContainsString('Table Output:', $this->command->output);
+        $this->assertCount(3, $flashcards);
+
+        // Add assertions for the table content
+        foreach ($flashcards as $flashcard) {
+            $this->assertStringContainsString($flashcard->question, $this->command->output);
+        }
     }
 
     #[Test]
@@ -148,7 +196,7 @@ final class PracticeFlashcardActionTest extends TestCase
         ]);
 
         // Create an active study session
-        $studySession = StudySession::create([
+        StudySession::create([
             'user_id' => $this->user->id,
             'started_at' => now(),
             'ended_at' => null,

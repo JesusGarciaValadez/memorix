@@ -121,37 +121,30 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
     {
         // Calculate completion percentage
         $totalCards = count($flashcards);
-        $correctCards = count(array_filter($practiceResults, fn ($result) => $result['is_correct']));
-        $completionPercentage = $totalCards > 0 ? round(($correctCards / $totalCards) * 100, 1) : 0;
+        $completedCards = count(array_filter($practiceResults, fn ($result) => $result['is_correct']));
 
-        // Prepare the table headers and rows
-        $headers = ['Question', 'Answer', 'Status'];
+        // Display title and completion statistics
+        $this->command->line('Flashcard Practice Progress');
+        $this->command->info("Completion: {$completedCards}/{$totalCards} cards");
+
+        // Prepare table headers and rows
+        $headers = ['Question', 'Status'];
         $rows = [];
 
-        // Prepare the rows for the table
         foreach ($flashcards as $flashcard) {
-            $status = ! isset($practiceResults[$flashcard->id])
-                ? 'Not answered'
-                : $practiceResults[$flashcard->id]['status'];
+            $status = 'Not answered';
+            if (isset($practiceResults[$flashcard->id])) {
+                $status = $practiceResults[$flashcard->id]['is_correct'] ? 'Correct' : 'Incorrect';
+            }
 
             $rows[] = [
-                'Question' => $flashcard->question,
-                'Answer' => $flashcard->answer,
-                'Status' => $status,
+                $flashcard->question,
+                $status,
             ];
         }
 
-        // Display table title
-        ConsoleRenderer::info('Flashcard Practice Progress');
-
         // Display the table
-        table(
-            headers: $headers,
-            rows: $rows
-        );
-
-        // Display the completion statistics
-        ConsoleRenderer::success("Completion: {$correctCards}/{$totalCards} cards ({$completionPercentage}%)");
+        $this->command->table($headers, $rows);
     }
 
     /**
