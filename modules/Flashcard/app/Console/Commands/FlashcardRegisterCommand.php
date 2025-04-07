@@ -49,16 +49,16 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
         } catch (QueryException $exception) {
             // Check for unique constraint violation
             if (str_contains($exception->getMessage(), 'SQLSTATE[23000]')) {
-                ConsoleRenderer::error('A user with this email already exists. Please try logging in instead.');
+                $this->error('A user with this email already exists. Please try logging in instead.');
 
                 return Command::FAILURE;
             }
 
-            ConsoleRenderer::error('An error occurred while registering the user. Please try again.');
+            $this->error('An error occurred while registering the user. Please try again.');
 
             return Command::FAILURE;
         } catch (\Illuminate\Database\UniqueConstraintViolationException $exception) {
-            ConsoleRenderer::error('A user with this email already exists. Please try logging in instead.');
+            $this->error('A user with this email already exists. Please try logging in instead.');
 
             return Command::FAILURE;
         }

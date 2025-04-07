@@ -64,7 +64,7 @@ final class ConsoleRenderer
     public static function success(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::render($message);
+            self::$testOutput .= $message.PHP_EOL;
 
             return;
         }
@@ -77,7 +77,7 @@ final class ConsoleRenderer
     public static function error(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::render($message);
+            self::$testOutput .= $message.PHP_EOL;
 
             return;
         }
@@ -90,7 +90,7 @@ final class ConsoleRenderer
     public static function info(string $message): void
     {
         if (self::$testOutput !== null) {
-            self::render($message);
+            self::$testOutput .= $message.PHP_EOL;
 
             return;
         }

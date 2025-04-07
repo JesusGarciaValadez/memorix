@@ -6,6 +6,7 @@ namespace Modules\Flashcard\tests\Unit\app\Console\Commands;
 
 use App\Models\User;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -104,14 +105,14 @@ final class FlashcardRegisterCommandTest extends TestCase
         // Create a mock for the UserRepository
         $userRepositoryMock = $this->mock(\Modules\Flashcard\app\Repositories\UserRepositoryInterface::class);
 
-        // Set up the mock to throw a UniqueConstraintViolationException
+        // Set up the mock to throw a QueryException
         $userRepositoryMock->shouldReceive('create')
             ->once()
-            ->andThrow(new \Illuminate\Database\UniqueConstraintViolationException(
+            ->andThrow(new QueryException(
                 'sqlite',
-                'insert into "users"',
-                [],
-                new Exception('UNIQUE constraint failed: users.email')
+                'insert into "users" ("email") values (?)',
+                ['test@example.com'],
+                new Exception('SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: users.email')
             ));
 
         // Bind the mock to the container
