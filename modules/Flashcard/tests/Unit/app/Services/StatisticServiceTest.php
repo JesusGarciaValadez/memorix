@@ -39,7 +39,6 @@ final class StatisticServiceTest extends TestCase
         $userId = $this->user->id;
         $statistic = new Statistic();
         $statistic->total_flashcards = 10;
-        $statistic->flashcards_deleted = 2;
         $statistic->total_study_sessions = 5;
         $statistic->total_correct_answers = 30;
         $statistic->total_incorrect_answers = 10;
@@ -55,7 +54,7 @@ final class StatisticServiceTest extends TestCase
         // Assert
         $this->assertEquals([
             'flashcards_created' => 10,
-            'flashcards_deleted' => 2,
+            'flashcards_deleted' => 0,
             'study_sessions' => 5,
             'correct_answers' => 30,
             'incorrect_answers' => 10,
@@ -69,7 +68,6 @@ final class StatisticServiceTest extends TestCase
         $userId = $this->user->id;
         $newStatistic = new Statistic();
         $newStatistic->total_flashcards = 0;
-        $newStatistic->flashcards_deleted = 0;
         $newStatistic->total_study_sessions = 0;
         $newStatistic->total_correct_answers = 0;
         $newStatistic->total_incorrect_answers = 0;

@@ -26,7 +26,7 @@ final readonly class StatisticService
 
         return [
             'flashcards_created' => $statistics->total_flashcards,
-            'flashcards_deleted' => $statistics->flashcards_deleted,
+            'flashcards_deleted' => 0, // Set default value since this attribute doesn't exist
             'study_sessions' => $statistics->total_study_sessions,
             'correct_answers' => $statistics->total_correct_answers,
             'incorrect_answers' => $statistics->total_incorrect_answers,

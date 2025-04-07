@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\StatisticService;
 
 final class FlashcardActionFactory
 {
@@ -29,7 +30,10 @@ final class FlashcardActionFactory
                 app(FlashcardRepositoryInterface::class),
                 app(StudySessionRepositoryInterface::class)
             ),
-            'statistics' => new StatisticsFlashcardAction($command),
+            'statistics' => new StatisticsFlashcardAction(
+                $command,
+                app(StatisticService::class)
+            ),
             'reset' => new ResetFlashcardAction($command),
             'register' => new RegisterUserAction($command),
             'exit' => new ExitCommandAction($command, $shouldKeepRunning),
