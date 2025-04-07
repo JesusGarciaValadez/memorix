@@ -9,18 +9,21 @@ use Modules\Flashcard\app\Helpers\ConsoleRenderer;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
+use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StudySessionService;
 
 use function Laravel\Prompts\clear;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\table;
-use function Laravel\Prompts\text;
 
 final readonly class PracticeFlashcardAction implements FlashcardActionInterface
 {
     public function __construct(
         private Command $command,
         private FlashcardRepositoryInterface $flashcardRepository,
-        private StudySessionRepositoryInterface $studySessionRepository
+        private StudySessionRepositoryInterface $studySessionRepository,
+        private StatisticService $statisticService,
+        private StudySessionService $studySessionService,
     ) {}
 
     public function execute(): void
@@ -36,6 +39,8 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
             return;
         }
 
+        // Start a new study session using the service
+        $studySession = $this->studySessionService->startSession($userId);
         $practiceResults = $this->getPracticeResults($flashcards);
         $shouldContinue = true;
 
@@ -65,10 +70,9 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
 
             $flashcardOptions['exit'] = 'Return to main menu';
 
-            $selectedOption = select(
-                label: 'Select a flashcard to practice:',
-                options: $flashcardOptions,
-                scroll: 10
+            $selectedOption = $this->command->choice(
+                'Select a flashcard to practice:',
+                $flashcardOptions
             );
 
             if ($selectedOption === 'exit') {
@@ -86,32 +90,36 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
                 continue;
             }
 
-            // Show question and ask for answer
+            // Show the question
             ConsoleRenderer::info("Question: {$selectedFlashcard->question}");
-            $userAnswer = text(
-                label: 'Your answer:',
-                required: true
-            );
 
-            // Check if the answer is correct (case-insensitive comparison)
-            $isCorrect = mb_strtolower(mb_trim($userAnswer)) === mb_strtolower(mb_trim($selectedFlashcard->answer));
+            // Get user's answer
+            $answer = $this->command->ask('Your answer:');
 
-            // Record the practice result
-            $this->studySessionRepository->recordPracticeResult($userId, $selectedFlashcard->id, $isCorrect);
+            // Check if the answer is correct (case-insensitive)
+            $isCorrect = mb_strtolower(mb_trim($answer)) === mb_strtolower(mb_trim($selectedFlashcard->answer));
 
-            // Update local practice results
+            // Update practice results
             $practiceResults[$selectedFlashcard->id] = [
                 'is_correct' => $isCorrect,
                 'status' => $isCorrect ? 'Correct' : 'Incorrect',
             ];
 
-            // Show feedback
+            // Record the practice result using the service
+            $this->studySessionService->recordPracticeResult($userId, $selectedFlashcard->id, $isCorrect);
+
+            // Update statistics
             if ($isCorrect) {
-                ConsoleRenderer::success('Correct!');
+                $this->statisticService->incrementCorrectAnswers($this->command->user->id);
+                ConsoleRenderer::success('Correct answer!');
             } else {
-                ConsoleRenderer::error("Incorrect. The correct answer is: {$selectedFlashcard->answer}");
+                $this->statisticService->incrementIncorrectAnswers($this->command->user->id);
+                ConsoleRenderer::error("Incorrect. The correct answer was: {$selectedFlashcard->answer}");
             }
         }
+
+        // End the study session using the service
+        $this->studySessionService->endSession($userId, $studySession->id);
     }
 
     /**

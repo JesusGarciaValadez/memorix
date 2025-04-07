@@ -32,9 +32,9 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
      */
     public function endSession(StudySession $studySession): bool
     {
-        return $studySession->update([
-            'ended_at' => now(),
-        ]);
+        $studySession->end();
+
+        return true;
     }
 
     /**

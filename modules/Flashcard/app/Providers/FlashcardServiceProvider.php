@@ -32,6 +32,7 @@ use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
+use Modules\Flashcard\app\Services\StudySessionService;
 
 final class FlashcardServiceProvider extends BaseServiceProvider
 {
@@ -68,6 +69,7 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->configureUrls();
         $this->configureVite();
         $this->registerRepositories();
+        $this->registerServices();
     }
 
     /**
@@ -136,5 +138,20 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         Gate::policy(Log::class, LogPolicy::class);
         Gate::policy(Statistic::class, StatisticPolicy::class);
         Gate::policy(StudySession::class, StudySessionPolicy::class);
+    }
+
+    /**
+     * Register services.
+     */
+    private function registerServices(): void
+    {
+        $this->app->bind(StudySessionService::class, function ($app) {
+            return new StudySessionService(
+                $app->make(StudySessionRepositoryInterface::class),
+                $app->make(FlashcardRepositoryInterface::class),
+                $app->make(LogRepositoryInterface::class),
+                $app->make(StatisticRepositoryInterface::class)
+            );
+        });
     }
 }

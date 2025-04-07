@@ -68,4 +68,28 @@ final readonly class StatisticService
     {
         return $this->statisticRepository->getTotalStudyTime($userId);
     }
+
+    /**
+     * Increment correct answers count.
+     */
+    public function incrementCorrectAnswers(int $userId): bool
+    {
+        return $this->statisticRepository->incrementCorrectAnswers($userId);
+    }
+
+    /**
+     * Increment incorrect answers count.
+     */
+    public function incrementIncorrectAnswers(int $userId): bool
+    {
+        return $this->statisticRepository->incrementIncorrectAnswers($userId);
+    }
+
+    /**
+     * Increment study sessions count.
+     */
+    public function incrementStudySessions(int $userId): bool
+    {
+        return $this->statisticRepository->incrementStudySessions($userId);
+    }
 }

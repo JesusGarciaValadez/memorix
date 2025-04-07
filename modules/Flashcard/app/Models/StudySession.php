@@ -61,6 +61,14 @@ final class StudySession extends Model
     }
 
     /**
+     * Check if the study session has ended.
+     */
+    public function isEnded(): bool
+    {
+        return (bool) $this->ended_at;
+    }
+
+    /**
      * End the study session.
      */
     public function end(): self

@@ -7,6 +7,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Services\StatisticService;
 
 use function Laravel\Prompts\table;
@@ -48,6 +49,9 @@ final readonly class StatisticsFlashcardAction implements FlashcardActionInterfa
         // Count total flashcards
         $totalFlashcards = $stats['flashcards_created'];
 
+        // Get actual study session count from database
+        $studySessionCount = StudySession::where('user_id', $user->id)->count();
+
         // Calculate completion percentage
         $answeredFlashcards = $stats['correct_answers'] + $stats['incorrect_answers'];
         $completionPercentage = $totalFlashcards > 0
@@ -59,7 +63,7 @@ final readonly class StatisticsFlashcardAction implements FlashcardActionInterfa
             headers: ['Statistic', 'Value'],
             rows: [
                 ['Total Flashcards', $totalFlashcards],
-                ['Study Sessions', $stats['study_sessions']],
+                ['Study Sessions', $studySessionCount],
                 ['Correct Answers', $stats['correct_answers']],
                 ['Incorrect Answers', $stats['incorrect_answers']],
                 ['Success Rate', $successRate.'%'],

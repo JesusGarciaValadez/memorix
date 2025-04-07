@@ -10,6 +10,7 @@ use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StudySessionService;
 
 final class FlashcardActionFactory
 {
@@ -28,7 +29,9 @@ final class FlashcardActionFactory
             'practice' => new PracticeFlashcardAction(
                 $command,
                 app(FlashcardRepositoryInterface::class),
-                app(StudySessionRepositoryInterface::class)
+                app(StudySessionRepositoryInterface::class),
+                app(StatisticService::class),
+                app(StudySessionService::class)
             ),
             'statistics' => new StatisticsFlashcardAction(
                 $command,
