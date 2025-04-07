@@ -10,14 +10,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "ext-pcntl": "*",
         "laravel/framework": "^12.0",
         "laravel/prompts": "^0.3.5",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
-        "nunomaduro/termwind": "^2.3",
-        "ext-pcntl": "*"
+        "nunomaduro/termwind": "^2.3"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
         "barryvdh/laravel-ide-helper": "^3.5",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
@@ -25,7 +25,8 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3"
+        "phpunit/phpunit": "^11.5.3",
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {

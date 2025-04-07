@@ -20,39 +20,11 @@ use Modules\Flashcard\app\Http\Controllers\Api\V1\StudySessionController;
 */
 
 // API v1 routes
-Route::prefix('v1')->group(function () {
-    // Flashcard Routes
-    Route::prefix('flashcards')->group(function () {
-        Route::get('/', [FlashcardController::class, 'index']);
-        Route::post('/', [FlashcardController::class, 'store']);
-        Route::get('/trash', [FlashcardController::class, 'trash']);
-        Route::get('/{flashcard}', [FlashcardController::class, 'show']);
-        Route::put('/{flashcard}', [FlashcardController::class, 'update']);
-        Route::delete('/{flashcard}', [FlashcardController::class, 'destroy']);
-        Route::post('/{flashcard}/restore', [FlashcardController::class, 'restore']);
-        Route::delete('/{flashcard}/force', [FlashcardController::class, 'forceDelete']);
-    });
-
-    // Study Session Routes
-    Route::prefix('study-sessions')->group(function () {
-        Route::post('/start', [StudySessionController::class, 'start']);
-        Route::post('/{studySession}/end', [StudySessionController::class, 'end']);
-        Route::get('/practice', [StudySessionController::class, 'getFlashcardsForPractice']);
-        Route::post('/practice/{flashcard}', [StudySessionController::class, 'recordPracticeResult']);
-        Route::post('/reset', [StudySessionController::class, 'resetPractice']);
-    });
-
-    // Statistics Routes
-    Route::prefix('statistics')->group(function () {
-        Route::get('/', [StatisticController::class, 'index']);
-        Route::get('/success-rate', [StatisticController::class, 'successRate']);
-        Route::get('/average-duration', [StatisticController::class, 'averageDuration']);
-        Route::get('/total-time', [StatisticController::class, 'totalTime']);
-    });
-
-    // Log Routes
-    Route::prefix('logs')->group(function () {
-        Route::get('/', [LogController::class, 'index']);
-        Route::get('/latest', [LogController::class, 'latest']);
-    });
-});
+Route::prefix('v1')
+    ->group(function () {
+        Route::apiResource('flashcards', FlashcardController::class)->name('api.flashcards');
+        Route::apiResource('study-sessions', StudySessionController::class)->name('api.study-sessions');
+        Route::apiResource('statistics', StatisticController::class)->name('api.statistics');
+        Route::apiResource('logs', LogController::class)->name('api.logs');
+    })
+    ->middleware(['auth:sanctum']);

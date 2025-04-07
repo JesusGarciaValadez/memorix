@@ -20,6 +20,8 @@ use function Laravel\Prompts\text;
 #[AllowDynamicProperties]
 final class FlashcardInteractiveCommand extends Command implements Isolatable
 {
+    public ?User $user;
+
     protected $signature = 'flashcard:interactive
         {email? : The email of the user}
         {password? : The password of the user}
@@ -52,7 +54,17 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             return;
         }
 
-        [$user] = $this->validateUserInformation();
+        $this->user = $this->validateUserInformation();
+
+        if ($this->user === null) {
+            ConsoleRenderer::error('User not found. Please register first.');
+
+            $this->executeAction('register');
+
+            return;
+        }
+
+        ConsoleRenderer::success('Hi '.$this->user?->name.', welcome to your flashcards');
 
         // Check for direct action options
         if ($this->option('list')) {
@@ -131,11 +143,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             transform: fn (string $value) => mb_trim($value)
         );
 
-        $user = $this->userRepository->findByEmail($email);
-
-        ConsoleRenderer::success('Hi '.$user?->name.', welcome to your flashcards');
-
-        return $user;
+        return $this->userRepository->findByEmail($email);
     }
 
     /**
