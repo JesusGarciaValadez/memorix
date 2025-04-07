@@ -108,12 +108,10 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
             // Record the practice result using the service
             $this->studySessionService->recordPracticeResult($userId, $selectedFlashcard->id, $isCorrect);
 
-            // Update statistics
+            // Show result message
             if ($isCorrect) {
-                $this->statisticService->incrementCorrectAnswers($this->command->user->id);
                 ConsoleRenderer::success('Correct answer!');
             } else {
-                $this->statisticService->incrementIncorrectAnswers($this->command->user->id);
                 ConsoleRenderer::error("Incorrect. The correct answer was: {$selectedFlashcard->answer}");
             }
         }

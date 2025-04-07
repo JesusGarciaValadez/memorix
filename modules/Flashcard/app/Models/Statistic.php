@@ -67,9 +67,13 @@ final class Statistic extends Model
             return 0.0;
         }
 
-        $totalAnswered = $this->total_correct_answers + $this->total_incorrect_answers;
+        // Get the count of unique flashcards that have been practiced
+        $uniqueFlashcardsPracticed = PracticeResult::where('user_id', $this->user_id)
+            ->distinct()
+            ->count('flashcard_id');
 
-        return ($totalAnswered / $this->total_flashcards) * 100;
+        // Calculate percentage and ensure it doesn't exceed 100%
+        return min(($uniqueFlashcardsPracticed / $this->total_flashcards) * 100, 100.0);
     }
 
     /**

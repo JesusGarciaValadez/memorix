@@ -42,4 +42,9 @@ interface StudySessionRepositoryInterface
      * Reset practice progress.
      */
     public function resetPracticeProgress(int $userId): bool;
+
+    /**
+     * Delete all study sessions for a user.
+     */
+    public function deleteAllForUser(int $userId): bool;
 }

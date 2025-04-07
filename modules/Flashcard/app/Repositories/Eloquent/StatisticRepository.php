@@ -93,6 +93,7 @@ final class StatisticRepository implements StatisticRepositoryInterface
         $statistic = $this->getOrCreateForUser($userId);
 
         return $statistic->update([
+            'total_study_sessions' => 0,
             'total_correct_answers' => 0,
             'total_incorrect_answers' => 0,
         ]);

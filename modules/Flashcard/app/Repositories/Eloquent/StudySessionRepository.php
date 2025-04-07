@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Repositories\Eloquent;
 
+use Illuminate\Support\Facades\DB;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
@@ -142,5 +143,15 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
 
         // Delete practice results
         return $this->practiceResultRepository->deleteForUser($userId);
+    }
+
+    /**
+     * Delete all study sessions for a user.
+     */
+    public function deleteAllForUser(int $userId): bool
+    {
+        return DB::table('study_sessions')
+            ->where('user_id', $userId)
+            ->delete() >= 0;
     }
 }
