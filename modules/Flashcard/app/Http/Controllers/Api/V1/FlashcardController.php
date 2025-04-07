@@ -58,7 +58,7 @@ final class FlashcardController extends Controller
 
         $flashcard = $this->flashcardService->create($userId, $data);
 
-        return response()->json($flashcard, Responses::HTTP_CREATED);
+        return response()->json($flashcard, Response::HTTP_CREATED);
     }
 
     /**

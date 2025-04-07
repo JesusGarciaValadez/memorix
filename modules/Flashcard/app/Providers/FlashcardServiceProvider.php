@@ -47,11 +47,6 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->commands([
             \Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
-            /*\Modules\Flashcard\app\Console\Commands\FlashcardDeleteCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardEditCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardListCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardReviewCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardStudyCommand::class,*/
         ]);
         $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
         $this->loadMigrationsFrom(__DIR__.'/../../Database/migrations');
