@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Console\Commands\Actions\ExitCommandAction;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -30,6 +31,8 @@ final class ExitCommandActionTest extends TestCase
 
     private LogRepository $logRepository;
 
+    private ConsoleRendererInterface $renderer;
+
     private ExitCommandAction $action;
 
     protected function setUp(): void
@@ -39,6 +42,7 @@ final class ExitCommandActionTest extends TestCase
         $this->command = new TestCommand();
         $this->shouldKeepRunning = true;
         $this->logRepository = new LogRepository();
+        $this->renderer = $this->createMock(ConsoleRendererInterface::class);
 
         // Create a test user
         User::factory()->create(['id' => 1]);
@@ -46,7 +50,8 @@ final class ExitCommandActionTest extends TestCase
         $this->action = new ExitCommandAction(
             $this->command,
             $this->shouldKeepRunning,
-            $this->logRepository
+            $this->logRepository,
+            $this->renderer
         );
     }
 

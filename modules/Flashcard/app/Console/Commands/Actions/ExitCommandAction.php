@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 
 final class ExitCommandAction implements FlashcardActionInterface
@@ -15,6 +15,7 @@ final class ExitCommandAction implements FlashcardActionInterface
         private readonly Command $command,
         private bool &$shouldKeepRunning,
         private readonly LogRepositoryInterface $logRepository,
+        private readonly ConsoleRendererInterface $renderer,
     ) {}
 
     public function execute(): void
@@ -32,7 +33,7 @@ final class ExitCommandAction implements FlashcardActionInterface
             $this->logRepository->logUserExit($user->id);
         }
 
-        ConsoleRenderer::error('See you!');
+        $this->renderer->error('See you!');
         $this->shouldKeepRunning = false;
     }
 }

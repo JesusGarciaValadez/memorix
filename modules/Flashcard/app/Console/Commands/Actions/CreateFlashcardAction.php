@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 
 use function Laravel\Prompts\text;
@@ -15,6 +15,7 @@ final readonly class CreateFlashcardAction implements FlashcardActionInterface
 {
     public function __construct(
         private Command $command,
+        private ConsoleRendererInterface $renderer,
     ) {}
 
     public function execute(): void
@@ -30,7 +31,7 @@ final readonly class CreateFlashcardAction implements FlashcardActionInterface
         }
 
         if (! $user) {
-            ConsoleRenderer::error('You must be logged in to create a flashcard.');
+            $this->renderer->error('You must be logged in to create a flashcard.');
 
             return;
         }
@@ -61,7 +62,7 @@ final readonly class CreateFlashcardAction implements FlashcardActionInterface
         ]);
 
         // Show success message
-        ConsoleRenderer::success('Flashcard created successfully!');
+        $this->renderer->success('Flashcard created successfully!');
         $this->command->info("Question: {$flashcard->question}");
         $this->command->info("Answer: {$flashcard->answer}");
     }

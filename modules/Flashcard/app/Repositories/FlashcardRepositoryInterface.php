@@ -48,4 +48,14 @@ interface FlashcardRepositoryInterface
      * Permanently delete a flashcard.
      */
     public function forceDelete(Flashcard $flashcard): bool;
+
+    /**
+     * Restore all deleted flashcards for a user.
+     */
+    public function restoreAll(int $userId): bool;
+
+    /**
+     * Permanently delete all deleted flashcards for a user.
+     */
+    public function forceDeleteAll(int $userId): bool;
 }

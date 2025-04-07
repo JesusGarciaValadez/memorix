@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Facades\Hash;
 use Modules\Flashcard\app\Console\Commands\Actions\FlashcardActionFactory;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
@@ -33,14 +33,17 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         {--reset : Reset the flashcards data}
         {--register : Register a new user}
         {--logs : View user activity logs}
+        {--trash-bin : Access the trash bin}
     ';
 
     protected $description = 'Display a main menu of available Flashcard options';
 
     protected bool $shouldKeepRunning = true;
 
-    public function __construct(private readonly UserRepositoryInterface $userRepository)
-    {
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly ConsoleRendererInterface $renderer,
+    ) {
         parent::__construct();
     }
 
@@ -58,14 +61,14 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         $this->user = $this->validateUserInformation();
 
         if (is_null($this->user)) {
-            ConsoleRenderer::error('User not found. Please register first.');
+            $this->renderer->error('User not found. Please register first.');
 
             $this->executeAction('register');
 
             return;
         }
 
-        ConsoleRenderer::success('Hi '.$this->user?->name.', welcome to your flashcards');
+        $this->renderer->success('Hi '.$this->user?->name.', welcome to your flashcards');
 
         // Check for direct action options
         if ($this->option('list')) {
@@ -100,6 +103,12 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         if ($this->option('reset')) {
             $this->executeAction('reset');
+
+            return;
+        }
+
+        if ($this->option('trash-bin')) {
+            $this->executeAction('trash-bin');
 
             return;
         }
@@ -162,10 +171,11 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
                 'statistics' => 'Statistics',
                 'reset' => 'Reset the flashcards data',
                 'logs' => 'View Activity Logs',
+                'trash-bin' => 'Flashcards Trash Bin',
                 'exit' => 'Exit',
             ],
             default: 'practice',
-            scroll: 8,
+            scroll: 9,
             hint: 'Use arrow keys to navigate and press Enter to select an option.',
         );
     }

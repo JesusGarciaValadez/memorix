@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
@@ -24,6 +24,7 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
         private StudySessionRepositoryInterface $studySessionRepository,
         private StatisticService $statisticService,
         private StudySessionService $studySessionService,
+        private ConsoleRendererInterface $renderer,
     ) {}
 
     public function execute(): void
@@ -34,7 +35,7 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
         $flashcards = $this->flashcardRepository->getAllForUser($userId, 100)->items();
 
         if (empty($flashcards)) {
-            ConsoleRenderer::info('You have no flashcards to practice. Create some first!');
+            $this->renderer->info('You have no flashcards to practice. Create some first!');
 
             return;
         }
@@ -54,7 +55,7 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
             });
 
             if (empty($availableFlashcards)) {
-                ConsoleRenderer::success('Congratulations! You have correctly answered all flashcards.');
+                $this->renderer->success('Congratulations! You have correctly answered all flashcards.');
                 break;
             }
 
@@ -85,13 +86,13 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
             $selectedFlashcard = collect($flashcards)->firstWhere('id', $selectedOption);
 
             if (! $selectedFlashcard) {
-                ConsoleRenderer::error('Invalid selection. Please try again.');
+                $this->renderer->error('Invalid selection. Please try again.');
 
                 continue;
             }
 
             // Show the question
-            ConsoleRenderer::info("Question: {$selectedFlashcard->question}");
+            $this->renderer->info("Question: {$selectedFlashcard->question}");
 
             // Get user's answer
             $answer = $this->command->ask('Your answer:');
@@ -110,9 +111,9 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
 
             // Show result message
             if ($isCorrect) {
-                ConsoleRenderer::success('Correct answer!');
+                $this->renderer->success('Correct answer!');
             } else {
-                ConsoleRenderer::error("Incorrect. The correct answer was: {$selectedFlashcard->answer}");
+                $this->renderer->error("Incorrect. The correct answer was: {$selectedFlashcard->answer}");
             }
         }
 
@@ -125,50 +126,62 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
      */
     private function showProgress(array $flashcards, array $practiceResults): void
     {
-        // Calculate completion percentage
-        $totalCards = count($flashcards);
-        $completedCards = count(array_filter($practiceResults, fn ($result) => $result['is_correct']));
-
-        // Display title and completion statistics
-        $this->command->line('Flashcard Practice Progress');
-        $this->command->info("Completion: {$completedCards}/{$totalCards} cards");
-
-        // Prepare table headers and rows
-        $headers = ['Question', 'Status'];
         $rows = [];
+        $totalFlashcards = count($flashcards);
+        $correctAnswers = 0;
+        $incorrectAnswers = 0;
 
         foreach ($flashcards as $flashcard) {
             $status = 'Not answered';
             if (isset($practiceResults[$flashcard->id])) {
-                $status = $practiceResults[$flashcard->id]['is_correct'] ? 'Correct' : 'Incorrect';
+                if ($practiceResults[$flashcard->id]['is_correct']) {
+                    $status = 'Correct';
+                    $correctAnswers++;
+                } else {
+                    $status = 'Incorrect';
+                    $incorrectAnswers++;
+                }
             }
 
             $rows[] = [
-                $flashcard->question,
-                $status,
+                'Question' => $flashcard->question,
+                'Status' => $status,
             ];
         }
 
-        // Display the table
-        $this->command->table($headers, $rows);
+        // Calculate completion percentage
+        $completionPercentage = ($correctAnswers / $totalFlashcards) * 100;
+
+        // Display progress table
+        table(
+            headers: ['Question', 'Status'],
+            rows: $rows
+        );
+
+        // Display summary
+        $this->renderer->info(sprintf(
+            "\nProgress: %.1f%% complete (%d/%d flashcards answered correctly)",
+            $completionPercentage,
+            $correctAnswers,
+            $totalFlashcards
+        ));
     }
 
     /**
-     * Get the practice results for the flashcards.
+     * Get practice results for all flashcards.
+     *
+     * @param  array<Flashcard>  $flashcards
+     * @return array<int, array{is_correct: bool, status: string}>
      */
     private function getPracticeResults(array $flashcards): array
     {
         $results = [];
-
         foreach ($flashcards as $flashcard) {
-            $practiceResults = $flashcard->practiceResults()
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if ($practiceResults) {
+            $practiceResult = $this->studySessionRepository->getLatestResultForFlashcard($flashcard->id);
+            if ($practiceResult) {
                 $results[$flashcard->id] = [
-                    'is_correct' => (bool) $practiceResults->is_correct,
-                    'status' => $practiceResults->is_correct ? 'Correct' : 'Incorrect',
+                    'is_correct' => $practiceResult->is_correct,
+                    'status' => $practiceResult->is_correct ? 'Correct' : 'Incorrect',
                 ];
             }
         }

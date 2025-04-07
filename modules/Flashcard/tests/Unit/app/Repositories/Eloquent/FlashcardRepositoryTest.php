@@ -231,4 +231,42 @@ final class FlashcardRepositoryTest extends TestCase
             'id' => $flashcard->id,
         ]);
     }
+
+    #[Test]
+    public function it_restores_all_deleted_flashcards_for_user(): void
+    {
+        // Arrange
+        Flashcard::factory()->count(3)->create([
+            'user_id' => $this->user->id,
+        ])->each(fn (Flashcard $flashcard) => $flashcard->delete());
+
+        // Act
+        $result = $this->repository->restoreAll($this->user->id);
+
+        // Assert
+        $this->assertTrue($result);
+        $this->assertDatabaseHas('flashcards', [
+            'user_id' => $this->user->id,
+            'deleted_at' => null,
+        ]);
+        $this->assertEquals(3, Flashcard::where('user_id', $this->user->id)->whereNull('deleted_at')->count());
+    }
+
+    #[Test]
+    public function it_permanently_deletes_all_deleted_flashcards_for_user(): void
+    {
+        // Arrange
+        Flashcard::factory()->count(3)->create([
+            'user_id' => $this->user->id,
+        ])->each(fn (Flashcard $flashcard) => $flashcard->delete());
+
+        // Act
+        $result = $this->repository->forceDeleteAll($this->user->id);
+
+        // Assert
+        $this->assertTrue($result);
+        $this->assertDatabaseMissing('flashcards', [
+            'user_id' => $this->user->id,
+        ]);
+    }
 }

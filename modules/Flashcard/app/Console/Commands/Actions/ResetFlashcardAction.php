@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
@@ -14,26 +14,14 @@ use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
 final readonly class ResetFlashcardAction implements FlashcardActionInterface
 {
-    private readonly StatisticRepositoryInterface $statisticRepository;
-
-    private readonly PracticeResultRepositoryInterface $practiceResultRepository;
-
-    private readonly LogRepositoryInterface $logRepository;
-
-    private readonly StudySessionRepositoryInterface $studySessionRepository;
-
     public function __construct(
-        private readonly Command $command,
-        ?StatisticRepositoryInterface $statisticRepository = null,
-        ?PracticeResultRepositoryInterface $practiceResultRepository = null,
-        ?LogRepositoryInterface $logRepository = null,
-        ?StudySessionRepositoryInterface $studySessionRepository = null,
-    ) {
-        $this->statisticRepository = $statisticRepository ?? app(StatisticRepositoryInterface::class);
-        $this->practiceResultRepository = $practiceResultRepository ?? app(PracticeResultRepositoryInterface::class);
-        $this->logRepository = $logRepository ?? app(LogRepositoryInterface::class);
-        $this->studySessionRepository = $studySessionRepository ?? app(StudySessionRepositoryInterface::class);
-    }
+        private Command $command,
+        private StatisticRepositoryInterface $statisticRepository,
+        private PracticeResultRepositoryInterface $practiceResultRepository,
+        private StudySessionRepositoryInterface $studySessionRepository,
+        private LogRepositoryInterface $logRepository,
+        private ConsoleRendererInterface $renderer,
+    ) {}
 
     public function execute(): void
     {
@@ -49,7 +37,7 @@ final readonly class ResetFlashcardAction implements FlashcardActionInterface
         }
 
         if (! $user) {
-            ConsoleRenderer::error('You must be logged in to reset flashcard data.');
+            $this->renderer->error('You must be logged in to reset flashcard data.');
 
             return;
         }
@@ -69,7 +57,7 @@ final readonly class ResetFlashcardAction implements FlashcardActionInterface
         if ($statsReset && $resultsDeleted && $sessionsDeleted) {
             $this->command->info('All practice data has been reset successfully.');
         } else {
-            ConsoleRenderer::error('There was an error resetting practice data.');
+            $this->renderer->error('There was an error resetting practice data.');
         }
     }
 }

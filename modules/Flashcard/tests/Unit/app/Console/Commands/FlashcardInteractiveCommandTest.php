@@ -7,6 +7,7 @@ namespace Modules\Flashcard\tests\Unit\app\Console\Commands;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -206,12 +207,20 @@ final class FlashcardInteractiveCommandTest extends TestCase
     #[Test]
     public function it_runs_statistics_command_directly(): void
     {
+        // Create a mock renderer
+        $renderer = $this->createMock(ConsoleRendererInterface::class);
+        $renderer->expects($this->once())
+            ->method('warning')
+            ->with('No statistics available yet.');
+
+        // Bind the mock renderer to the container
+        $this->app->instance(ConsoleRendererInterface::class, $renderer);
+
         $this->artisan('flashcard:interactive', [
             'email' => 'test@example.com',
             'password' => 'password',
             '--statistics' => true,
         ])
-            ->expectsOutput('Showing statistics...')
             ->assertExitCode(0);
     }
 

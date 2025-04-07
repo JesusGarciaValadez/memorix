@@ -6,14 +6,17 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 
 use function Laravel\Prompts\select;
 
 final readonly class DeleteFlashcardAction implements FlashcardActionInterface
 {
-    public function __construct(private Command $command) {}
+    public function __construct(
+        private Command $command,
+        private ConsoleRendererInterface $renderer,
+    ) {}
 
     public function execute(): void
     {
@@ -26,7 +29,7 @@ final readonly class DeleteFlashcardAction implements FlashcardActionInterface
         }
 
         if (! $user) {
-            ConsoleRenderer::error('You must be logged in to delete a flashcard.');
+            $this->renderer->error('You must be logged in to delete a flashcard.');
 
             return;
         }
@@ -39,7 +42,7 @@ final readonly class DeleteFlashcardAction implements FlashcardActionInterface
         $flashcards = $flashcardService->getAllForUser($user->id, 100)->items();
 
         if (count($flashcards) === 0) {
-            ConsoleRenderer::warning('You have no flashcards to delete.');
+            $this->renderer->warning('You have no flashcards to delete.');
 
             return;
         }
@@ -56,40 +59,36 @@ final readonly class DeleteFlashcardAction implements FlashcardActionInterface
         $selectedOption = select(
             label: 'Select a flashcard to delete:',
             options: $options,
-            default: 'cancel',
-            scroll: 10,
-            hint: 'Use arrow keys to navigate and press Enter to select an option.',
+            default: 'cancel'
         );
 
         if ($selectedOption === 'cancel') {
-            $this->command->info('Deletion cancelled.');
+            $this->renderer->info('Operation cancelled.');
 
             return;
         }
 
-        // Double check with the user
-        $confirmDelete = select(
+        // Get confirmation
+        $confirmation = select(
             label: 'Are you sure you want to delete this flashcard?',
             options: [
                 'yes' => 'Yes, delete it',
-                'no' => 'No, go back',
+                'no' => 'No, keep it',
             ],
-            default: 'no',
+            default: 'no'
         );
 
-        if ($confirmDelete === 'no') {
-            $this->command->info('Deletion cancelled.');
+        if ($confirmation === 'no') {
+            $this->renderer->info('Operation cancelled.');
 
             return;
         }
 
         // Delete the flashcard
-        $result = $flashcardService->delete($user->id, (int) $selectedOption);
-
-        if ($result) {
-            ConsoleRenderer::success('Flashcard deleted successfully!');
+        if ($flashcardService->delete($user->id, (int) $selectedOption)) {
+            $this->renderer->success('Flashcard deleted successfully.');
         } else {
-            ConsoleRenderer::error('Failed to delete flashcard. Please try again.');
+            $this->renderer->error('Failed to delete flashcard.');
         }
     }
 }

@@ -6,25 +6,19 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
-use Modules\Flashcard\app\Models\StudySession;
-use Modules\Flashcard\app\Services\StatisticService;
-
-use function Laravel\Prompts\table;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
+use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 
 final readonly class StatisticsFlashcardAction implements FlashcardActionInterface
 {
     public function __construct(
         private Command $command,
-        private ?StatisticService $statisticService = null,
-    ) {
-        $this->statisticService ??= app(StatisticService::class);
-    }
+        private StatisticRepositoryInterface $statisticRepository,
+        private ConsoleRendererInterface $renderer,
+    ) {}
 
     public function execute(): void
     {
-        $this->command->info('Showing statistics...');
-
         // Get the authenticated user
         $user = null;
         if ($this->command instanceof FlashcardInteractiveCommand) {
@@ -35,53 +29,32 @@ final readonly class StatisticsFlashcardAction implements FlashcardActionInterfa
         }
 
         if (! $user) {
-            ConsoleRenderer::error('You must be logged in to view statistics.');
+            $this->renderer->error('You must be logged in to view statistics.');
 
             return;
         }
 
-        // Get statistics for the current user
-        $stats = $this->statisticService->getStatisticsForUser($user->id);
-        $successRate = $this->statisticService->getPracticeSuccessRate($user->id);
-        $avgSessionDuration = $this->statisticService->getAverageStudySessionDuration($user->id);
-        $totalStudyTime = $this->statisticService->getTotalStudyTime($user->id);
+        $stats = $this->statisticRepository->getStatisticsForUser($user->id);
 
-        // Count total flashcards
-        $totalFlashcards = $stats['flashcards_created'];
+        if (! $stats) {
+            $this->renderer->warning('No statistics available yet.');
 
-        // Get actual study session count from database
-        $studySessionCount = StudySession::where('user_id', $user->id)->count();
-
-        // Calculate completion percentage
-        $answeredFlashcards = $stats['correct_answers'] + $stats['incorrect_answers'];
-        $completionPercentage = $totalFlashcards > 0
-            ? round(($answeredFlashcards / $totalFlashcards) * 100, 2)
-            : 0;
-
-        // Display the statistics using a table
-        table(
-            headers: ['Statistic', 'Value'],
-            rows: [
-                ['Total Flashcards', $totalFlashcards],
-                ['Study Sessions', $studySessionCount],
-                ['Correct Answers', $stats['correct_answers']],
-                ['Incorrect Answers', $stats['incorrect_answers']],
-                ['Success Rate', $successRate.'%'],
-                ['Completion', $completionPercentage.'%'],
-                ['Avg. Session Duration', $avgSessionDuration.' minutes'],
-                ['Total Study Time', $totalStudyTime.' minutes'],
-            ]
-        );
-
-        // Display some useful insights based on the statistics
-        if ($totalFlashcards === 0) {
-            ConsoleRenderer::warning('You have not created any flashcards yet.');
-        } elseif ($answeredFlashcards === 0) {
-            ConsoleRenderer::warning('You have not practiced any flashcards yet.');
-        } elseif ($successRate < 50) {
-            ConsoleRenderer::warning('Your success rate is below 50%. Keep practicing to improve!');
-        } elseif ($successRate >= 80) {
-            ConsoleRenderer::success('Great job! Your success rate is '.$successRate.'%.');
+            return;
         }
+
+        $this->renderer->info('Your Flashcard Practice Statistics:');
+        $this->renderer->info('--------------------------------');
+        $this->renderer->info("Total Practice Sessions: {$stats->total_sessions}");
+        $this->renderer->info("Total Questions Attempted: {$stats->total_questions_attempted}");
+        $this->renderer->info("Correct Answers: {$stats->correct_answers}");
+        $this->renderer->info("Incorrect Answers: {$stats->incorrect_answers}");
+        $accuracy = $stats->total_questions_attempted > 0
+            ? round(($stats->correct_answers / $stats->total_questions_attempted) * 100, 2)
+            : 0;
+        $this->renderer->info("Accuracy Rate: {$accuracy}%");
+        $this->renderer->info("Average Time Per Question: {$stats->average_time_per_question} seconds");
+        $this->renderer->info("Fastest Response Time: {$stats->fastest_response_time} seconds");
+        $this->renderer->info("Slowest Response Time: {$stats->slowest_response_time} seconds");
+        $this->renderer->info('--------------------------------');
     }
 }

@@ -85,4 +85,28 @@ final class FlashcardRepository implements FlashcardRepositoryInterface
     {
         return $flashcard->forceDelete();
     }
+
+    /**
+     * Restore all deleted flashcards for a user.
+     */
+    public function restoreAll(int $userId): bool
+    {
+        $result = Flashcard::onlyTrashed()
+            ->where('user_id', $userId)
+            ->restore();
+
+        return $result > 0;
+    }
+
+    /**
+     * Permanently delete all deleted flashcards for a user.
+     */
+    public function forceDeleteAll(int $userId): bool
+    {
+        $result = Flashcard::onlyTrashed()
+            ->where('user_id', $userId)
+            ->forceDelete();
+
+        return $result > 0;
+    }
 }

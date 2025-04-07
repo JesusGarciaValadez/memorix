@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Exception;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\LogServiceInterface;
 
 final class ViewLogsAction implements FlashcardActionInterface
@@ -15,6 +15,7 @@ final class ViewLogsAction implements FlashcardActionInterface
         private FlashcardInteractiveCommand $command,
         private bool &$shouldKeepRunning,
         private LogServiceInterface $logService,
+        private ConsoleRendererInterface $renderer,
     ) {}
 
     public function execute(): void
@@ -23,13 +24,13 @@ final class ViewLogsAction implements FlashcardActionInterface
             $logs = $this->logService->getLatestActivityForUser($this->command->user->id);
 
             if (empty($logs)) {
-                ConsoleRenderer::warning('No activity logs found');
+                $this->renderer->warning('No activity logs found');
 
                 return;
             }
 
             foreach ($logs as $log) {
-                ConsoleRenderer::info(sprintf(
+                $this->renderer->info(sprintf(
                     '[%s] %s - %s',
                     $log['level'],
                     $log['action'],
@@ -37,7 +38,7 @@ final class ViewLogsAction implements FlashcardActionInterface
                 ));
             }
         } catch (Exception $e) {
-            ConsoleRenderer::error('An error occurred while fetching logs: '.$e->getMessage());
+            $this->renderer->error('An error occurred while fetching logs: '.$e->getMessage());
         }
     }
 }

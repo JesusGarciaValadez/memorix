@@ -47,4 +47,9 @@ interface StudySessionRepositoryInterface
      * Delete all study sessions for a user.
      */
     public function deleteAllForUser(int $userId): bool;
+
+    /**
+     * Get the latest practice result for a flashcard.
+     */
+    public function getLatestResultForFlashcard(int $flashcardId): ?array;
 }

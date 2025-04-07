@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Console\Commands\Actions\ResetFlashcardAction;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
@@ -29,6 +30,8 @@ final class ResetFlashcardActionTest extends TestCase
     private LogRepositoryInterface $logRepository;
 
     private StudySessionRepositoryInterface $studySessionRepository;
+
+    private ConsoleRendererInterface $renderer;
 
     private User $user;
 
@@ -52,6 +55,7 @@ final class ResetFlashcardActionTest extends TestCase
         $this->practiceResultRepository = $this->createMock(PracticeResultRepositoryInterface::class);
         $this->logRepository = $this->createMock(LogRepositoryInterface::class);
         $this->studySessionRepository = $this->createMock(StudySessionRepositoryInterface::class);
+        $this->renderer = $this->createMock(ConsoleRendererInterface::class);
     }
 
     #[Test]
@@ -95,8 +99,9 @@ final class ResetFlashcardActionTest extends TestCase
             $this->command,
             $this->statisticRepository,
             $this->practiceResultRepository,
+            $this->studySessionRepository,
             $this->logRepository,
-            $this->studySessionRepository
+            $this->renderer
         );
 
         // Act
@@ -136,8 +141,9 @@ final class ResetFlashcardActionTest extends TestCase
             $this->command,
             $this->statisticRepository,
             $this->practiceResultRepository,
+            $this->studySessionRepository,
             $this->logRepository,
-            $this->studySessionRepository
+            $this->renderer
         );
 
         // Act
@@ -170,8 +176,9 @@ final class ResetFlashcardActionTest extends TestCase
             $this->command,
             $this->statisticRepository,
             $this->practiceResultRepository,
+            $this->studySessionRepository,
             $this->logRepository,
-            $this->studySessionRepository
+            $this->renderer
         );
 
         // Act

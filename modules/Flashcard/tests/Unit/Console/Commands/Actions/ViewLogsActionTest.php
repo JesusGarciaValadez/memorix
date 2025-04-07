@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Console\Commands\Actions\ViewLogsAction;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Services\LogServiceInterface;
 use Tests\TestCase;
@@ -25,6 +26,8 @@ final class ViewLogsActionTest extends TestCase
 
     private LogServiceInterface $logService;
 
+    private ConsoleRendererInterface $renderer;
+
     private ViewLogsAction $action;
 
     protected function setUp(): void
@@ -39,10 +42,12 @@ final class ViewLogsActionTest extends TestCase
         $this->command = $this->app->make(FlashcardInteractiveCommand::class);
         $this->command->user = $this->user;
         $this->logService = $this->app->make(LogServiceInterface::class);
+        $this->renderer = $this->app->make(ConsoleRendererInterface::class);
         $this->action = new ViewLogsAction(
             $this->command,
             $this->shouldKeepRunning,
-            $this->logService
+            $this->logService,
+            $this->renderer
         );
     }
 
@@ -94,7 +99,8 @@ final class ViewLogsActionTest extends TestCase
         $action = new ViewLogsAction(
             $this->command,
             $this->shouldKeepRunning,
-            $this->app->make(LogServiceInterface::class)
+            $this->app->make(LogServiceInterface::class),
+            $this->renderer
         );
 
         // Capture output

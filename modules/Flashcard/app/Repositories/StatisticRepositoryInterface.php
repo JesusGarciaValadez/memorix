@@ -14,6 +14,11 @@ interface StatisticRepositoryInterface
     public function getForUser(int $userId): ?Statistic;
 
     /**
+     * Get statistics for a user.
+     */
+    public function getStatisticsForUser(int $userId): ?Statistic;
+
+    /**
      * Create statistics for a user.
      */
     public function createForUser(int $userId): Statistic;

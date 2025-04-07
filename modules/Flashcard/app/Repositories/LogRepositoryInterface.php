@@ -76,4 +76,14 @@ interface LogRepositoryInterface
      * Log user exit.
      */
     public function logUserExit(int $userId): Log;
+
+    /**
+     * Log restoration of all flashcards.
+     */
+    public function logAllFlashcardsRestore(int $userId): Log;
+
+    /**
+     * Log permanent deletion of all flashcards.
+     */
+    public function logAllFlashcardsPermanentDelete(int $userId): Log;
 }

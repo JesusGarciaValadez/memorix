@@ -201,4 +201,34 @@ final class LogRepository implements LogRepositoryInterface
 
         return Log::logUserExit($user);
     }
+
+    /**
+     * Log restoration of all flashcards.
+     */
+    public function logAllFlashcardsRestore(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'restored_all_flashcards',
+            Log::LEVEL_INFO,
+            'Restored all deleted flashcards'
+        );
+    }
+
+    /**
+     * Log permanent deletion of all flashcards.
+     */
+    public function logAllFlashcardsPermanentDelete(int $userId): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'permanently_deleted_all_flashcards',
+            Log::LEVEL_WARNING,
+            'Permanently deleted all flashcards'
+        );
+    }
 }

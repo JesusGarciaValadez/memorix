@@ -260,4 +260,34 @@ final class LogRepositoryTest extends TestCase
         $this->assertNull($result->details);
         $this->assertNotNull($result->created_at);
     }
+
+    #[Test]
+    public function it_logs_all_flashcards_restore(): void
+    {
+        // Act
+        $result = $this->repository->logAllFlashcardsRestore($this->user->id);
+
+        // Assert
+        $this->assertInstanceOf(Log::class, $result);
+        $this->assertEquals($this->user->id, $result->user_id);
+        $this->assertEquals('restored_all_flashcards', $result->action);
+        $this->assertEquals('Restored all deleted flashcards', $result->details);
+        $this->assertEquals(Log::LEVEL_INFO, $result->level);
+        $this->assertNotNull($result->created_at);
+    }
+
+    #[Test]
+    public function it_logs_all_flashcards_permanent_delete(): void
+    {
+        // Act
+        $result = $this->repository->logAllFlashcardsPermanentDelete($this->user->id);
+
+        // Assert
+        $this->assertInstanceOf(Log::class, $result);
+        $this->assertEquals($this->user->id, $result->user_id);
+        $this->assertEquals('permanently_deleted_all_flashcards', $result->action);
+        $this->assertEquals('Permanently deleted all flashcards', $result->details);
+        $this->assertEquals(Log::LEVEL_WARNING, $result->level);
+        $this->assertNotNull($result->created_at);
+    }
 }

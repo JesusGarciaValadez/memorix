@@ -10,7 +10,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 
 use function Laravel\Prompts\password;
@@ -27,8 +27,10 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
 
     protected $description = 'Register a new user';
 
-    public function __construct(private readonly UserRepositoryInterface $userRepository)
-    {
+    public function __construct(
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly ConsoleRendererInterface $renderer,
+    ) {
         parent::__construct();
     }
 
@@ -45,7 +47,7 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
                 'password' => Hash::make($password),
             ]);
 
-            ConsoleRenderer::success('User '.$name.' registered successfully with email '.$email.'.');
+            $this->renderer->success('User '.$name.' registered successfully with email '.$email.'.');
         } catch (QueryException $exception) {
             // Check for unique constraint violation
             if (str_contains($exception->getMessage(), 'SQLSTATE[23000]')) {

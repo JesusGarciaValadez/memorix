@@ -19,6 +19,14 @@ final class StatisticRepository implements StatisticRepositoryInterface
     }
 
     /**
+     * Get statistics for a user.
+     */
+    public function getStatisticsForUser(int $userId): ?Statistic
+    {
+        return $this->getForUser($userId);
+    }
+
+    /**
      * Create statistics for a user.
      */
     public function createForUser(int $userId): Statistic

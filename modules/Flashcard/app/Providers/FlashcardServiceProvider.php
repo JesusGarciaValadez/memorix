@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\Statistic;
@@ -67,6 +69,7 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->configureVite();
         $this->registerRepositories();
         $this->registerServices();
+        $this->registerHelpers();
     }
 
     /**
@@ -152,5 +155,13 @@ final class FlashcardServiceProvider extends BaseServiceProvider
                 $app->make(StatisticRepositoryInterface::class)
             );
         });
+    }
+
+    /**
+     * Register helpers.
+     */
+    private function registerHelpers(): void
+    {
+        $this->app->singleton(ConsoleRendererInterface::class, ConsoleRenderer::class);
     }
 }

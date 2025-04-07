@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Console\Commands\Actions\PracticeFlashcardAction;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
@@ -33,6 +34,8 @@ final class PracticeFlashcardActionTest extends TestCase
 
     private StudySessionService $studySessionService;
 
+    private ConsoleRendererInterface $renderer;
+
     private User $user;
 
     protected function setUp(): void
@@ -51,6 +54,7 @@ final class PracticeFlashcardActionTest extends TestCase
         $this->studySessionRepository = app(StudySessionRepositoryInterface::class);
         $this->statisticService = app(StatisticService::class);
         $this->studySessionService = app(StudySessionService::class);
+        $this->renderer = $this->createMock(ConsoleRendererInterface::class);
     }
 
     #[Test]
@@ -71,7 +75,8 @@ final class PracticeFlashcardActionTest extends TestCase
             $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
-            $this->studySessionService
+            $this->studySessionService,
+            $this->renderer
         );
 
         $action->execute();
@@ -95,7 +100,8 @@ final class PracticeFlashcardActionTest extends TestCase
             $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
-            $this->studySessionService
+            $this->studySessionService,
+            $this->renderer
         );
 
         $action->execute();
@@ -130,7 +136,8 @@ final class PracticeFlashcardActionTest extends TestCase
             $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
-            $this->studySessionService
+            $this->studySessionService,
+            $this->renderer
         );
 
         $action->execute();
@@ -177,7 +184,8 @@ final class PracticeFlashcardActionTest extends TestCase
             $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
-            $this->studySessionService
+            $this->studySessionService,
+            $this->renderer
         );
 
         $action->execute();
@@ -226,7 +234,8 @@ final class PracticeFlashcardActionTest extends TestCase
             $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
-            $this->studySessionService
+            $this->studySessionService,
+            $this->renderer
         );
 
         $action->execute();

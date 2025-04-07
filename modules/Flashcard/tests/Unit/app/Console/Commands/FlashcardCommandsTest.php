@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 use Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\Eloquent\UserRepository;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -50,8 +51,9 @@ final class FlashcardCommandsTest extends TestCase
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
 
-        $this->assertCount(1, $parameters);
+        $this->assertCount(2, $parameters);
         $this->assertEquals(UserRepositoryInterface::class, $parameters[0]->getType()->getName());
+        $this->assertEquals(ConsoleRendererInterface::class, $parameters[1]->getType()->getName());
     }
 
     /**
@@ -69,8 +71,9 @@ final class FlashcardCommandsTest extends TestCase
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
 
-        $this->assertCount(1, $parameters);
+        $this->assertCount(2, $parameters);
         $this->assertEquals(UserRepositoryInterface::class, $parameters[0]->getType()->getName());
+        $this->assertEquals(ConsoleRendererInterface::class, $parameters[1]->getType()->getName());
     }
 
     /**

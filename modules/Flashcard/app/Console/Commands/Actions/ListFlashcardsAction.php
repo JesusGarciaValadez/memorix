@@ -6,7 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 
@@ -18,6 +18,7 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
         private Command $command,
         private FlashcardService $flashcardService,
         private LogRepositoryInterface $logRepository,
+        private ConsoleRendererInterface $renderer,
     ) {}
 
     public function execute(): void
@@ -34,7 +35,7 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
         }
 
         if (! $user) {
-            ConsoleRenderer::error('You must be logged in to list flashcards.');
+            $this->renderer->error('You must be logged in to list flashcards.');
 
             return;
         }
@@ -46,7 +47,7 @@ final readonly class ListFlashcardsAction implements FlashcardActionInterface
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
         if (count($flashcards) === 0) {
-            ConsoleRenderer::warning('You have no flashcards yet.');
+            $this->renderer->warning('You have no flashcards yet.');
 
             return;
         }

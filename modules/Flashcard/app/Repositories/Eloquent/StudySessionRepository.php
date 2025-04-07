@@ -154,4 +154,27 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
             ->where('user_id', $userId)
             ->delete() >= 0;
     }
+
+    /**
+     * Get the latest practice result for a flashcard.
+     */
+    public function getLatestResultForFlashcard(int $flashcardId): ?array
+    {
+        $result = DB::table('practice_results')
+            ->where('flashcard_id', $flashcardId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (! $result) {
+            return null;
+        }
+
+        return [
+            'id' => $result->id,
+            'flashcard_id' => $result->flashcard_id,
+            'study_session_id' => $result->study_session_id,
+            'is_correct' => (bool) $result->is_correct,
+            'created_at' => $result->created_at,
+        ];
+    }
 }

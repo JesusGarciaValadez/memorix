@@ -10,12 +10,12 @@ use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 
-final readonly class FlashcardService
+final class FlashcardService implements FlashcardServiceInterface
 {
     public function __construct(
-        private FlashcardRepositoryInterface $flashcardRepository,
-        private LogRepositoryInterface $logRepository,
-        private StatisticRepositoryInterface $statisticRepository,
+        private readonly FlashcardRepositoryInterface $flashcardRepository,
+        private readonly LogRepositoryInterface $logRepository,
+        private readonly StatisticRepositoryInterface $statisticRepository,
     ) {}
 
     /**
@@ -129,7 +129,7 @@ final readonly class FlashcardService
      */
     public function forceDelete(int $userId, int $flashcardId): bool
     {
-        $flashcard = $this->flashcardRepository->findDeletedForUser($flashcardId, $userId);
+        $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId, true);
 
         if (! $flashcard) {
             return false;

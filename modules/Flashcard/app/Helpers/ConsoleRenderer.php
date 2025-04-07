@@ -7,14 +7,14 @@ namespace Modules\Flashcard\app\Helpers;
 /**
  * Helper class for rendering console output that can be suppressed during testing
  */
-final class ConsoleRenderer
+final class ConsoleRenderer implements ConsoleRendererInterface
 {
     private static ?string $testOutput = null;
 
     /**
      * Enable test mode and start capturing output
      */
-    public static function enableTestMode(): void
+    public function enableTestMode(): void
     {
         self::$testOutput = '';
     }
@@ -22,26 +22,127 @@ final class ConsoleRenderer
     /**
      * Get the captured output and reset it
      */
-    public static function getTestOutput(): ?string
+    public function getCapturedOutput(): string
     {
-        $output = self::$testOutput;
+        $output = self::$testOutput ?? '';
         self::$testOutput = null;
 
         return $output;
     }
 
     /**
-     * Reset test output
+     * Capture output for testing
      */
-    public static function resetTestOutput(): void
+    public function captureOutput(): void
     {
         self::$testOutput = '';
     }
 
     /**
+     * Reset test output
+     */
+    public function resetTestOutput(): void
+    {
+        self::$testOutput = '';
+    }
+
+    /**
+     * Render a success message with a green background
+     */
+    public function success(string $message): void
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= $message.PHP_EOL;
+
+            return;
+        }
+        echo "\033[32m".$message."\033[0m\n";
+    }
+
+    /**
+     * Render an error message with a red background
+     */
+    public function error(string $message): void
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= $message.PHP_EOL;
+
+            return;
+        }
+        echo "\033[31m".$message."\033[0m\n";
+    }
+
+    /**
+     * Render an info message with a blue background
+     */
+    public function info(string $message): void
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= $message.PHP_EOL;
+
+            return;
+        }
+        echo "\033[34m".$message."\033[0m\n";
+    }
+
+    /**
+     * Render a warning message with a yellow background
+     */
+    public function warning(string $message): void
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= $message.PHP_EOL;
+
+            return;
+        }
+        echo "\033[33m".$message."\033[0m\n";
+    }
+
+    /**
+     * Ask a question and return the answer
+     */
+    public function ask(string $question): string
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= $question.PHP_EOL;
+
+            return '';
+        }
+        echo $question.': ';
+        $handle = fopen('php://stdin', 'r');
+        $line = fgets($handle);
+        fclose($handle);
+
+        return mb_trim($line);
+    }
+
+    /**
+     * Render a table
+     */
+    public function table(array $headers, array $rows): void
+    {
+        if (self::$testOutput !== null) {
+            self::$testOutput .= implode(' | ', $headers).PHP_EOL;
+            self::$testOutput .= str_repeat('-', mb_strlen(implode(' | ', $headers))).PHP_EOL;
+            foreach ($rows as $row) {
+                self::$testOutput .= implode(' | ', $row).PHP_EOL;
+            }
+
+            return;
+        }
+
+        // Simple table rendering for console
+        echo implode(' | ', $headers).PHP_EOL;
+        echo str_repeat('-', mb_strlen(implode(' | ', $headers))).PHP_EOL;
+        foreach ($rows as $row) {
+            echo implode(' | ', $row).PHP_EOL;
+        }
+    }
+
+    /**
      * Render a message in the console, but only if not in testing or if TERMWIND_SILENT is not true
      */
-    public static function render(string $html): void
+    private function render(string $html): void
     {
         // During testing, capture output instead of rendering
         if (self::$testOutput !== null) {
@@ -56,90 +157,5 @@ final class ConsoleRenderer
         }
 
         echo $html;
-    }
-
-    /**
-     * Render a success message with a green background
-     */
-    public static function success(string $message): void
-    {
-        if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
-
-            return;
-        }
-        echo "\033[32m".$message."\033[0m\n";
-    }
-
-    /**
-     * Render an error message with a red background
-     */
-    public static function error(string $message): void
-    {
-        if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
-
-            return;
-        }
-        echo "\033[31m".$message."\033[0m\n";
-    }
-
-    /**
-     * Render an info message with a blue background
-     */
-    public static function info(string $message): void
-    {
-        if (self::$testOutput !== null) {
-            self::$testOutput .= $message.PHP_EOL;
-
-            return;
-        }
-        echo "\033[34m".$message."\033[0m\n";
-    }
-
-    /**
-     * Render a warning message with an orange background
-     */
-    public static function warning(string $message): void
-    {
-        if (self::$testOutput !== null) {
-            self::render($message);
-
-            return;
-        }
-        echo "\033[33m".$message."\033[0m\n";
-    }
-
-    public static function table(array $headers, array $rows): void
-    {
-        // Calculate column widths
-        $widths = [];
-        foreach ($headers as $i => $header) {
-            $widths[$i] = mb_strlen($header);
-            foreach ($rows as $row) {
-                $widths[$i] = max($widths[$i], mb_strlen((string) $row[$i]));
-            }
-        }
-
-        // Print headers
-        echo "\033[34m"; // Blue color for headers
-        foreach ($headers as $i => $header) {
-            echo mb_str_pad($header, $widths[$i] + 2);
-        }
-        echo "\033[0m\n"; // Reset color
-
-        // Print separator
-        foreach ($widths as $width) {
-            echo str_repeat('-', $width + 2);
-        }
-        echo "\n";
-
-        // Print rows
-        foreach ($rows as $row) {
-            foreach ($row as $i => $cell) {
-                echo mb_str_pad((string) $cell, $widths[$i] + 2);
-            }
-            echo "\n";
-        }
     }
 }
