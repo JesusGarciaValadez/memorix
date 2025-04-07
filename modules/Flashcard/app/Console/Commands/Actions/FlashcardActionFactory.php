@@ -6,6 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
 use InvalidArgumentException;
+use Modules\Flashcard\app\Services\FlashcardService;
 
 final class FlashcardActionFactory
 {
@@ -18,7 +19,7 @@ final class FlashcardActionFactory
         ?bool &$shouldKeepRunning = null
     ): FlashcardActionInterface {
         return match ($action) {
-            'list' => new ListFlashcardsAction($command),
+            'list' => new ListFlashcardsAction($command, app(FlashcardService::class)),
             'create' => new CreateFlashcardAction($command),
             'delete' => new DeleteFlashcardAction($command),
             'practice' => new PracticeFlashcardAction($command),

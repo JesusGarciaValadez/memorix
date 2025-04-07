@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Modules\Flashcard\app\Console\Commands\Actions\CreateFlashcardAction;
 use Modules\Flashcard\app\Console\Commands\Actions\DeleteFlashcardAction;
@@ -14,15 +15,20 @@ use Modules\Flashcard\app\Console\Commands\Actions\ListFlashcardsAction;
 use Modules\Flashcard\app\Console\Commands\Actions\PracticeFlashcardAction;
 use Modules\Flashcard\app\Console\Commands\Actions\ResetFlashcardAction;
 use Modules\Flashcard\app\Console\Commands\Actions\StatisticsFlashcardAction;
+use Modules\Flashcard\app\Services\FlashcardService;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\Exception;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class FlashcardActionFactoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     private Command $command;
 
     private bool $shouldKeepRunning;
+
+    private FlashcardService $flashcardService;
 
     /**
      * @throws Exception
@@ -32,6 +38,11 @@ final class FlashcardActionFactoryTest extends TestCase
         parent::setUp();
         $this->command = $this->createMock(Command::class);
         $this->shouldKeepRunning = true;
+
+        // Create a real FlashcardService instance for testing
+        $this->flashcardService = app(FlashcardService::class);
+        // Bind this instance to the app container so the factory can resolve it
+        $this->app->instance(FlashcardService::class, $this->flashcardService);
     }
 
     #[Test]

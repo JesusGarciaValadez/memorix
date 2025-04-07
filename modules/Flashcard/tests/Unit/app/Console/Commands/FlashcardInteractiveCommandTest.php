@@ -61,6 +61,59 @@ final class FlashcardInteractiveCommandTest extends TestCase
     }
 
     #[Test]
+    public function it_lists_flashcards_with_data(): void
+    {
+        // Create sample flashcards
+        $flashcard1 = $this->user->flashcards()->create([
+            'question' => 'What is Laravel?',
+            'answer' => 'A PHP framework for web development',
+        ]);
+
+        $flashcard2 = $this->user->flashcards()->create([
+            'question' => 'What is PHPUnit?',
+            'answer' => 'A unit testing framework for PHP',
+        ]);
+
+        // Run the list command
+        $this->artisan('flashcard:interactive', [
+            'email' => 'test@example.com',
+            'password' => 'password',
+            '--list' => true,
+        ])
+            ->expectsOutput('Listing all flashcards...')
+            ->assertExitCode(0);
+
+        // Verify the flashcards exist in the database
+        $this->assertDatabaseHas('flashcards', [
+            'id' => $flashcard1->id,
+            'question' => 'What is Laravel?',
+            'answer' => 'A PHP framework for web development',
+        ]);
+
+        $this->assertDatabaseHas('flashcards', [
+            'id' => $flashcard2->id,
+            'question' => 'What is PHPUnit?',
+            'answer' => 'A unit testing framework for PHP',
+        ]);
+    }
+
+    #[Test]
+    public function it_shows_warning_when_no_flashcards_exist(): void
+    {
+        // Delete any existing flashcards for the user
+        $this->user->flashcards()->delete();
+
+        // Run the list command
+        $this->artisan('flashcard:interactive', [
+            'email' => 'test@example.com',
+            'password' => 'password',
+            '--list' => true,
+        ])
+            ->expectsOutput('Listing all flashcards...')
+            ->assertExitCode(0);
+    }
+
+    #[Test]
     public function it_runs_create_command_directly(): void
     {
         $this->artisan('flashcard:interactive', [

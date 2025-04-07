@@ -5,14 +5,63 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
+use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Services\FlashcardService;
+
+use function Laravel\Prompts\table;
 
 final readonly class ListFlashcardsAction implements FlashcardActionInterface
 {
-    public function __construct(private Command $command) {}
+    public function __construct(
+        private Command $command,
+        private FlashcardService $flashcardService
+    ) {}
 
     public function execute(): void
     {
         $this->command->info('Listing all flashcards...');
-        // Implementation will be added later
+
+        // Get the authenticated user
+        $user = null;
+        if ($this->command instanceof FlashcardInteractiveCommand) {
+            $user = $this->command->user;
+        } else {
+            // For our test command class
+            $user = $this->command->user;
+        }
+
+        if (! $user) {
+            ConsoleRenderer::error('You must be logged in to list flashcards.');
+
+            return;
+        }
+
+        // Get all flashcards for the current user
+        $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
+
+        if (count($flashcards) === 0) {
+            ConsoleRenderer::warning('You have no flashcards yet.');
+
+            return;
+        }
+
+        // Prepare the data for the table
+        $headers = ['ID', 'Question', 'Answer'];
+        $rows = [];
+
+        foreach ($flashcards as $flashcard) {
+            $rows[] = [
+                'ID' => $flashcard->id,
+                'Question' => $flashcard->question,
+                'Answer' => $flashcard->answer,
+            ];
+        }
+
+        // Render the flashcards using Laravel Prompts table
+        table(
+            headers: $headers,
+            rows: $rows
+        );
     }
 }
