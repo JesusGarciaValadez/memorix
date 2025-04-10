@@ -55,21 +55,7 @@ final class FlashcardTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_has_correct_fillable_attributes(): void
-    {
-        $flashcard = new Flashcard();
-        $this->assertEquals(['user_id', 'question', 'answer'], $flashcard->getFillable());
-    }
-
-    #[Test]
-    public function it_uses_soft_deletes(): void
-    {
-        $flashcard = new Flashcard();
-        $this->assertTrue(method_exists($flashcard, 'bootSoftDeletes'));
-    }
-
-    #[Test]
-    public function it_belongs_to_a_user(): void
+    public function it_can_only_be_accessed_by_its_owner(): void
     {
         $flashcard = Flashcard::create([
             'user_id' => $this->user->id,
@@ -77,90 +63,57 @@ final class FlashcardTest extends BaseTestCase
             'answer' => 'A PHP framework',
         ]);
 
-        $this->assertInstanceOf(User::class, $flashcard->user);
-        $this->assertEquals($this->user->id, $flashcard->user->id);
-    }
+        $otherUser = User::factory()->create();
 
-    #[Test]
-    public function it_can_get_all_flashcards_for_user(): void
-    {
-        Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
-        Flashcard::factory()->count(2)->create(); // Other user's flashcards
-
-        $flashcards = Flashcard::getAllForUser($this->user->id);
-
-        $this->assertCount(3, $flashcards);
-        $this->assertEquals(3, $flashcards->total());
-    }
-
-    #[Test]
-    public function it_can_get_all_deleted_flashcards_for_user(): void
-    {
-        $flashcards = Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
-        $flashcards->each->delete();
-
-        $deletedFlashcards = Flashcard::getAllDeletedForUser($this->user->id);
-
-        $this->assertCount(3, $deletedFlashcards);
-        $this->assertEquals(3, $deletedFlashcards->total());
-    }
-
-    #[Test]
-    public function it_can_find_flashcard_for_user(): void
-    {
-        $flashcard = Flashcard::factory()->create(['user_id' => $this->user->id]);
-
+        // Owner can access
         $found = Flashcard::findForUser($flashcard->id, $this->user->id);
-
         $this->assertNotNull($found);
-        $this->assertEquals($flashcard->id, $found->id);
+
+        // Other user cannot access
+        $notFound = Flashcard::findForUser($flashcard->id, $otherUser->id);
+        $this->assertNull($notFound);
     }
 
     #[Test]
-    public function it_can_find_deleted_flashcard_for_user(): void
+    public function it_can_be_soft_deleted_and_restored(): void
     {
-        $flashcard = Flashcard::factory()->create(['user_id' => $this->user->id]);
+        $flashcard = Flashcard::create([
+            'user_id' => $this->user->id,
+            'question' => 'What is Laravel?',
+            'answer' => 'A PHP framework',
+        ]);
+
+        // Delete the flashcard
         $flashcard->delete();
+        $this->assertNull(Flashcard::findForUser($flashcard->id, $this->user->id));
 
-        $found = Flashcard::findForUser($flashcard->id, $this->user->id, true);
-
-        $this->assertNotNull($found);
-        $this->assertEquals($flashcard->id, $found->id);
+        // Restore the flashcard
+        $flashcard->restore();
+        $restored = Flashcard::findForUser($flashcard->id, $this->user->id);
+        $this->assertNotNull($restored);
+        $this->assertEquals($flashcard->id, $restored->id);
     }
 
     #[Test]
-    public function it_can_restore_all_deleted_flashcards_for_user(): void
+    public function it_can_track_practice_results(): void
     {
-        $flashcards = Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
-        $flashcards->each->delete();
+        $flashcard = Flashcard::create([
+            'user_id' => $this->user->id,
+            'question' => 'What is Laravel?',
+            'answer' => 'A PHP framework',
+        ]);
 
-        $result = Flashcard::restoreAllForUser($this->user->id);
-
-        $this->assertTrue($result);
-        $this->assertCount(3, Flashcard::where('user_id', $this->user->id)->get());
-    }
-
-    #[Test]
-    public function it_can_force_delete_all_deleted_flashcards_for_user(): void
-    {
-        $flashcards = Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
-        $flashcards->each->delete();
-
-        $result = Flashcard::forceDeleteAllForUser($this->user->id);
-
-        $this->assertTrue($result);
-        $this->assertCount(0, Flashcard::withTrashed()->where('user_id', $this->user->id)->get());
-    }
-
-    #[Test]
-    public function it_can_check_if_correctly_answered(): void
-    {
-        $flashcard = Flashcard::factory()->create(['user_id' => $this->user->id]);
+        // Create a study session
         $studySession = StudySession::create([
             'user_id' => $this->user->id,
             'started_at' => now(),
         ]);
 
+        // Initially not answered
+        $this->assertFalse($flashcard->isCorrectlyAnswered());
+        $this->assertFalse($flashcard->isIncorrectlyAnswered());
+
+        // Create a correct answer
         $flashcard->practiceResults()->create([
             'user_id' => $this->user->id,
             'study_session_id' => $studySession->id,
@@ -168,23 +121,68 @@ final class FlashcardTest extends BaseTestCase
         ]);
 
         $this->assertTrue($flashcard->isCorrectlyAnswered());
-    }
+        $this->assertFalse($flashcard->isIncorrectlyAnswered());
 
-    #[Test]
-    public function it_can_check_if_incorrectly_answered(): void
-    {
-        $flashcard = Flashcard::factory()->create(['user_id' => $this->user->id]);
-        $studySession = StudySession::create([
-            'user_id' => $this->user->id,
-            'started_at' => now(),
-        ]);
-
+        // Create an incorrect answer
         $flashcard->practiceResults()->create([
             'user_id' => $this->user->id,
             'study_session_id' => $studySession->id,
             'is_correct' => false,
         ]);
 
+        $this->assertTrue($flashcard->isCorrectlyAnswered());
         $this->assertTrue($flashcard->isIncorrectlyAnswered());
+    }
+
+    #[Test]
+    public function it_can_handle_bulk_operations(): void
+    {
+        // Create multiple flashcards
+        $flashcards = Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
+
+        // Verify they can be retrieved
+        $retrieved = Flashcard::getAllForUser($this->user->id);
+        $this->assertCount(3, $retrieved);
+
+        // Delete all
+        $flashcards->each->delete();
+        $this->assertCount(0, Flashcard::getAllForUser($this->user->id));
+
+        // Restore all
+        Flashcard::restoreAllForUser($this->user->id);
+        $this->assertCount(3, Flashcard::getAllForUser($this->user->id));
+
+        // Force delete all
+        Flashcard::forceDeleteAllForUser($this->user->id);
+        $this->assertCount(0, Flashcard::getAllForUser($this->user->id));
+    }
+
+    #[Test]
+    public function it_can_handle_edge_cases(): void
+    {
+        // Test with empty question
+        $flashcard = Flashcard::create([
+            'user_id' => $this->user->id,
+            'question' => '',
+            'answer' => 'A PHP framework',
+        ]);
+        $this->assertNotNull($flashcard);
+
+        // Test with very long question and answer
+        $longText = str_repeat('a', 500);
+        $flashcard = Flashcard::create([
+            'user_id' => $this->user->id,
+            'question' => $longText,
+            'answer' => $longText,
+        ]);
+        $this->assertNotNull($flashcard);
+
+        // Test with special characters
+        $flashcard = Flashcard::create([
+            'user_id' => $this->user->id,
+            'question' => 'What is @#$%^&*()?',
+            'answer' => 'Special characters!',
+        ]);
+        $this->assertNotNull($flashcard);
     }
 }

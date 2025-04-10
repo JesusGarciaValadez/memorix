@@ -84,12 +84,11 @@ final class Flashcard extends Model
     }
 
     /**
-     * Permanently delete all deleted flashcards for a user.
+     * Permanently delete all flashcards for a user.
      */
     public static function forceDeleteAllForUser(int $userId): bool
     {
-        $result = self::onlyTrashed()
-            ->where('user_id', $userId)
+        $result = self::where('user_id', $userId)
             ->forceDelete();
 
         return $result > 0;

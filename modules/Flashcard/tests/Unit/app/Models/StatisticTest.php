@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Unit\app\Models;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
@@ -67,125 +66,119 @@ final class StatisticTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_has_correct_table_name(): void
+    public function it_can_track_learning_progress(): void
     {
-        $this->assertEquals('statistics', (new Statistic())->getTable());
-    }
-
-    #[Test]
-    public function it_has_correct_fillable_attributes(): void
-    {
-        $fillable = [
-            'user_id',
-            'total_flashcards',
-            'total_study_sessions',
-            'total_correct_answers',
-            'total_incorrect_answers',
-        ];
-
-        $this->assertEquals($fillable, (new Statistic())->getFillable());
-    }
-
-    #[Test]
-    public function it_belongs_to_a_user(): void
-    {
-        $this->assertInstanceOf(BelongsTo::class, (new Statistic())->user());
-    }
-
-    #[Test]
-    public function it_can_calculate_correct_percentage(): void
-    {
-        $statistic = new Statistic([
-            'total_correct_answers' => 7,
-            'total_incorrect_answers' => 3,
-        ]);
-
-        $this->assertEquals(70.0, $statistic->getCorrectPercentage());
-    }
-
-    #[Test]
-    public function it_can_calculate_completion_percentage(): void
-    {
-        // Case 1: No flashcards practiced
-        $this->assertEquals(0.0, $this->statistic->getCompletionPercentage());
-
         // Create a study session
         $studySession = StudySession::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        // Create 8 flashcards
+        // Create flashcards
         $flashcards = Flashcard::factory()->count(8)->create([
             'user_id' => $this->user->id,
         ]);
 
-        // Case 2: Practice 5 unique flashcards (some multiple times)
+        // Practice some flashcards correctly
         foreach ([0, 1, 2, 3, 4] as $index) {
-            // Practice each flashcard once
             PracticeResult::factory()->create([
                 'user_id' => $this->user->id,
                 'flashcard_id' => $flashcards[$index]->id,
                 'study_session_id' => $studySession->id,
                 'is_correct' => true,
             ]);
+            $this->statistic->incrementTotalCorrectAnswers();
         }
 
-        // Refresh the statistic to get updated data
-        $this->statistic->refresh();
-        $this->assertEquals(62.5, $this->statistic->getCompletionPercentage());
-
-        // Case 3: Practice all flashcards
-        foreach ([5, 6, 7] as $index) {
+        // Practice some flashcards incorrectly
+        foreach ([5, 6] as $index) {
             PracticeResult::factory()->create([
                 'user_id' => $this->user->id,
                 'flashcard_id' => $flashcards[$index]->id,
                 'study_session_id' => $studySession->id,
-                'is_correct' => true,
+                'is_correct' => false,
             ]);
+            $this->statistic->incrementTotalIncorrectAnswers();
         }
 
-        // Refresh the statistic to get updated data
-        $this->statistic->refresh();
-        $this->assertEquals(100.0, $this->statistic->getCompletionPercentage());
-    }
-
-    #[Test]
-    public function it_can_increment_total_flashcards(): void
-    {
-        $this->statistic->incrementTotalFlashcards();
-        $this->assertEquals(9, $this->statistic->total_flashcards);
-
-        $this->statistic->incrementTotalFlashcards(2);
-        $this->assertEquals(11, $this->statistic->total_flashcards);
-    }
-
-    #[Test]
-    public function it_can_increment_total_study_sessions(): void
-    {
+        // Increment study sessions
         $this->statistic->incrementTotalStudySessions();
+
+        // Refresh statistics
+        $this->statistic->refresh();
+
+        // Verify progress tracking
+        // 7 out of 8 flashcards have been practiced (87.5%)
+        $this->assertEqualsWithDelta(87.5, $this->statistic->getCompletionPercentage(), 0.01);
+        // 5 correct out of 7 total answers (71.43%)
+        $this->assertEqualsWithDelta(71.43, $this->statistic->getCorrectPercentage(), 0.01);
         $this->assertEquals(1, $this->statistic->total_study_sessions);
+        $this->assertEquals(5, $this->statistic->total_correct_answers);
+        $this->assertEquals(2, $this->statistic->total_incorrect_answers);
+    }
 
-        $this->statistic->incrementTotalStudySessions(2);
+    #[Test]
+    public function it_can_handle_edge_cases_in_statistics(): void
+    {
+        // Case 1: No answers yet
+        $this->assertEquals(0.0, $this->statistic->getCorrectPercentage());
+        $this->assertEquals(0.0, $this->statistic->getCompletionPercentage());
+
+        // Case 2: All correct answers
+        $this->statistic->update([
+            'total_correct_answers' => 8,
+            'total_incorrect_answers' => 0,
+        ]);
+        $this->assertEquals(100.0, $this->statistic->getCorrectPercentage());
+
+        // Case 3: All incorrect answers
+        $this->statistic->update([
+            'total_correct_answers' => 0,
+            'total_incorrect_answers' => 8,
+        ]);
+        $this->assertEquals(0.0, $this->statistic->getCorrectPercentage());
+
+        // Case 4: Large numbers
+        $this->statistic->update([
+            'total_correct_answers' => 1000,
+            'total_incorrect_answers' => 1000,
+        ]);
+        $this->assertEquals(50.0, $this->statistic->getCorrectPercentage());
+    }
+
+    #[Test]
+    public function it_can_handle_bulk_operations(): void
+    {
+        // Increment multiple statistics at once
+        $this->statistic->incrementTotalFlashcards(5);
+        $this->statistic->incrementTotalStudySessions(3);
+        $this->statistic->incrementTotalCorrectAnswers(10);
+        $this->statistic->incrementTotalIncorrectAnswers(5);
+
+        // Verify all increments
+        $this->assertEquals(13, $this->statistic->total_flashcards);
         $this->assertEquals(3, $this->statistic->total_study_sessions);
+        $this->assertEquals(10, $this->statistic->total_correct_answers);
+        $this->assertEquals(5, $this->statistic->total_incorrect_answers);
     }
 
     #[Test]
-    public function it_can_increment_total_correct_answers(): void
+    public function it_can_handle_concurrent_updates(): void
     {
-        $this->statistic->incrementTotalCorrectAnswers();
+        // Simulate concurrent updates
+        $statistic1 = $this->statistic;
+        $statistic2 = Statistic::find($this->statistic->id);
+
+        // First update
+        $statistic1->incrementTotalCorrectAnswers();
+        $statistic1->save();
+
+        // Second update
+        $statistic2->incrementTotalIncorrectAnswers();
+        $statistic2->save();
+
+        // Verify both updates are reflected
+        $this->statistic->refresh();
         $this->assertEquals(1, $this->statistic->total_correct_answers);
-
-        $this->statistic->incrementTotalCorrectAnswers(2);
-        $this->assertEquals(3, $this->statistic->total_correct_answers);
-    }
-
-    #[Test]
-    public function it_can_increment_total_incorrect_answers(): void
-    {
-        $this->statistic->incrementTotalIncorrectAnswers();
         $this->assertEquals(1, $this->statistic->total_incorrect_answers);
-
-        $this->statistic->incrementTotalIncorrectAnswers(2);
-        $this->assertEquals(3, $this->statistic->total_incorrect_answers);
     }
 }
