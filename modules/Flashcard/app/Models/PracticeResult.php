@@ -19,6 +19,18 @@ final class PracticeResult extends Model
     /** @use HasFactory<PracticeResultFactory> */
     use HasFactory;
 
+    /**
+     * The columns that should be returned.
+     *
+     * @var array|null
+     */
+    public $columns = [
+        'user_id',
+        'flashcard_id',
+        'study_session_id',
+        'is_correct',
+    ];
+
     protected $fillable = [
         'user_id',
         'flashcard_id',

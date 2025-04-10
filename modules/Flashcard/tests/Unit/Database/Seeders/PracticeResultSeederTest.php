@@ -109,8 +109,8 @@ final class PracticeResultSeederTest extends TestCase
         $seeder->run();
 
         // Get practice results and study sessions
-        $practiceResults = PracticeResult::where('user_id', $user->id)->get();
-        $studySessions = StudySession::where('user_id', $user->id)->get();
+        $practiceResults = PracticeResult::where('practice_results.user_id', $user->id)->get();
+        $studySessions = StudySession::where('study_sessions.user_id', $user->id)->get();
 
         // Assert practice results are linked to study sessions
         foreach ($practiceResults as $result) {

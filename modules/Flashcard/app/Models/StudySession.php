@@ -27,6 +27,17 @@ final class StudySession extends Model
     public $timestamps = false;
 
     /**
+     * The columns that should be returned.
+     *
+     * @var array|null
+     */
+    public $columns = [
+        'user_id',
+        'starter_at',
+        'ended_at',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
