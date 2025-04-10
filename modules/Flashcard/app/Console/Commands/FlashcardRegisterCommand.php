@@ -9,6 +9,7 @@ use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
@@ -39,6 +40,44 @@ final class FlashcardRegisterCommand extends Command implements Isolatable, Prom
         $name = str_replace('_', ' ', $this->argument('name'));
         $email = $this->argument('email');
         $password = $this->argument('password');
+
+        // Validate inputs
+        $validator = Validator::make(
+            [
+                'name' => $name,
+                'email' => $email,
+                'password' => $password,
+            ],
+            [
+                'name' => 'required|string|min:2|max:255',
+                'email' => 'required|email',
+                'password' => [
+                    'required',
+                    'min:8',
+                    'regex:/[A-Z]/',      // at least one uppercase letter
+                    'regex:/[a-z]/',      // at least one lowercase letter
+                    'regex:/[0-9]/',      // at least one number
+                    'regex:/[^A-Za-z0-9]/', // at least one special character
+                    'not_regex:/\s/',     // no whitespace
+                ],
+            ],
+            [
+                'name.required' => 'The username cannot be empty.',
+                'email.required' => 'The email cannot be empty.',
+                'email.email' => 'The email format is invalid.',
+                'password.min' => 'Password must be at least 8 characters long.',
+                'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
+                'password.not_regex' => 'Password must not contain spaces.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            foreach ($validator->errors()->all() as $error) {
+                $this->error($error);
+            }
+
+            return Command::FAILURE;
+        }
 
         try {
             $this->userRepository->create([

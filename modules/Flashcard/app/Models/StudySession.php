@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Flashcard\database\factories\StudySessionFactory;
 
+/**
+ * @mixin IdeHelperStudySession
+ */
 final class StudySession extends Model
 {
     /** @use HasFactory<StudySessionFactory> */

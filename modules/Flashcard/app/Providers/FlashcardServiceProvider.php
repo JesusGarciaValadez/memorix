@@ -51,7 +51,7 @@ final class FlashcardServiceProvider extends BaseServiceProvider
             \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
         ]);
         $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
-        $this->loadMigrationsFrom(__DIR__.'/../../Database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
 
         $this->registerPolicies();
@@ -121,12 +121,12 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     private function registerRepositories(): void
     {
-        $this->app->bind(FlashcardRepositoryInterface::class, FlashcardRepository::class);
-        $this->app->bind(LogRepositoryInterface::class, LogRepository::class);
-        $this->app->bind(PracticeResultRepositoryInterface::class, PracticeResultRepository::class);
-        $this->app->bind(StatisticRepositoryInterface::class, StatisticRepository::class);
-        $this->app->bind(StudySessionRepositoryInterface::class, StudySessionRepository::class);
-        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->singleton(FlashcardRepositoryInterface::class, FlashcardRepository::class);
+        $this->app->singleton(LogRepositoryInterface::class, LogRepository::class);
+        $this->app->singleton(PracticeResultRepositoryInterface::class, PracticeResultRepository::class);
+        $this->app->singleton(StatisticRepositoryInterface::class, StatisticRepository::class);
+        $this->app->singleton(StudySessionRepositoryInterface::class, StudySessionRepository::class);
+        $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
     }
 
     /**
@@ -145,9 +145,9 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     private function registerServices(): void
     {
-        $this->app->bind(LogServiceInterface::class, LogService::class);
+        $this->app->singleton(LogServiceInterface::class, LogService::class);
 
-        $this->app->bind(StudySessionService::class, function ($app) {
+        $this->app->singleton(StudySessionService::class, function ($app) {
             return new StudySessionService(
                 $app->make(StudySessionRepositoryInterface::class),
                 $app->make(FlashcardRepositoryInterface::class),

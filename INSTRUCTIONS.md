@@ -70,7 +70,7 @@ These tasks are **optional** and can be completed to demonstrate additional skil
 * **Assignment Completeness**: The application must function as described, fulfilling all requirements.
 * **Code Elegance**: Code should be concise, minimizing complexity. It should be easily handover-able to another developer of reasonable skill without requiring significant explanation.
 * **Code Readability**: Use meaningful names for variables and functions. Organize code logically into functions and modules. Maintain consistent indentation and use white space judiciously for better readability.
-   * Note that it is highly recommended to use a tool like [Laravel Pint](https://laravel.com/docs/11.x/pint).
+   * Note that it is highly recommended to use a tool like [Laravel Pint](https://laravel.com/docs/12.x/pint).
 * **Documentation**: Ensure the codebase is well-commented, but avoid excessive comments. The documentation should clearly explain the setup process, usage, and any important architectural choices. Git history should be meaningful and informative.
 
 ## CodeSubmit

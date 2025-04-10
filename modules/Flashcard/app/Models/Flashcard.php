@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Models;
 
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Flashcard\database\factories\FlashcardFactory;
 
+/**
+ * @mixin IdeHelperFlashcard
+ */
 final class Flashcard extends Model
 {
     /** @use HasFactory<FlashcardFactory> */
@@ -30,6 +34,66 @@ final class Flashcard extends Model
         'question',
         'answer',
     ];
+
+    /**
+     * Get all flashcards for a user.
+     */
+    public static function getAllForUser(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return self::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get all deleted flashcards for a user.
+     */
+    public static function getAllDeletedForUser(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return self::onlyTrashed()
+            ->where('user_id', $userId)
+            ->orderBy('deleted_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Find a flashcard for a user.
+     */
+    public static function findForUser(int $flashcardId, int $userId, bool $withTrashed = false): ?self
+    {
+        $query = self::where('id', $flashcardId)
+            ->where('user_id', $userId);
+
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Restore all deleted flashcards for a user.
+     */
+    public static function restoreAllForUser(int $userId): bool
+    {
+        $result = self::onlyTrashed()
+            ->where('user_id', $userId)
+            ->restore();
+
+        return $result > 0;
+    }
+
+    /**
+     * Permanently delete all deleted flashcards for a user.
+     */
+    public static function forceDeleteAllForUser(int $userId): bool
+    {
+        $result = self::onlyTrashed()
+            ->where('user_id', $userId)
+            ->forceDelete();
+
+        return $result > 0;
+    }
 
     /**
      * Get the user that owns the flashcard.
@@ -52,8 +116,9 @@ final class Flashcard extends Model
      */
     public function isCorrectlyAnswered(): bool
     {
-        // Implementation will depend on future study session tracking
-        return false;
+        return $this->practiceResults()
+            ->where('is_correct', true)
+            ->exists();
     }
 
     /**
@@ -61,8 +126,9 @@ final class Flashcard extends Model
      */
     public function isIncorrectlyAnswered(): bool
     {
-        // Implementation will depend on future study session tracking
-        return false;
+        return $this->practiceResults()
+            ->where('is_correct', false)
+            ->exists();
     }
 
     /**

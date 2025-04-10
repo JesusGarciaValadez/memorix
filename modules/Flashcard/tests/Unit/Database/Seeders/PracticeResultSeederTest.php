@@ -99,6 +99,10 @@ final class PracticeResultSeederTest extends TestCase
     {
         // Create a user
         $user = User::factory()->create();
+        $flashcards = Flashcard::factory()->count(3)->for($user)->create();
+        $studySession = StudySession::factory()->for($user)->create([
+            'ended_at' => null,
+        ]);
 
         // Run the seeder
         $seeder = new PracticeResultSeeder();
@@ -110,6 +114,7 @@ final class PracticeResultSeederTest extends TestCase
 
         // Assert practice results are linked to study sessions
         foreach ($practiceResults as $result) {
+            $this->assertNotNull($result->study_session_id);
             $this->assertTrue($studySessions->contains('id', $result->study_session_id));
         }
     }

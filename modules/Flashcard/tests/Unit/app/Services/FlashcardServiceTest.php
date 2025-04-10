@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Unit\app\Services;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
-use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class FlashcardServiceTest extends TestCase
 {
-    private MockInterface $flashcardRepository;
+    use RefreshDatabase;
+
+    private User $user;
 
     private MockInterface $logRepository;
 
@@ -30,12 +32,11 @@ final class FlashcardServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->flashcardRepository = Mockery::mock(FlashcardRepositoryInterface::class);
+        $this->user = User::factory()->create();
         $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
         $this->statisticRepository = Mockery::mock(StatisticRepositoryInterface::class);
 
         $this->service = new FlashcardService(
-            $this->flashcardRepository,
             $this->logRepository,
             $this->statisticRepository
         );
@@ -48,37 +49,31 @@ final class FlashcardServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_gets_all_for_user_delegates_to_repository(): void
+    public function it_gets_all_for_user(): void
     {
         // Arrange
-        $paginator = Mockery::mock(LengthAwarePaginator::class);
-        $this->flashcardRepository->shouldReceive('getAllForUser')
-            ->once()
-            ->with(1, 15)
-            ->andReturn($paginator);
+        Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
+        Flashcard::factory()->count(2)->create(); // Other user's flashcards
 
         // Act
-        $result = $this->service->getAllForUser(1, 15);
+        $result = $this->service->getAllForUser($this->user->id, 15);
 
         // Assert
-        $this->assertSame($paginator, $result);
+        $this->assertEquals(3, $result->total());
     }
 
     #[Test]
-    public function it_gets_deleted_for_user_delegates_to_repository(): void
+    public function it_gets_deleted_for_user(): void
     {
         // Arrange
-        $paginator = Mockery::mock(LengthAwarePaginator::class);
-        $this->flashcardRepository->shouldReceive('getAllDeletedForUser')
-            ->once()
-            ->with(1, 15)
-            ->andReturn($paginator);
+        $flashcards = Flashcard::factory()->count(3)->create(['user_id' => $this->user->id]);
+        $flashcards->each->delete();
 
         // Act
-        $result = $this->service->getDeletedForUser(1, 15);
+        $result = $this->service->getDeletedForUser($this->user->id, 15);
 
         // Assert
-        $this->assertSame($paginator, $result);
+        $this->assertEquals(3, $result->total());
     }
 
     #[Test]
@@ -86,68 +81,48 @@ final class FlashcardServiceTest extends TestCase
     {
         // Arrange
         $data = ['question' => 'Test?', 'answer' => 'Answer'];
-        $flashcard = new Flashcard();
-        $flashcard->question = 'Test?';
-        $flashcard->answer = 'Answer';
-        $flashcard->user_id = 1;
-
         $log = new Log();
         $log->action = 'created_flashcard';
 
         // Expectations
-        $this->flashcardRepository->shouldReceive('create')
-            ->once()
-            ->with(['question' => 'Test?', 'answer' => 'Answer', 'user_id' => 1])
-            ->andReturn($flashcard);
-
         $this->logRepository->shouldReceive('logFlashcardCreation')
             ->once()
-            ->with(1, $flashcard)
             ->andReturn($log);
 
         $this->statisticRepository->shouldReceive('incrementFlashcardsCreated')
             ->once()
-            ->with(1)
+            ->with($this->user->id)
             ->andReturn(true);
 
         // Act
-        $result = $this->service->create(1, $data);
+        $result = $this->service->create($this->user->id, $data);
 
         // Assert
-        $this->assertSame($flashcard, $result);
+        $this->assertInstanceOf(Flashcard::class, $result);
+        $this->assertEquals('Test?', $result->question);
+        $this->assertEquals('Answer', $result->answer);
+        $this->assertEquals($this->user->id, $result->user_id);
     }
 
     #[Test]
-    public function it_finds_for_user_delegates_to_repository(): void
+    public function it_finds_for_user(): void
     {
         // Arrange
-        $flashcard = new Flashcard();
-        $flashcard->id = 5;
-        $flashcard->user_id = 1;
-
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1, false)
-            ->andReturn($flashcard);
+        $flashcard = Flashcard::factory()->create(['user_id' => $this->user->id]);
 
         // Act
-        $result = $this->service->findForUser(1, 5);
+        $result = $this->service->findForUser($this->user->id, $flashcard->id);
 
         // Assert
-        $this->assertSame($flashcard, $result);
+        $this->assertInstanceOf(Flashcard::class, $result);
+        $this->assertEquals($flashcard->id, $result->id);
     }
 
     #[Test]
     public function it_updates_returns_false_when_flashcard_not_found(): void
     {
-        // Arrange
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1)
-            ->andReturn(null);
-
         // Act
-        $result = $this->service->update(1, 5, ['question' => 'Updated?']);
+        $result = $this->service->update($this->user->id, 999, ['question' => 'Updated?']);
 
         // Assert
         $this->assertFalse($result);
@@ -157,48 +132,33 @@ final class FlashcardServiceTest extends TestCase
     public function it_updates_updates_flashcard_and_logs_when_found(): void
     {
         // Arrange
-        $data = ['question' => 'Updated?'];
-        $flashcard = new Flashcard();
-        $flashcard->id = 5;
-        $flashcard->question = 'Original?';
-        $flashcard->user_id = 1;
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $this->user->id,
+            'question' => 'Original?',
+        ]);
 
+        $data = ['question' => 'Updated?'];
         $log = new Log();
         $log->action = 'updated_flashcard';
 
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1)
-            ->andReturn($flashcard);
-
-        $this->flashcardRepository->shouldReceive('update')
-            ->once()
-            ->with($flashcard, $data)
-            ->andReturn(true);
-
         $this->logRepository->shouldReceive('logFlashcardUpdate')
             ->once()
-            ->with(1, $flashcard)
+            ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
 
         // Act
-        $result = $this->service->update(1, 5, $data);
+        $result = $this->service->update($this->user->id, $flashcard->id, $data);
 
         // Assert
         $this->assertTrue($result);
+        $this->assertEquals('Updated?', $flashcard->fresh()->question);
     }
 
     #[Test]
     public function it_deletes_returns_false_when_flashcard_not_found(): void
     {
-        // Arrange
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1)
-            ->andReturn(null);
-
         // Act
-        $result = $this->service->delete(1, 5);
+        $result = $this->service->delete($this->user->id, 999);
 
         // Assert
         $this->assertFalse($result);
@@ -208,83 +168,93 @@ final class FlashcardServiceTest extends TestCase
     public function it_deletes_deleted_flashcard_and_logs_when_found(): void
     {
         // Arrange
-        $flashcard = new Flashcard();
-        $flashcard->id = 5;
-        $flashcard->question = 'Delete me?';
-        $flashcard->user_id = 1;
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $this->user->id,
+            'question' => 'Delete me?',
+        ]);
 
         $log = new Log();
         $log->action = 'deleted_flashcard';
 
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1)
-            ->andReturn($flashcard);
-
         $this->logRepository->shouldReceive('logFlashcardDeletion')
             ->once()
-            ->with(1, $flashcard)
+            ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
 
-        $this->flashcardRepository->shouldReceive('delete')
-            ->once()
-            ->with($flashcard)
-            ->andReturn(true);
-
         // Act
-        $result = $this->service->delete(1, 5);
+        $result = $this->service->delete($this->user->id, $flashcard->id);
 
         // Assert
         $this->assertTrue($result);
+        $this->assertSoftDeleted($flashcard);
     }
 
     #[Test]
-    public function restores_returns_false_when_flashcard_not_found(): void
+    public function it_restores_returns_false_when_flashcard_not_found(): void
     {
-        // Arrange
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1, true)
-            ->andReturn(null);
-
         // Act
-        $result = $this->service->restore(1, 5);
+        $result = $this->service->restore($this->user->id, 999);
 
         // Assert
         $this->assertFalse($result);
     }
 
     #[Test]
-    public function restore_restores_flashcard_and_logs_when_found(): void
+    public function it_restores_flashcard_and_logs_when_found(): void
     {
         // Arrange
-        $flashcard = new Flashcard();
-        $flashcard->id = 5;
-        $flashcard->question = 'Restore me?';
-        $flashcard->user_id = 1;
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $this->user->id,
+            'question' => 'Restore me?',
+        ]);
+        $flashcard->delete();
 
         $log = new Log();
         $log->action = 'restored_flashcard';
 
-        $this->flashcardRepository->shouldReceive('findForUser')
-            ->once()
-            ->with(5, 1, true)
-            ->andReturn($flashcard);
-
-        $this->flashcardRepository->shouldReceive('restore')
-            ->once()
-            ->with($flashcard)
-            ->andReturn(true);
-
         $this->logRepository->shouldReceive('logFlashcardRestoration')
             ->once()
-            ->with(1, $flashcard)
+            ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
 
         // Act
-        $result = $this->service->restore(1, 5);
+        $result = $this->service->restore($this->user->id, $flashcard->id);
 
         // Assert
         $this->assertTrue($result);
+        $this->assertNotSoftDeleted($flashcard);
+    }
+
+    #[Test]
+    public function it_force_deletes_returns_false_when_flashcard_not_found(): void
+    {
+        // Act
+        $result = $this->service->forceDelete($this->user->id, 999);
+
+        // Assert
+        $this->assertFalse($result);
+    }
+
+    #[Test]
+    public function it_force_deletes_flashcard_and_logs_when_found(): void
+    {
+        // Arrange
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $this->user->id,
+            'question' => 'Force delete me?',
+        ]);
+        $flashcard->delete();
+
+        $this->logRepository->shouldReceive('logFlashcardForceDelete')
+            ->once()
+            ->with($this->user->id, $flashcard->id, 'Force delete me?')
+            ->andReturn(new Log());
+
+        // Act
+        $result = $this->service->forceDelete($this->user->id, $flashcard->id);
+
+        // Assert
+        $this->assertTrue($result);
+        $this->assertModelMissing($flashcard);
     }
 }

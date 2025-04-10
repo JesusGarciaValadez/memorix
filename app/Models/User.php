@@ -17,6 +17,9 @@ use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 
+/**
+ * @mixin IdeHelperUser
+ */
 final class User extends Authenticatable
 {
     use HasApiTokens;

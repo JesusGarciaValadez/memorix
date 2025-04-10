@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Unit\app\Services;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Models\Flashcard;
@@ -15,12 +15,12 @@ use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StudySessionServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private MockInterface $studySessionRepository;
 

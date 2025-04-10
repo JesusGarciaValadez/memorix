@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Flashcard\database\factories\LogFactory;
 
+/**
+ * @mixin IdeHelperLog
+ */
 final class Log extends Model
 {
     /** @use HasFactory<LogFactory> */

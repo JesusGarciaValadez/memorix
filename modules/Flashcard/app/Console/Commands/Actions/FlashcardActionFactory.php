@@ -7,7 +7,6 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
-use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
@@ -44,7 +43,6 @@ final class FlashcardActionFactory
             ),
             'practice' => new PracticeFlashcardAction(
                 $command,
-                app(FlashcardRepositoryInterface::class),
                 app(StudySessionRepositoryInterface::class),
                 app(StatisticService::class),
                 app(StudySessionService::class),
@@ -72,7 +70,6 @@ final class FlashcardActionFactory
             ),
             'trash-bin' => new TrashBinAction(
                 $command,
-                app(FlashcardRepositoryInterface::class),
                 app(LogRepositoryInterface::class),
                 app(ConsoleRendererInterface::class)
             ),

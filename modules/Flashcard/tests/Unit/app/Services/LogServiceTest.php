@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Services;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
 use Modules\Flashcard\app\Services\LogService;
-use Tests\TestCase;
+use Modules\Flashcard\Tests\TestCase;
 
 final class LogServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private LogService $service;
 

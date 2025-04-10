@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Flashcard\database\factories\PracticeResultFactory;
 
+/**
+ * @mixin IdeHelperPracticeResult
+ */
 final class PracticeResult extends Model
 {
     /** @use HasFactory<PracticeResultFactory> */

@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Flashcard\database\factories\StatisticFactory;
 
+/**
+ * @mixin IdeHelperStatistic
+ */
 final class Statistic extends Model
 {
     /** @use HasFactory<StatisticFactory> */

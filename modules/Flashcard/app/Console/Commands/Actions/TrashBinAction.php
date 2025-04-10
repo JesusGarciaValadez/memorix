@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Console\Commands\Actions;
 
 use Illuminate\Console\Command;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
@@ -35,7 +36,7 @@ final readonly class TrashBinAction implements FlashcardActionInterface
             return;
         }
 
-        $deletedFlashcards = $this->flashcardRepository->getAllDeletedForUser($user->id);
+        $deletedFlashcards = $this->flashcardRepository->getAllDeletedForUser($user->id, 15);
 
         if ($deletedFlashcards->isEmpty()) {
             $this->renderer->warning('No deleted flashcards found.');
@@ -65,16 +66,16 @@ final readonly class TrashBinAction implements FlashcardActionInterface
 
         switch ($choice) {
             case '1':
-                $this->handleRestore($user->id, $deletedFlashcards->items());
+                $this->handleRestore($deletedFlashcards);
                 break;
             case '2':
-                $this->handlePermanentDelete($user->id, $deletedFlashcards->items());
+                $this->handlePermanentDelete($deletedFlashcards);
                 break;
             case '3':
-                $this->handleRestoreAll($user->id, $deletedFlashcards->items());
+                $this->handleRestoreAll($user->id);
                 break;
             case '4':
-                $this->handlePermanentDeleteAll($user->id, $deletedFlashcards->items());
+                $this->handlePermanentDeleteAll($user->id);
                 break;
             case '5':
                 $this->renderer->info('Exiting trash bin...');
@@ -85,67 +86,61 @@ final readonly class TrashBinAction implements FlashcardActionInterface
         }
     }
 
-    private function handleRestore(int $userId, array $deletedFlashcards): void
+    private function handleRestore(LengthAwarePaginator $deletedFlashcards): void
     {
-        $flashcardNumber = $this->renderer->ask('Enter the number of the flashcard to restore: ');
-        $index = (int) $flashcardNumber - 1;
+        $flashcardNumber = (int) $this->renderer->ask('Enter the number of the flashcard to restore: ');
+        $flashcard = $deletedFlashcards->items()[$flashcardNumber - 1] ?? null;
 
-        if (! isset($deletedFlashcards[$index])) {
+        if (! $flashcard) {
             $this->renderer->error('Invalid flashcard number.');
 
             return;
         }
 
-        $flashcard = $deletedFlashcards[$index];
-        $flashcardModel = $this->flashcardRepository->findForUser($flashcard->id, $userId, true);
+        $flashcard = $this->flashcardRepository->findForUser($this->command->user->id, $flashcard->id, true);
 
-        if (! $flashcardModel) {
+        if (! $flashcard) {
             $this->renderer->error('Flashcard not found.');
 
             return;
         }
 
-        $restored = $this->flashcardRepository->restore($flashcardModel);
-
-        if ($restored) {
-            $this->logRepository->logFlashcardRestoration($userId, $flashcard);
+        if ($this->flashcardRepository->restore($flashcard)) {
+            $this->logRepository->logFlashcardRestoration($this->command->user->id, $flashcard);
             $this->renderer->success('Flashcard restored successfully!');
         } else {
             $this->renderer->error('Failed to restore flashcard.');
         }
     }
 
-    private function handlePermanentDelete(int $userId, array $deletedFlashcards): void
+    private function handlePermanentDelete(LengthAwarePaginator $deletedFlashcards): void
     {
-        $flashcardNumber = $this->renderer->ask('Enter the number of the flashcard to permanently delete: ');
-        $index = (int) $flashcardNumber - 1;
+        $flashcardNumber = (int) $this->renderer->ask('Enter the number of the flashcard to permanently delete: ');
+        $flashcard = $deletedFlashcards->items()[$flashcardNumber - 1] ?? null;
 
-        if (! isset($deletedFlashcards[$index])) {
+        if (! $flashcard) {
             $this->renderer->error('Invalid flashcard number.');
 
             return;
         }
 
-        $flashcard = $deletedFlashcards[$index];
-        $flashcardModel = $this->flashcardRepository->findForUser($flashcard->id, $userId, true);
+        $flashcard = $this->flashcardRepository->findForUser($this->command->user->id, $flashcard->id, true);
 
-        if (! $flashcardModel) {
+        if (! $flashcard) {
             $this->renderer->error('Flashcard not found.');
 
             return;
         }
 
-        $deleted = $this->flashcardRepository->forceDelete($flashcardModel);
-
-        if ($deleted) {
-            $this->logRepository->logFlashcardDeletion($userId, $flashcard);
-            $this->renderer->success('Flashcard permanently deleted!');
+        if ($this->flashcardRepository->forceDelete($flashcard)) {
+            $this->logRepository->logFlashcardDeletion($this->command->user->id, $flashcard);
+            $this->renderer->success('Flashcard permanently deleted successfully!');
         } else {
             $this->renderer->error('Failed to permanently delete flashcard.');
         }
     }
 
-    private function handleRestoreAll(int $userId, array $deletedFlashcards): void
+    private function handleRestoreAll(int $userId): void
     {
         $confirmation = $this->renderer->ask('Are you sure you want to restore all flashcards? (yes/no): ');
 
@@ -165,7 +160,7 @@ final readonly class TrashBinAction implements FlashcardActionInterface
         }
     }
 
-    private function handlePermanentDeleteAll(int $userId, array $deletedFlashcards): void
+    private function handlePermanentDeleteAll(int $userId): void
     {
         $confirmation = $this->renderer->ask('Are you sure you want to permanently delete all flashcards? (yes/no): ');
 

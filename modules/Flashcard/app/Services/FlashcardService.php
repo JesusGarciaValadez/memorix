@@ -6,14 +6,12 @@ namespace Modules\Flashcard\app\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Models\Flashcard;
-use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 
 final class FlashcardService implements FlashcardServiceInterface
 {
     public function __construct(
-        private readonly FlashcardRepositoryInterface $flashcardRepository,
         private readonly LogRepositoryInterface $logRepository,
         private readonly StatisticRepositoryInterface $statisticRepository,
     ) {}
@@ -23,7 +21,7 @@ final class FlashcardService implements FlashcardServiceInterface
      */
     public function getAllForUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->flashcardRepository->getAllForUser($userId, $perPage);
+        return Flashcard::getAllForUser($userId, $perPage);
     }
 
     /**
@@ -31,7 +29,7 @@ final class FlashcardService implements FlashcardServiceInterface
      */
     public function getDeletedForUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->flashcardRepository->getAllDeletedForUser($userId, $perPage);
+        return Flashcard::getAllDeletedForUser($userId, $perPage);
     }
 
     /**
@@ -41,7 +39,7 @@ final class FlashcardService implements FlashcardServiceInterface
     {
         // Create the flashcard
         $data['user_id'] = $userId;
-        $flashcard = $this->flashcardRepository->create($data);
+        $flashcard = Flashcard::create($data);
 
         // Log the action
         $this->logRepository->logFlashcardCreation($userId, $flashcard);
@@ -57,7 +55,7 @@ final class FlashcardService implements FlashcardServiceInterface
      */
     public function findForUser(int $userId, int $flashcardId, bool $withTrashed = false): ?Flashcard
     {
-        return $this->flashcardRepository->findForUser($flashcardId, $userId, $withTrashed);
+        return Flashcard::findForUser($flashcardId, $userId, $withTrashed);
     }
 
     /**
@@ -66,14 +64,14 @@ final class FlashcardService implements FlashcardServiceInterface
     public function update(int $userId, int $flashcardId, array $data): bool
     {
         // Find the flashcard
-        $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId);
+        $flashcard = Flashcard::findForUser($flashcardId, $userId);
 
         if (! $flashcard) {
             return false;
         }
 
         // Update the flashcard
-        $result = $this->flashcardRepository->update($flashcard, $data);
+        $result = $flashcard->update($data);
 
         // Log the action
         if ($result) {
@@ -88,7 +86,7 @@ final class FlashcardService implements FlashcardServiceInterface
      */
     public function delete(int $userId, int $flashcardId): bool
     {
-        $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId);
+        $flashcard = Flashcard::findForUser($flashcardId, $userId);
 
         if (! $flashcard) {
             return false;
@@ -98,7 +96,7 @@ final class FlashcardService implements FlashcardServiceInterface
         $this->logRepository->logFlashcardDeletion($userId, $flashcard);
 
         // Delete the flashcard
-        return $this->flashcardRepository->delete($flashcard);
+        return $flashcard->delete();
     }
 
     /**
@@ -107,14 +105,14 @@ final class FlashcardService implements FlashcardServiceInterface
     public function restore(int $userId, int $flashcardId): bool
     {
         // Find the flashcard
-        $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId, true);
+        $flashcard = Flashcard::findForUser($flashcardId, $userId, true);
 
         if (! $flashcard) {
             return false;
         }
 
         // Restore the flashcard
-        $result = $this->flashcardRepository->restore($flashcard);
+        $result = $flashcard->restore();
 
         // Log the action
         if ($result) {
@@ -129,7 +127,7 @@ final class FlashcardService implements FlashcardServiceInterface
      */
     public function forceDelete(int $userId, int $flashcardId): bool
     {
-        $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId, true);
+        $flashcard = Flashcard::findForUser($flashcardId, $userId, true);
 
         if (! $flashcard) {
             return false;
@@ -139,7 +137,7 @@ final class FlashcardService implements FlashcardServiceInterface
         $flashcardQuestion = $flashcard->question;
 
         // Force delete the flashcard
-        $result = $this->flashcardRepository->forceDelete($flashcard);
+        $result = $flashcard->forceDelete();
 
         // Log the action after deletion
         if ($result) {

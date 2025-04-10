@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Flashcard\app\Http\Requests\FlashcardRequest;
-use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\FlashcardServiceInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 final class FlashcardController extends Controller
 {
     public function __construct(
-        private readonly FlashcardService $flashcardService,
+        private readonly FlashcardServiceInterface $flashcardService,
     ) {}
 
     /**
@@ -51,7 +51,7 @@ final class FlashcardController extends Controller
     /**
      * Create a new flashcard
      */
-    public function store(FlashcardRequest $request): JsonResponse
+    public function store(FormRequest $request): JsonResponse
     {
         $userId = $request->user()->id;
         $data = $request->validated();
@@ -64,7 +64,7 @@ final class FlashcardController extends Controller
     /**
      * Update a flashcard
      */
-    public function update(FlashcardRequest $request, int $flashcard): JsonResponse
+    public function update(FormRequest $request, int $flashcard): JsonResponse
     {
         $userId = $request->user()->id;
         $data = $request->validated();

@@ -17,8 +17,8 @@ use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\StatisticService;
 use Modules\Flashcard\app\Services\StudySessionService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class PracticeFlashcardActionTest extends TestCase
 {
@@ -72,7 +72,6 @@ final class PracticeFlashcardActionTest extends TestCase
         // Act
         $action = new PracticeFlashcardAction(
             $this->command,
-            $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
             $this->studySessionService,
@@ -97,7 +96,6 @@ final class PracticeFlashcardActionTest extends TestCase
         // Act
         $action = new PracticeFlashcardAction(
             $this->command,
-            $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
             $this->studySessionService,
@@ -133,7 +131,6 @@ final class PracticeFlashcardActionTest extends TestCase
         // Act
         $action = new PracticeFlashcardAction(
             $this->command,
-            $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
             $this->studySessionService,
@@ -181,7 +178,6 @@ final class PracticeFlashcardActionTest extends TestCase
         // Act
         $action = new PracticeFlashcardAction(
             $this->command,
-            $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
             $this->studySessionService,
@@ -231,7 +227,6 @@ final class PracticeFlashcardActionTest extends TestCase
         // Act
         $action = new PracticeFlashcardAction(
             $this->command,
-            $this->flashcardRepository,
             $this->studySessionRepository,
             $this->statisticService,
             $this->studySessionService,

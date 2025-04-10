@@ -9,9 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
-use Tests\TestCase;
 
 final class StatisticServiceTest extends TestCase
 {

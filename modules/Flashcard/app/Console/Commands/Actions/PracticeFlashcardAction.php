@@ -7,7 +7,6 @@ namespace Modules\Flashcard\app\Console\Commands\Actions;
 use Illuminate\Console\Command;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Flashcard;
-use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\StatisticService;
 use Modules\Flashcard\app\Services\StudySessionService;
@@ -20,7 +19,6 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
 {
     public function __construct(
         private Command $command,
-        private FlashcardRepositoryInterface $flashcardRepository,
         private StudySessionRepositoryInterface $studySessionRepository,
         private StatisticService $statisticService,
         private StudySessionService $studySessionService,
@@ -32,7 +30,7 @@ final readonly class PracticeFlashcardAction implements FlashcardActionInterface
         clear();
         // Get all flashcards for the current user
         $userId = $this->command->user->id;
-        $flashcards = $this->flashcardRepository->getAllForUser($userId, 100)->items();
+        $flashcards = Flashcard::getAllForUser($userId, 100)->items();
 
         if (empty($flashcards)) {
             $this->renderer->info('You have no flashcards to practice. Create some first!');
