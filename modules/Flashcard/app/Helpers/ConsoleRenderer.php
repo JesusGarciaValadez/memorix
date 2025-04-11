@@ -56,6 +56,12 @@ final class ConsoleRenderer implements ConsoleRendererInterface
 
             return;
         }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            return;
+        }
+
         echo "\033[32m".$message."\033[0m\n";
     }
 
@@ -69,6 +75,12 @@ final class ConsoleRenderer implements ConsoleRendererInterface
 
             return;
         }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            return;
+        }
+
         echo "\033[31m".$message."\033[0m\n";
     }
 
@@ -82,6 +94,12 @@ final class ConsoleRenderer implements ConsoleRendererInterface
 
             return;
         }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            return;
+        }
+
         echo "\033[34m".$message."\033[0m\n";
     }
 
@@ -95,6 +113,12 @@ final class ConsoleRenderer implements ConsoleRendererInterface
 
             return;
         }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            return;
+        }
+
         echo "\033[33m".$message."\033[0m\n";
     }
 
@@ -108,6 +132,12 @@ final class ConsoleRenderer implements ConsoleRendererInterface
 
             return '';
         }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
+            return '';
+        }
+
         echo $question.': ';
         $handle = fopen('php://stdin', 'r');
         $line = fgets($handle);
@@ -128,6 +158,11 @@ final class ConsoleRenderer implements ConsoleRendererInterface
                 self::$testOutput .= implode(' | ', $row).PHP_EOL;
             }
 
+            return;
+        }
+
+        // Don't output during PHPUnit tests
+        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
             return;
         }
 

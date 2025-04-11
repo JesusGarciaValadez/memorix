@@ -45,6 +45,7 @@ final class ViewLogsActionTest extends TestCase
         $this->command->user = $this->user;
         $logService = $this->app->make(LogServiceInterface::class);
         $this->renderer = $this->app->make(ConsoleRendererInterface::class);
+        $this->renderer->enableTestMode(); // Enable test mode to capture output
         $this->action = new ViewLogsAction(
             $this->command,
             $this->shouldKeepRunning,
@@ -64,10 +65,10 @@ final class ViewLogsActionTest extends TestCase
             'details' => 'Test details',
         ]);
 
-        // Capture output
-        ob_start();
+        // Execute action and get captured output
+        $this->renderer->captureOutput();
         $this->action->execute();
-        $output = ob_get_clean();
+        $output = $this->renderer->getCapturedOutput();
 
         // Assert output contains expected content
         $this->assertStringContainsString('test_action', $output);
@@ -79,10 +80,10 @@ final class ViewLogsActionTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_displays_message_when_no_logs_exist(): void
     {
-        // Capture output
-        ob_start();
+        // Execute action and get captured output
+        $this->renderer->captureOutput();
         $this->action->execute();
-        $output = ob_get_clean();
+        $output = $this->renderer->getCapturedOutput();
 
         // Assert output contains expected message
         $this->assertStringContainsString('No activity logs found', $output);
@@ -108,10 +109,10 @@ final class ViewLogsActionTest extends TestCase
             $this->renderer
         );
 
-        // Capture output
-        ob_start();
+        // Execute action and get captured output
+        $this->renderer->captureOutput();
         $action->execute();
-        $output = ob_get_clean();
+        $output = $this->renderer->getCapturedOutput();
 
         // Assert error message is displayed
         $this->assertStringContainsString('An error occurred while fetching logs', $output);
