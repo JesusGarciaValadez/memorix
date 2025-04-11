@@ -10,7 +10,7 @@ use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
 use Modules\Flashcard\app\Services\LogService;
-use Modules\Flashcard\Tests\TestCase;
+use Tests\TestCase;
 
 final class LogServiceTest extends TestCase
 {

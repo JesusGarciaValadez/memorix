@@ -15,8 +15,8 @@ use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
-use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 final class StudySessionServiceTest extends TestCase
 {

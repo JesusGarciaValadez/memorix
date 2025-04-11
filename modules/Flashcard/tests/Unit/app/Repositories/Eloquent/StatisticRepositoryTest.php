@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\Eloquent\StatisticRepository;
-use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 final class StatisticRepositoryTest extends TestCase
 {

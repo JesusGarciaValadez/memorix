@@ -6,16 +6,16 @@ namespace Modules\Flashcard\tests\Unit\app\Http\Controllers\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Http\Controllers\Api\V1\FlashcardController;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Services\FlashcardServiceInterface;
-use Modules\Flashcard\Tests\TestCase;
-use Symfony\Component\HttpFoundation\Response;
 
 final class TestRequest extends FormRequest
 {
@@ -42,7 +42,7 @@ final class TestRequest extends FormRequest
     }
 }
 
-final class FlashcardControllerTest extends TestCase
+final class FlashcardControllerTest extends BaseTestCase
 {
     use RefreshDatabase;
 

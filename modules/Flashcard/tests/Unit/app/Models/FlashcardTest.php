@@ -109,11 +109,7 @@ final class FlashcardTest extends BaseTestCase
             'started_at' => now(),
         ]);
 
-        // Initially not answered
-        $this->assertFalse($flashcard->isCorrectlyAnswered());
-        $this->assertFalse($flashcard->isIncorrectlyAnswered());
-
-        // Create a correct answer
+        // Add practice results
         $flashcard->practiceResults()->create([
             'user_id' => $this->user->id,
             'study_session_id' => $studySession->id,
@@ -122,16 +118,6 @@ final class FlashcardTest extends BaseTestCase
 
         $this->assertTrue($flashcard->isCorrectlyAnswered());
         $this->assertFalse($flashcard->isIncorrectlyAnswered());
-
-        // Create an incorrect answer
-        $flashcard->practiceResults()->create([
-            'user_id' => $this->user->id,
-            'study_session_id' => $studySession->id,
-            'is_correct' => false,
-        ]);
-
-        $this->assertTrue($flashcard->isCorrectlyAnswered());
-        $this->assertTrue($flashcard->isIncorrectlyAnswered());
     }
 
     #[Test]

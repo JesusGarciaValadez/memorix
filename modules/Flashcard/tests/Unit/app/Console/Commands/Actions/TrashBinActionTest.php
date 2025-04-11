@@ -7,6 +7,7 @@ namespace Modules\Flashcard\tests\Unit\app\Console\Commands\Actions;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Console\Commands\Actions\TrashBinAction;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
@@ -14,10 +15,9 @@ use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-final class TrashBinActionTest extends TestCase
+final class TrashBinActionTest extends BaseTestCase
 {
     use RefreshDatabase;
 
