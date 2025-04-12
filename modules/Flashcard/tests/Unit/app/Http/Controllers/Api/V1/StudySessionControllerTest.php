@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Controllers\Api\V1;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
@@ -16,18 +15,16 @@ use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
-use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
+use Modules\Flashcard\app\Services\LogServiceInterface;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\TestCase;
 
 final class StudySessionControllerTest extends TestCase
 {
-    use RefreshDatabase;
-
     private MockInterface $studySessionRepository;
 
     private MockInterface $flashcardRepository;
@@ -48,8 +45,8 @@ final class StudySessionControllerTest extends TestCase
 
         $this->studySessionRepository = Mockery::mock(StudySessionRepositoryInterface::class);
         $this->flashcardRepository = Mockery::mock(FlashcardRepositoryInterface::class);
-        $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
-        $this->statisticRepository = Mockery::mock(StatisticRepositoryInterface::class);
+        $this->logRepository = Mockery::mock(LogServiceInterface::class);
+        $this->statisticRepository = Mockery::mock(StatisticServiceInterface::class);
 
         // Create a real StudySessionService with the mocked repositories
         $studySessionService = new StudySessionService(
@@ -314,7 +311,7 @@ final class StudySessionControllerTest extends TestCase
     {
         // Arrange
         $log = new Log();
-        $log->action = 'reset_practice_progress';
+        $log->action = 'reset_practice';
 
         // Expect
         $this->studySessionRepository->shouldReceive('resetPracticeProgress')
@@ -322,7 +319,7 @@ final class StudySessionControllerTest extends TestCase
             ->with($this->user->id)
             ->andReturn(true);
 
-        $this->statisticRepository->shouldReceive('resetPracticeStats')
+        $this->statisticRepository->shouldReceive('resetPracticeStatistics')
             ->once()
             ->with($this->user->id)
             ->andReturn(true);

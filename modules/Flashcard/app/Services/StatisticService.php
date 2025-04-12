@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Services;
 
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
+use App\Models\User;
+use Modules\Flashcard\app\Models\Statistic;
+use Modules\Flashcard\app\Models\StudySession;
 
-final readonly class StatisticService
+final class StatisticService implements StatisticServiceInterface
 {
-    public function __construct(
-        private StatisticRepositoryInterface $statisticRepository,
-    ) {}
-
     /**
      * Get statistics for a user.
      */
     public function getStatisticsForUser(int $userId): array
     {
-        $statistics = $this->statisticRepository->getForUser($userId);
+        $statistics = Statistic::getForUser($userId);
 
         // If no statistics exist yet, create an empty statistics record
         if (! $statistics) {
-            $statistics = $this->statisticRepository->createForUser($userId);
+            $statistics = Statistic::createForUser($userId);
         }
 
         return [
@@ -38,7 +36,7 @@ final readonly class StatisticService
      */
     public function getPracticeSuccessRate(int $userId): float
     {
-        $statistics = $this->statisticRepository->getForUser($userId);
+        $statistics = $this->getByUserId($userId);
 
         if (! $statistics) {
             return 0.0;
@@ -58,7 +56,21 @@ final readonly class StatisticService
      */
     public function getAverageStudySessionDuration(int $userId): float
     {
-        return $this->statisticRepository->getAverageStudySessionDuration($userId);
+        $completedSessions = StudySession::where('user_id', $userId)
+            ->whereNotNull('ended_at')
+            ->get();
+
+        if ($completedSessions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalMinutes = 0;
+
+        foreach ($completedSessions as $session) {
+            $totalMinutes += $session->started_at->diffInMinutes($session->ended_at);
+        }
+
+        return round($totalMinutes / count($completedSessions), 2);
     }
 
     /**
@@ -66,30 +78,171 @@ final readonly class StatisticService
      */
     public function getTotalStudyTime(int $userId): float
     {
-        return $this->statisticRepository->getTotalStudyTime($userId);
+        $completedSessions = StudySession::where('user_id', $userId)
+            ->whereNotNull('ended_at')
+            ->get();
+
+        if ($completedSessions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalMinutes = 0;
+
+        foreach ($completedSessions as $session) {
+            $totalMinutes += $session->started_at->diffInMinutes($session->ended_at);
+        }
+
+        return (float) $totalMinutes;
     }
 
     /**
-     * Increment correct answers count.
+     * Get statistic by user id
+     */
+    public function getByUserId(int $userId): ?Statistic
+    {
+        return Statistic::where('user_id', $userId)->first();
+    }
+
+    /**
+     * Create a new statistic
+     */
+    public function createStatistic(int $userId): Statistic
+    {
+        return Statistic::create([
+            'user_id' => $userId,
+            'total_flashcards' => 0,
+            'total_study_sessions' => 0,
+            'total_correct_answers' => 0,
+            'total_incorrect_answers' => 0,
+        ]);
+    }
+
+    /**
+     * Increment correct answers count
+     *
+     * @return Statistic
      */
     public function incrementCorrectAnswers(int $userId): bool
     {
-        return $this->statisticRepository->incrementCorrectAnswers($userId);
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        return (bool) $statistic->increment('total_correct_answers');
     }
 
     /**
-     * Increment incorrect answers count.
+     * Increment incorrect answers count
+     *
+     * @return Statistic
      */
     public function incrementIncorrectAnswers(int $userId): bool
     {
-        return $this->statisticRepository->incrementIncorrectAnswers($userId);
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        return (bool) $statistic->increment('total_incorrect_answers');
     }
 
     /**
-     * Increment study sessions count.
+     * Increment study sessions count
+     *
+     * @return Statistic
      */
     public function incrementStudySessions(int $userId): bool
     {
-        return $this->statisticRepository->incrementStudySessions($userId);
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        return (bool) $statistic->increment('total_study_sessions');
+    }
+
+    /**
+     * Increment total flashcards count
+     *
+     * @return Statistic
+     */
+    public function incrementTotalFlashcards(int $userId): bool
+    {
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        return (bool) $statistic->increment('total_flashcards');
+    }
+
+    /**
+     * Decrement total flashcards count
+     *
+     * @return Statistic
+     */
+    public function decrementTotalFlashcards(int $userId): bool
+    {
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        if ($statistic->total_flashcards > 0) {
+            return (bool) $statistic->decrement('total_flashcards');
+        }
+
+        return true;
+    }
+
+    /**
+     * Add study time
+     *
+     * @param  int  $userId
+     */
+    public function addStudyTime(User $user, int $minutes): bool
+    {
+        $statistic = $this->getOrCreateStatistic($user->id);
+
+        // Create a new study session record
+        $studySession = new StudySession();
+        $studySession->user_id = $user->id;
+        $studySession->started_at = now()->subMinutes($minutes);
+        $studySession->ended_at = now();
+
+        return $studySession->save();
+    }
+
+    /**
+     * Reset practice statistics
+     *
+     * @return Statistic
+     */
+    public function resetPracticeStatistics(int $userId): bool
+    {
+        $statistic = $this->getOrCreateStatistic($userId);
+
+        return $statistic->update([
+            'total_study_sessions' => 0,
+            'total_correct_answers' => 0,
+            'total_incorrect_answers' => 0,
+        ]);
+    }
+
+    /**
+     * Update statistics for a user.
+     */
+    public function updateStatistics(int $userId, array $data): bool
+    {
+        $statistics = Statistic::getForUser($userId);
+
+        if (! $statistics) {
+            return false;
+        }
+
+        return $statistics->update([
+            'total_correct_answers' => $data['correct_answers'] ?? $statistics->total_correct_answers,
+            'total_incorrect_answers' => $data['incorrect_answers'] ?? $statistics->total_incorrect_answers,
+        ]);
+    }
+
+    /**
+     * Get or create statistics for a user.
+     */
+    private function getOrCreateStatistic(int $userId): Statistic
+    {
+        $statistic = $this->getByUserId($userId);
+
+        if (! $statistic) {
+            $statistic = $this->createStatistic($userId);
+        }
+
+        return $statistic;
     }
 }

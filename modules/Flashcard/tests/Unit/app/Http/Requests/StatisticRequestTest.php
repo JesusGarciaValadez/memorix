@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Requests;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\StatisticRequest;
 use Modules\Flashcard\app\Models\Statistic;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
-use Tests\TestCase;
 
 final class StatisticRequestTest extends TestCase
 {
-    use RefreshDatabase;
-
     private Statistic $statistic;
 
     private StatisticRequest $request;

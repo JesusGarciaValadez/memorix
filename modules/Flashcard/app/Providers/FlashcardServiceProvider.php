@@ -27,15 +27,18 @@ use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\PracticeResultRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\StatisticRepository;
 use Modules\Flashcard\app\Repositories\Eloquent\StudySessionRepository;
-use Modules\Flashcard\app\Repositories\Eloquent\UserRepository;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
-use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
+use Modules\Flashcard\app\Services\FlashcardCommandService;
+use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
+use Modules\Flashcard\app\Services\FlashcardService;
 use Modules\Flashcard\app\Services\LogService;
 use Modules\Flashcard\app\Services\LogServiceInterface;
+use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
 
 final class FlashcardServiceProvider extends BaseServiceProvider
@@ -49,6 +52,10 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->commands([
             \Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
+            \Modules\Flashcard\app\Console\Commands\FlashcardImportCommand::class,
+            \Modules\Flashcard\app\Console\Commands\FlashcardLogsCommand::class,
+            \Modules\Flashcard\app\Console\Commands\FlashcardStatsCommand::class,
+            \Modules\Flashcard\app\Console\Commands\FlashcardResetCommand::class,
         ]);
         $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
@@ -126,7 +133,6 @@ final class FlashcardServiceProvider extends BaseServiceProvider
         $this->app->singleton(PracticeResultRepositoryInterface::class, PracticeResultRepository::class);
         $this->app->singleton(StatisticRepositoryInterface::class, StatisticRepository::class);
         $this->app->singleton(StudySessionRepositoryInterface::class, StudySessionRepository::class);
-        $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
     }
 
     /**
@@ -145,16 +151,14 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     private function registerServices(): void
     {
+        $this->app->singleton(FlashcardService::class);
+        $this->app->singleton(StudySessionService::class);
+        $this->app->singleton(LogService::class);
         $this->app->singleton(LogServiceInterface::class, LogService::class);
-
-        $this->app->singleton(StudySessionService::class, function ($app) {
-            return new StudySessionService(
-                $app->make(StudySessionRepositoryInterface::class),
-                $app->make(FlashcardRepositoryInterface::class),
-                $app->make(LogRepositoryInterface::class),
-                $app->make(StatisticRepositoryInterface::class)
-            );
-        });
+        $this->app->singleton(StatisticService::class);
+        $this->app->singleton(StatisticServiceInterface::class, StatisticService::class);
+        $this->app->singleton(FlashcardCommandService::class);
+        $this->app->singleton(FlashcardCommandServiceInterface::class, FlashcardCommandService::class);
     }
 
     /**

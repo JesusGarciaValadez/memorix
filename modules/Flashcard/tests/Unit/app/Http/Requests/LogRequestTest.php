@@ -6,17 +6,14 @@ namespace Modules\Flashcard\tests\Unit\app\Http\Requests;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\LogRequest;
 use Modules\Flashcard\app\Models\Log;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
-use Tests\TestCase;
 
 final class LogRequestTest extends TestCase
 {
-    use RefreshDatabase;
-
     private Log $log;
 
     private LogRequest $request;

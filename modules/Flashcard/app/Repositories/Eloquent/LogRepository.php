@@ -231,4 +231,19 @@ final class LogRepository implements LogRepositoryInterface
             'Permanently deleted all flashcards'
         );
     }
+
+    /**
+     * Log import of flashcards from file.
+     */
+    public function logFlashcardImport(int $userId, int $importCount): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'imported_flashcards',
+            Log::LEVEL_INFO,
+            "Imported {$importCount} flashcards from file"
+        );
+    }
 }

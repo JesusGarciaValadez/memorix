@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\database\seeders\LogSeeder;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class LogSeederTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_seeds_logs_for_existing_users(): void
     {

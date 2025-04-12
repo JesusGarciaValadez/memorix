@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Controllers\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +43,6 @@ final class TestRequest extends FormRequest
 
 final class FlashcardControllerTest extends BaseTestCase
 {
-    use RefreshDatabase;
-
     private FlashcardController $controller;
 
     private MockInterface $flashcardService;

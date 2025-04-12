@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Models;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class PracticeResultTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_has_correct_fillable_attributes(): void
     {

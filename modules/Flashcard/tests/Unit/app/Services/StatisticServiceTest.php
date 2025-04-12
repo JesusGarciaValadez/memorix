@@ -2,21 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Modules\Flashcard\Tests\Unit\app\Services;
+namespace Modules\Flashcard\tests\Unit\app\Services;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Modules\Flashcard\app\Models\Flashcard;
-use Modules\Flashcard\app\Models\PracticeResult;
+use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-final class StatisticServiceTest extends BaseTestCase
+final class StatisticServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private StatisticService $statisticService;
 
     private User $user;
@@ -25,99 +21,203 @@ final class StatisticServiceTest extends BaseTestCase
     {
         parent::setUp();
 
-        $this->statisticService = app(StatisticService::class);
-        $this->user = User::factory()->create();
-    }
-
-    public function createApplication()
-    {
-        $app = require __DIR__.'/../../../../../../bootstrap/app.php';
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        return $app;
+        $this->statisticService = new StatisticService();
+        $this->user = User::factory()->create([
+            'id' => 1,
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 
     #[Test]
-    public function it_can_track_practice_results(): void
+    public function it_can_create_statistic_for_user(): void
     {
-        // Create flashcards
-        $flashcards = Flashcard::factory()
-            ->count(4)
-            ->create(['user_id' => $this->user->id]);
+        $statistic = $this->statisticService->createStatistic($this->user->id);
 
-        // Create a study session
-        $studySession = StudySession::create([
-            'user_id' => $this->user->id,
-            'started_at' => now(),
-        ]);
-
-        // No answers yet
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(0, $stats['correct_answers']);
-        $this->assertEquals(0, $stats['incorrect_answers']);
-
-        // Answer 2 flashcards correctly
-        foreach ($flashcards->take(2) as $flashcard) {
-            PracticeResult::create([
-                'user_id' => $this->user->id,
-                'flashcard_id' => $flashcard->id,
-                'study_session_id' => $studySession->id,
-                'is_correct' => true,
-            ]);
-            $this->statisticService->incrementCorrectAnswers($this->user->id);
-        }
-
-        // Should have 2 correct answers
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(2, $stats['correct_answers']);
-        $this->assertEquals(0, $stats['incorrect_answers']);
-
-        // Answer another flashcard incorrectly
-        PracticeResult::create([
-            'user_id' => $this->user->id,
-            'flashcard_id' => $flashcards[2]->id,
-            'study_session_id' => $studySession->id,
-            'is_correct' => false,
-        ]);
-        $this->statisticService->incrementIncorrectAnswers($this->user->id);
-
-        // Should have 2 correct and 1 incorrect answers
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(2, $stats['correct_answers']);
-        $this->assertEquals(1, $stats['incorrect_answers']);
-
-        // Check success rate
-        $successRate = $this->statisticService->getPracticeSuccessRate($this->user->id);
-        $this->assertEquals(66.67, $successRate);
+        $this->assertNotNull($statistic);
+        $this->assertInstanceOf(Statistic::class, $statistic);
+        $this->assertEquals($this->user->id, $statistic->user_id);
+        $this->assertEquals(0, $statistic->total_flashcards);
+        $this->assertEquals(0, $statistic->total_study_sessions);
+        $this->assertEquals(0, $statistic->total_correct_answers);
+        $this->assertEquals(0, $statistic->total_incorrect_answers);
     }
 
     #[Test]
-    public function it_can_track_study_sessions(): void
+    public function it_can_get_statistic_by_user_id(): void
     {
-        // Initially no study sessions
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(0, $stats['study_sessions']);
+        $createdStatistic = $this->statisticService->createStatistic($this->user->id);
 
-        // Create and track a study session
-        StudySession::create([
-            'user_id' => $this->user->id,
-            'started_at' => now(),
-        ]);
-        $this->statisticService->incrementStudySessions($this->user->id);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
 
-        // Should have 1 study session
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(1, $stats['study_sessions']);
+        $this->assertNotNull($statistic);
+        $this->assertEquals($createdStatistic->id, $statistic->id);
+    }
 
-        // Create and track another study session
-        StudySession::create([
-            'user_id' => $this->user->id,
-            'started_at' => now(),
-        ]);
-        $this->statisticService->incrementStudySessions($this->user->id);
+    #[Test]
+    public function it_returns_null_when_getting_non_existent_statistic(): void
+    {
+        $statistic = $this->statisticService->getByUserId(999);
 
-        // Should have 2 study sessions
-        $stats = $this->statisticService->getStatisticsForUser($this->user->id);
-        $this->assertEquals(2, $stats['study_sessions']);
+        $this->assertNull($statistic);
+    }
+
+    #[Test]
+    public function it_can_increment_total_flashcards(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $result = $this->statisticService->incrementTotalFlashcards($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(1, $statistic->total_flashcards);
+    }
+
+    #[Test]
+    public function it_can_decrement_total_flashcards(): void
+    {
+        $statistic = $this->statisticService->createStatistic($this->user->id);
+        $statistic->total_flashcards = 2;
+        $statistic->save();
+
+        $result = $this->statisticService->decrementTotalFlashcards($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(1, $statistic->total_flashcards);
+    }
+
+    #[Test]
+    public function it_will_not_decrement_below_zero(): void
+    {
+        $statistic = $this->statisticService->createStatistic($this->user->id);
+        $statistic->total_flashcards = 0;
+        $statistic->save();
+
+        $result = $this->statisticService->decrementTotalFlashcards($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(0, $statistic->total_flashcards);
+    }
+
+    #[Test]
+    public function it_can_increment_study_sessions(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $result = $this->statisticService->incrementStudySessions($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(1, $statistic->total_study_sessions);
+    }
+
+    #[Test]
+    public function it_can_increment_correct_answers(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $result = $this->statisticService->incrementCorrectAnswers($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(1, $statistic->total_correct_answers);
+    }
+
+    #[Test]
+    public function it_can_increment_incorrect_answers(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $result = $this->statisticService->incrementIncorrectAnswers($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(1, $statistic->total_incorrect_answers);
+    }
+
+    #[Test]
+    public function it_can_reset_practice_statistics(): void
+    {
+        $statistic = $this->statisticService->createStatistic($this->user->id);
+        $statistic->total_study_sessions = 5;
+        $statistic->total_correct_answers = 10;
+        $statistic->total_incorrect_answers = 3;
+        $statistic->save();
+
+        $result = $this->statisticService->resetPracticeStatistics($this->user->id);
+
+        $this->assertTrue($result);
+        $statistic = $this->statisticService->getByUserId($this->user->id);
+        $this->assertEquals(0, $statistic->total_study_sessions);
+        $this->assertEquals(0, $statistic->total_correct_answers);
+        $this->assertEquals(0, $statistic->total_incorrect_answers);
+    }
+
+    #[Test]
+    public function it_can_add_study_time(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $result = $this->statisticService->addStudyTime($this->user, 30);
+
+        $this->assertTrue($result);
+
+        $studySession = StudySession::where('user_id', $this->user->id)->first();
+        $this->assertNotNull($studySession);
+        $this->assertEquals($this->user->id, $studySession->user_id);
+        $this->assertNotNull($studySession->started_at);
+        $this->assertNotNull($studySession->ended_at);
+        $this->assertEquals(30, $studySession->started_at->diffInMinutes($studySession->ended_at));
+    }
+
+    #[Test]
+    public function it_can_get_average_study_session_duration(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        // Create two study sessions of 30 and 60 minutes
+        $this->statisticService->addStudyTime($this->user, 30);
+        $this->statisticService->addStudyTime($this->user, 60);
+
+        $average = $this->statisticService->getAverageStudySessionDuration($this->user->id);
+
+        $this->assertEquals(45.0, $average);
+    }
+
+    #[Test]
+    public function it_returns_zero_for_average_when_no_sessions(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $average = $this->statisticService->getAverageStudySessionDuration($this->user->id);
+
+        $this->assertEquals(0.0, $average);
+    }
+
+    #[Test]
+    public function it_can_get_total_study_time(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        // Create two study sessions of 30 and 60 minutes
+        $this->statisticService->addStudyTime($this->user, 30);
+        $this->statisticService->addStudyTime($this->user, 60);
+
+        $total = $this->statisticService->getTotalStudyTime($this->user->id);
+
+        $this->assertEquals(90.0, $total);
+    }
+
+    #[Test]
+    public function it_returns_zero_for_total_study_time_when_no_sessions(): void
+    {
+        $this->statisticService->createStatistic($this->user->id);
+
+        $total = $this->statisticService->getTotalStudyTime($this->user->id);
+
+        $this->assertEquals(0.0, $total);
     }
 }

@@ -11,7 +11,7 @@ use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-final class FlashcardRegisterCommandTest extends TestCase
+final class FlashcardStatsCommandTest extends TestCase
 {
     private FlashcardCommandServiceInterface $commandService;
 
@@ -23,6 +23,7 @@ final class FlashcardRegisterCommandTest extends TestCase
     {
         parent::setUp();
 
+        $this->user = User::factory()->create();
         $this->commandService = Mockery::mock(FlashcardCommandServiceInterface::class);
         $this->app->instance(FlashcardCommandServiceInterface::class, $this->commandService);
 
@@ -36,22 +37,17 @@ final class FlashcardRegisterCommandTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_a_new_user(): void
+    public function it_shows_statistics(): void
     {
-        // Create a user to return
-        $user = User::factory()->make([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-        // Setup mock
-        $this->commandService->shouldReceive('registerUser')
+        // Set up mock
+        $this->commandService->shouldReceive('showStatistics')
             ->once()
-            ->andReturn($user);
+            ->with(Mockery::on(fn ($user) => $user->id === $this->user->id))
+            ->andReturn(true);
 
-        // Execute command
-        $this->artisan('flashcard:register')
-            ->expectsConfirmation('Do you want to use the flashcard application now?', 'no')
+        $this->artisan('flashcard:stats', [
+            'userId' => $this->user->id,
+        ])
             ->assertSuccessful();
     }
 }

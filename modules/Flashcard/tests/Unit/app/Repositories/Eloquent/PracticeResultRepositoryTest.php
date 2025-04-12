@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Repositories\Eloquent;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\Eloquent\PracticeResultRepository;
-use Tests\TestCase;
+use Modules\Flashcard\Tests\TestCase;
 
 final class PracticeResultRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
-
     private PracticeResultRepository $repository;
 
     private User $user;

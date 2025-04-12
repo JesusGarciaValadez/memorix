@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Policies;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Policies\StatisticPolicy;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StatisticPolicyTest extends TestCase
 {
-    use RefreshDatabase;
-
     private StatisticPolicy $policy;
 
     protected function setUp(): void

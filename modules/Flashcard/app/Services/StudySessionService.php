@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Services;
 
+use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
-use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
 final readonly class StudySessionService
@@ -15,8 +14,8 @@ final readonly class StudySessionService
     public function __construct(
         private StudySessionRepositoryInterface $studySessionRepository,
         private FlashcardRepositoryInterface $flashcardRepository,
-        private LogRepositoryInterface $logRepository,
-        private StatisticRepositoryInterface $statisticRepository,
+        private LogServiceInterface $logService,
+        private StatisticServiceInterface $statisticService,
     ) {}
 
     /**
@@ -28,10 +27,10 @@ final readonly class StudySessionService
         $session = $this->studySessionRepository->startSession($userId);
 
         // Log the action
-        $this->logRepository->logStudySessionStart($userId, $session);
+        $this->logService->logStudySessionStart($userId, $session);
 
         // Update statistics
-        $this->statisticRepository->incrementStudySessions($userId);
+        $this->statisticService->incrementStudySessions($userId);
 
         return $session;
     }
@@ -43,7 +42,7 @@ final readonly class StudySessionService
     {
         $session = $this->studySessionRepository->findForUser($sessionId, $userId);
 
-        if (! $session || ! $session->isActive()) {
+        if (! $session || $session->ended_at !== null) {
             return false;
         }
 
@@ -52,7 +51,7 @@ final readonly class StudySessionService
 
         // Log the action
         if ($result) {
-            $this->logRepository->logStudySessionEnd($userId, $session);
+            $this->logService->logStudySessionEnd($userId, $session);
         }
 
         return $result;
@@ -90,13 +89,13 @@ final readonly class StudySessionService
 
         if ($result) {
             // Log the action
-            $this->logRepository->logFlashcardPractice($userId, $flashcard, $isCorrect);
+            $this->logService->logFlashcardPractice($userId, $flashcard, $isCorrect);
 
             // Update statistics
             if ($isCorrect) {
-                $this->statisticRepository->incrementCorrectAnswers($userId);
+                $this->statisticService->incrementCorrectAnswers($userId);
             } else {
-                $this->statisticRepository->incrementIncorrectAnswers($userId);
+                $this->statisticService->incrementIncorrectAnswers($userId);
             }
         }
 
@@ -113,10 +112,10 @@ final readonly class StudySessionService
 
         // Reset statistics
         if ($result) {
-            $this->statisticRepository->resetPracticeStats($userId);
+            $this->statisticService->resetPracticeStatistics($userId);
 
             // Log the action
-            $this->logRepository->logPracticeReset($userId);
+            $this->logService->logPracticeReset($userId);
         }
 
         return $result;

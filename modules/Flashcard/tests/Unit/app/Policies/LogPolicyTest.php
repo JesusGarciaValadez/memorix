@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Policies;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Policies\LogPolicy;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class LogPolicyTest extends TestCase
 {
-    use RefreshDatabase;
-
     private LogPolicy $policy;
 
     protected function setUp(): void

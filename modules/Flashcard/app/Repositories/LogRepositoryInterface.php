@@ -86,4 +86,9 @@ interface LogRepositoryInterface
      * Log permanent deletion of all flashcards.
      */
     public function logAllFlashcardsPermanentDelete(int $userId): Log;
+
+    /**
+     * Log import of flashcards from file.
+     */
+    public function logFlashcardImport(int $userId, int $importCount): Log;
 }

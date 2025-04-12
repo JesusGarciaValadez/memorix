@@ -48,4 +48,14 @@ interface FlashcardServiceInterface
      * Permanently delete a flashcard.
      */
     public function forceDelete(int $userId, int $flashcardId): bool;
+
+    /**
+     * Restore all deleted flashcards for a user.
+     */
+    public function restoreAllForUser(int $userId): bool;
+
+    /**
+     * Permanently delete all deleted flashcards for a user.
+     */
+    public function forceDeleteAllForUser(int $userId): bool;
 }

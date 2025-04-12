@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Unit\Database\Migrations;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +11,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 final class StudySessionsTableTest extends BaseTestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();

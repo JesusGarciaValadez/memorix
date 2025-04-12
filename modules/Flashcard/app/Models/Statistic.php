@@ -40,6 +40,93 @@ final class Statistic extends Model
     ];
 
     /**
+     * Get statistics for a user.
+     */
+    public static function getForUser(int $userId): ?self
+    {
+        return self::where('user_id', $userId)->first();
+    }
+
+    /**
+     * Create statistics for a user.
+     */
+    public static function createForUser(int $userId): self
+    {
+        return self::create([
+            'user_id' => $userId,
+            'total_flashcards' => 0,
+            'total_study_sessions' => 0,
+            'total_correct_answers' => 0,
+            'total_incorrect_answers' => 0,
+        ]);
+    }
+
+    /**
+     * Reset practice statistics for a user.
+     */
+    public static function resetPracticeStats(int $userId): bool
+    {
+        $statistics = self::getForUser($userId);
+
+        if (! $statistics) {
+            return false;
+        }
+
+        return $statistics->update([
+            'total_correct_answers' => 0,
+            'total_incorrect_answers' => 0,
+        ]);
+    }
+
+    /**
+     * Get average study session duration for a user.
+     */
+    public static function getAverageStudySessionDuration(int $userId): float
+    {
+        $studySessions = StudySession::where('user_id', $userId)
+            ->whereNotNull('ended_at')
+            ->get();
+
+        if ($studySessions->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalDuration = 0;
+        foreach ($studySessions as $session) {
+            $startedAt = $session->started_at;
+            $endedAt = $session->ended_at;
+
+            if ($startedAt && $endedAt) {
+                $totalDuration += $endedAt->diffInSeconds($startedAt);
+            }
+        }
+
+        return round($totalDuration / $studySessions->count() / 60, 2); // Return in minutes
+    }
+
+    /**
+     * Get total study time for a user.
+     */
+    public static function getTotalStudyTime(int $userId): float
+    {
+        $totalDuration = StudySession::where('user_id', $userId)
+            ->whereNotNull('ended_at')
+            ->get()
+            ->sum(function ($session) {
+                $startedAt = $session->started_at;
+                $endedAt = $session->ended_at;
+
+                if ($startedAt && $endedAt) {
+                    return $endedAt->diffInSeconds($startedAt);
+                }
+
+                return 0;
+            });
+
+        return round($totalDuration / 60, 2); // Return in minutes
+    }
+
+    /**
      * Get the user that owns the statistics.
      */
     public function user(): BelongsTo

@@ -6,15 +6,12 @@ namespace Modules\Flashcard\tests\Unit\Database\Factories;
 
 use App\Models\User;
 use Carbon\CarbonInterface;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StudySessionFactoryTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_can_create_a_study_session(): void
     {

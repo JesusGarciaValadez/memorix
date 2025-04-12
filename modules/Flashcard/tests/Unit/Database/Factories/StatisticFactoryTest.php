@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\Database\Factories;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Statistic;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StatisticFactoryTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_can_create_a_statistic(): void
     {

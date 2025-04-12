@@ -5,24 +5,19 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Controllers\Api\V1;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JsonException;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Http\Controllers\Api\V1\StatisticController;
-use Modules\Flashcard\app\Models\Statistic;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
-use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StatisticControllerTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private MockInterface $statisticRepository;
+    private MockInterface $statisticService;
 
     private StatisticController $controller;
 
@@ -34,12 +29,8 @@ final class StatisticControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->statisticRepository = Mockery::mock(StatisticRepositoryInterface::class);
-
-        // Create a real StatisticService with the mocked repository
-        $statisticService = new StatisticService($this->statisticRepository);
-
-        $this->controller = new StatisticController($statisticService);
+        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
+        $this->controller = new StatisticController($this->statisticService);
 
         // Create a real user instance
         $this->user = User::factory()->create();
@@ -61,25 +52,19 @@ final class StatisticControllerTest extends TestCase
     public function it_returns_statistics_for_user(): void
     {
         // Arrange
-        $statistic = new Statistic();
-        $statistic->total_flashcards = 10;
-        $statistic->total_study_sessions = 5;
-        $statistic->total_correct_answers = 30;
-        $statistic->total_incorrect_answers = 10;
-
         $expectedResponse = [
-            'flashcards_created' => 10,
+            'flashcards_created' => 0,
             'flashcards_deleted' => 0,
-            'study_sessions' => 5,
-            'correct_answers' => 30,
-            'incorrect_answers' => 10,
+            'study_sessions' => 0,
+            'correct_answers' => 0,
+            'incorrect_answers' => 0,
         ];
 
         // Expect
-        $this->statisticRepository->shouldReceive('getForUser')
+        $this->statisticService->shouldReceive('getStatisticsForUser')
             ->once()
             ->with($this->user->id)
-            ->andReturn($statistic);
+            ->andReturn($expectedResponse);
 
         // Act
         $response = $this->controller->index($this->request);
@@ -97,17 +82,14 @@ final class StatisticControllerTest extends TestCase
     public function it_returns_success_rate_for_user(): void
     {
         // Arrange
-        $statistic = new Statistic();
-        $statistic->total_correct_answers = 75;
-        $statistic->total_incorrect_answers = 25;
-
-        $expectedResponse = ['success_rate' => 75.0];
+        $successRate = 0.0;
+        $expectedResponse = ['success_rate' => 0.0];
 
         // Expect
-        $this->statisticRepository->shouldReceive('getForUser')
+        $this->statisticService->shouldReceive('getPracticeSuccessRate')
             ->once()
             ->with($this->user->id)
-            ->andReturn($statistic);
+            ->andReturn($successRate);
 
         // Act
         $response = $this->controller->successRate($this->request);
@@ -125,11 +107,11 @@ final class StatisticControllerTest extends TestCase
     public function it_returns_average_study_session_duration(): void
     {
         // Arrange
-        $averageDuration = 25.5;
-        $expectedResponse = ['average_duration' => 25.5];
+        $averageDuration = 0.0;
+        $expectedResponse = ['average_duration' => 0.0];
 
         // Expect
-        $this->statisticRepository->shouldReceive('getAverageStudySessionDuration')
+        $this->statisticService->shouldReceive('getAverageStudySessionDuration')
             ->once()
             ->with($this->user->id)
             ->andReturn($averageDuration);
@@ -150,11 +132,11 @@ final class StatisticControllerTest extends TestCase
     public function it_returns_total_study_time(): void
     {
         // Arrange
-        $totalTime = 120.75;
-        $expectedResponse = ['total_time' => 120.75];
+        $totalTime = 0.0;
+        $expectedResponse = ['total_time' => 0.0];
 
         // Expect
-        $this->statisticRepository->shouldReceive('getTotalStudyTime')
+        $this->statisticService->shouldReceive('getTotalStudyTime')
             ->once()
             ->with($this->user->id)
             ->andReturn($totalTime);

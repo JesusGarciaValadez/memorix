@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Unit\Database\Migrations;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +11,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 final class FlashcardsTableTest extends BaseTestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,6 +19,9 @@ final class FlashcardsTableTest extends BaseTestCase
         if (DB::getDriverName() === 'sqlite') {
             DB::statement('PRAGMA foreign_keys=OFF;');
         }
+
+        // Run core Laravel migrations first
+        $this->artisan('migrate', ['--path' => 'database/migrations']);
 
         // Run module migrations
         $this->artisan('migrate', ['--path' => 'modules/Flashcard/database/migrations']);

@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Unit\Database\Seeders;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\database\seeders\DatabaseSeeder;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class DatabaseSeederTest extends TestCase
 {
-    use RefreshDatabase;
-
     #[Test]
     public function it_runs_all_seeders(): void
     {

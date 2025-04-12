@@ -6,14 +6,12 @@ namespace Modules\Flashcard\app\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Models\Flashcard;
-use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 
 final class FlashcardService implements FlashcardServiceInterface
 {
     public function __construct(
-        private readonly LogRepositoryInterface $logRepository,
-        private readonly StatisticRepositoryInterface $statisticRepository,
+        private readonly LogServiceInterface $logService,
+        private readonly StatisticServiceInterface $statisticService,
     ) {}
 
     /**
@@ -42,10 +40,10 @@ final class FlashcardService implements FlashcardServiceInterface
         $flashcard = Flashcard::create($data);
 
         // Log the action
-        $this->logRepository->logFlashcardCreation($userId, $flashcard);
+        $this->logService->logFlashcardCreation($userId, $flashcard);
 
         // Update statistics
-        $this->statisticRepository->incrementFlashcardsCreated($userId);
+        $this->statisticService->incrementTotalFlashcards($userId);
 
         return $flashcard;
     }
@@ -75,7 +73,7 @@ final class FlashcardService implements FlashcardServiceInterface
 
         // Log the action
         if ($result) {
-            $this->logRepository->logFlashcardUpdate($userId, $flashcard);
+            $this->logService->logFlashcardUpdate($userId, $flashcard);
         }
 
         return $result;
@@ -93,7 +91,7 @@ final class FlashcardService implements FlashcardServiceInterface
         }
 
         // Log the action before deletion
-        $this->logRepository->logFlashcardDeletion($userId, $flashcard);
+        $this->logService->logFlashcardDeletion($userId, $flashcard);
 
         // Delete the flashcard
         return $flashcard->delete();
@@ -116,7 +114,7 @@ final class FlashcardService implements FlashcardServiceInterface
 
         // Log the action
         if ($result) {
-            $this->logRepository->logFlashcardRestoration($userId, $flashcard);
+            $this->logService->logFlashcardRestoration($userId, $flashcard);
         }
 
         return $result;
@@ -141,7 +139,35 @@ final class FlashcardService implements FlashcardServiceInterface
 
         // Log the action after deletion
         if ($result) {
-            $this->logRepository->logFlashcardForceDelete($userId, $flashcardId, $flashcardQuestion);
+            $this->logService->logFlashcardForceDelete($userId, $flashcardId, $flashcardQuestion);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Restore all deleted flashcards for a user.
+     */
+    public function restoreAllForUser(int $userId): bool
+    {
+        $result = Flashcard::restoreAllForUser($userId);
+
+        if ($result) {
+            $this->logService->logAllFlashcardsRestore($userId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Permanently delete all deleted flashcards for a user.
+     */
+    public function forceDeleteAllForUser(int $userId): bool
+    {
+        $result = Flashcard::forceDeleteAllForUser($userId);
+
+        if ($result) {
+            $this->logService->logAllFlashcardsPermanentDelete($userId);
         }
 
         return $result;

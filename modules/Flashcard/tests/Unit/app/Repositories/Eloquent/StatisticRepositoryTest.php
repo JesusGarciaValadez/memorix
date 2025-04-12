@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Repositories\Eloquent;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\Eloquent\StatisticRepository;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StatisticRepositoryTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private StatisticRepository $repository;
 
     private User $user;

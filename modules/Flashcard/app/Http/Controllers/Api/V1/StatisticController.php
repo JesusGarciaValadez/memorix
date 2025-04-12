@@ -7,12 +7,12 @@ namespace Modules\Flashcard\app\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
 
 final class StatisticController extends Controller
 {
     public function __construct(
-        private readonly StatisticService $statisticService,
+        private readonly StatisticServiceInterface $statisticService,
     ) {}
 
     /**

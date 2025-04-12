@@ -6,16 +6,13 @@ namespace Modules\Flashcard\tests\Unit\app\Repositories\Eloquent;
 
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Repositories\Eloquent\FlashcardRepository;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class FlashcardRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
-
     private FlashcardRepository $repository;
 
     private User $user;

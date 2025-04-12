@@ -11,7 +11,7 @@ use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-final class FlashcardRegisterCommandTest extends TestCase
+final class FlashcardImportCommandTest extends TestCase
 {
     private FlashcardCommandServiceInterface $commandService;
 
@@ -19,10 +19,13 @@ final class FlashcardRegisterCommandTest extends TestCase
 
     private User $user;
 
+    private string $filePath = 'test-file.csv';
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->user = User::factory()->create();
         $this->commandService = Mockery::mock(FlashcardCommandServiceInterface::class);
         $this->app->instance(FlashcardCommandServiceInterface::class, $this->commandService);
 
@@ -36,22 +39,25 @@ final class FlashcardRegisterCommandTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_a_new_user(): void
+    public function it_imports_flashcards_from_file_for_user(): void
     {
-        // Create a user to return
-        $user = User::factory()->make([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create a temporary file for testing
+        $tempFilePath = sys_get_temp_dir().'/'.$this->filePath;
+        file_put_contents($tempFilePath, "question,answer\nTest Question,Test Answer");
 
-        // Setup mock
-        $this->commandService->shouldReceive('registerUser')
+        // Set up mock
+        $this->commandService->shouldReceive('importFlashcardsFromFile')
             ->once()
-            ->andReturn($user);
+            ->with($this->user->id, $tempFilePath)
+            ->andReturn(true);
 
-        // Execute command
-        $this->artisan('flashcard:register')
-            ->expectsConfirmation('Do you want to use the flashcard application now?', 'no')
+        $this->artisan('flashcard:import', [
+            '--email' => $this->user->email,
+            '--file' => $tempFilePath,
+        ])
             ->assertSuccessful();
+
+        // Clean up the temporary file
+        @unlink($tempFilePath);
     }
 }

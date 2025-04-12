@@ -6,17 +6,14 @@ namespace Modules\Flashcard\tests\Unit\app\Http\Requests;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\StudySessionRequest;
 use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
-use Tests\TestCase;
 
 final class StudySessionRequestTest extends TestCase
 {
-    use RefreshDatabase;
-
     private StudySession $studySession;
 
     private StudySessionRequest $request;

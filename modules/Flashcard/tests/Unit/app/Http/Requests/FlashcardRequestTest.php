@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Requests;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\FlashcardRequest;
 use Modules\Flashcard\app\Models\Flashcard;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class FlashcardRequestTest extends TestCase
 {
-    use RefreshDatabase;
-
     private Flashcard $flashcard;
 
     private FlashcardRequest $request;

@@ -5,26 +5,23 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Services;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
-use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\LogServiceInterface;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class FlashcardServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private User $user;
 
-    private MockInterface $logRepository;
+    private MockInterface $logService;
 
-    private MockInterface $statisticRepository;
+    private MockInterface $statisticService;
 
     private FlashcardService $service;
 
@@ -33,12 +30,12 @@ final class FlashcardServiceTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
-        $this->statisticRepository = Mockery::mock(StatisticRepositoryInterface::class);
+        $this->logService = Mockery::mock(LogServiceInterface::class);
+        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
 
         $this->service = new FlashcardService(
-            $this->logRepository,
-            $this->statisticRepository
+            $this->logService,
+            $this->statisticService
         );
     }
 
@@ -85,11 +82,11 @@ final class FlashcardServiceTest extends TestCase
         $log->action = 'created_flashcard';
 
         // Expectations
-        $this->logRepository->shouldReceive('logFlashcardCreation')
+        $this->logService->shouldReceive('logFlashcardCreation')
             ->once()
             ->andReturn($log);
 
-        $this->statisticRepository->shouldReceive('incrementFlashcardsCreated')
+        $this->statisticService->shouldReceive('incrementTotalFlashcards')
             ->once()
             ->with($this->user->id)
             ->andReturn(true);
@@ -141,7 +138,7 @@ final class FlashcardServiceTest extends TestCase
         $log = new Log();
         $log->action = 'updated_flashcard';
 
-        $this->logRepository->shouldReceive('logFlashcardUpdate')
+        $this->logService->shouldReceive('logFlashcardUpdate')
             ->once()
             ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
@@ -176,7 +173,7 @@ final class FlashcardServiceTest extends TestCase
         $log = new Log();
         $log->action = 'deleted_flashcard';
 
-        $this->logRepository->shouldReceive('logFlashcardDeletion')
+        $this->logService->shouldReceive('logFlashcardDeletion')
             ->once()
             ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
@@ -212,7 +209,7 @@ final class FlashcardServiceTest extends TestCase
         $log = new Log();
         $log->action = 'restored_flashcard';
 
-        $this->logRepository->shouldReceive('logFlashcardRestoration')
+        $this->logService->shouldReceive('logFlashcardRestoration')
             ->once()
             ->with($this->user->id, Mockery::type(Flashcard::class))
             ->andReturn($log);
@@ -245,7 +242,7 @@ final class FlashcardServiceTest extends TestCase
         ]);
         $flashcard->delete();
 
-        $this->logRepository->shouldReceive('logFlashcardForceDelete')
+        $this->logService->shouldReceive('logFlashcardForceDelete')
             ->once()
             ->with($this->user->id, $flashcard->id, 'Force delete me?')
             ->andReturn(new Log());

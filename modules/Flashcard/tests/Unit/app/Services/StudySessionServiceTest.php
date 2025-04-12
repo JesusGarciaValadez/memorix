@@ -11,12 +11,12 @@ use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
-use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
+use Modules\Flashcard\app\Services\LogServiceInterface;
+use Modules\Flashcard\app\Services\StatisticServiceInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
+use Modules\Flashcard\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
 final class StudySessionServiceTest extends TestCase
 {
@@ -26,9 +26,9 @@ final class StudySessionServiceTest extends TestCase
 
     private MockInterface $flashcardRepository;
 
-    private MockInterface $logRepository;
+    private MockInterface $logService;
 
-    private MockInterface $statisticRepository;
+    private MockInterface $statisticService;
 
     private StudySessionService $service;
 
@@ -38,14 +38,14 @@ final class StudySessionServiceTest extends TestCase
 
         $this->studySessionRepository = Mockery::mock(StudySessionRepositoryInterface::class);
         $this->flashcardRepository = Mockery::mock(FlashcardRepositoryInterface::class);
-        $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
-        $this->statisticRepository = Mockery::mock(StatisticRepositoryInterface::class);
+        $this->logService = Mockery::mock(LogServiceInterface::class);
+        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
 
         $this->service = new StudySessionService(
             $this->studySessionRepository,
             $this->flashcardRepository,
-            $this->logRepository,
-            $this->statisticRepository
+            $this->logService,
+            $this->statisticService
         );
     }
 
@@ -73,12 +73,12 @@ final class StudySessionServiceTest extends TestCase
             ->with($userId)
             ->andReturn($session);
 
-        $this->logRepository->shouldReceive('logStudySessionStart')
+        $this->logService->shouldReceive('logStudySessionStart')
             ->once()
             ->with($userId, $session)
             ->andReturn($log);
 
-        $this->statisticRepository->shouldReceive('incrementStudySessions')
+        $this->statisticService->shouldReceive('incrementStudySessions')
             ->once()
             ->with($userId)
             ->andReturn(true);
@@ -161,7 +161,7 @@ final class StudySessionServiceTest extends TestCase
             ->with($session)
             ->andReturn(true);
 
-        $this->logRepository->shouldReceive('logStudySessionEnd')
+        $this->logService->shouldReceive('logStudySessionEnd')
             ->once()
             ->with($userId, $session)
             ->andReturn($log);
@@ -201,12 +201,12 @@ final class StudySessionServiceTest extends TestCase
             ->with($userId)
             ->andReturn($session);
 
-        $this->logRepository->shouldReceive('logStudySessionStart')
+        $this->logService->shouldReceive('logStudySessionStart')
             ->once()
             ->with($userId, $session)
             ->andReturn($log);
 
-        $this->statisticRepository->shouldReceive('incrementStudySessions')
+        $this->statisticService->shouldReceive('incrementStudySessions')
             ->once()
             ->with($userId)
             ->andReturn(true);
@@ -270,12 +270,12 @@ final class StudySessionServiceTest extends TestCase
             ->with($userId, $flashcardId, $isCorrect)
             ->andReturn(true);
 
-        $this->logRepository->shouldReceive('logFlashcardPractice')
+        $this->logService->shouldReceive('logFlashcardPractice')
             ->once()
             ->with($userId, $flashcard, $isCorrect)
             ->andReturn($log);
 
-        $this->statisticRepository->shouldReceive('incrementCorrectAnswers')
+        $this->statisticService->shouldReceive('incrementCorrectAnswers')
             ->once()
             ->with($userId)
             ->andReturn(true);
@@ -313,12 +313,12 @@ final class StudySessionServiceTest extends TestCase
             ->with($userId, $flashcardId, $isCorrect)
             ->andReturn(true);
 
-        $this->logRepository->shouldReceive('logFlashcardPractice')
+        $this->logService->shouldReceive('logFlashcardPractice')
             ->once()
             ->with($userId, $flashcard, $isCorrect)
             ->andReturn($log);
 
-        $this->statisticRepository->shouldReceive('incrementIncorrectAnswers')
+        $this->statisticService->shouldReceive('incrementIncorrectAnswers')
             ->once()
             ->with($userId)
             ->andReturn(true);
@@ -344,12 +344,12 @@ final class StudySessionServiceTest extends TestCase
             ->with($userId)
             ->andReturn(true);
 
-        $this->statisticRepository->shouldReceive('resetPracticeStats')
+        $this->statisticService->shouldReceive('resetPracticeStatistics')
             ->once()
             ->with($userId)
             ->andReturn(true);
 
-        $this->logRepository->shouldReceive('logPracticeReset')
+        $this->logService->shouldReceive('logPracticeReset')
             ->once()
             ->with($userId)
             ->andReturn($log);

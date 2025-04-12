@@ -8,10 +8,8 @@ use AllowDynamicProperties;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
-use Illuminate\Support\Facades\Hash;
-use Modules\Flashcard\app\Console\Commands\Actions\FlashcardActionFactory;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
-use Modules\Flashcard\app\Repositories\UserRepositoryInterface;
+use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -41,8 +39,8 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     protected bool $shouldKeepRunning = true;
 
     public function __construct(
-        private readonly UserRepositoryInterface $userRepository,
         private readonly ConsoleRendererInterface $renderer,
+        private readonly FlashcardCommandServiceInterface $commandService,
     ) {
         parent::__construct();
     }
@@ -53,7 +51,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         // Handle primary command options first
         if ($this->option('register')) {
-            $this->executeAction('register');
+            $this->user = $this->commandService->registerUser();
 
             return;
         }
@@ -62,8 +60,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         if (is_null($this->user)) {
             $this->renderer->error('User not found. Please register first.');
-
-            $this->executeAction('register');
+            $this->user = $this->commandService->registerUser();
 
             return;
         }
@@ -72,51 +69,57 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
         // Check for direct action options
         if ($this->option('list')) {
-            $this->executeAction('list');
+            $this->commandService->listFlashcards($this->user);
 
             return;
         }
 
         if ($this->option('create')) {
-            $this->executeAction('create');
+            $this->commandService->createFlashcard($this->user);
 
             return;
         }
 
         if ($this->option('delete')) {
-            $this->executeAction('delete');
+            $this->commandService->deleteFlashcard($this->user);
 
             return;
         }
 
         if ($this->option('practice')) {
-            $this->executeAction('practice');
+            $this->commandService->practiceFlashcards($this->user);
 
             return;
         }
 
         if ($this->option('statistics')) {
-            $this->executeAction('statistics');
+            $this->commandService->showStatistics($this->user);
 
             return;
         }
 
         if ($this->option('reset')) {
-            $this->executeAction('reset');
+            $this->commandService->resetPracticeData($this->user);
+
+            return;
+        }
+
+        if ($this->option('logs')) {
+            $this->commandService->viewLogs($this->user);
 
             return;
         }
 
         if ($this->option('trash-bin')) {
-            $this->executeAction('trash-bin');
+            $this->commandService->accessTrashBin($this->user);
 
             return;
         }
 
         // If no specific action option was provided, enter the interactive menu
         while ($this->shouldKeepRunning) {
-            $selectedOption = $this->selectMenuOption();
-            $this->executeAction($selectedOption);
+            $action = $this->selectMenuOption();
+            $this->executeAction($action);
         }
     }
 
@@ -144,16 +147,16 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             placeholder: '********',
             required: true,
             validate: fn (string $value) => match (true) {
-                ! Hash::check(
+                ! \Illuminate\Support\Facades\Hash::check(
                     $value,
-                    $this->userRepository->getPasswordByEmail($email)
+                    User::where('email', $email)->value('password')
                 ) => 'Invalid password. Please try again.',
                 default => null,
             },
             transform: fn (string $value) => mb_trim($value)
         );
 
-        return $this->userRepository->findByEmail($email);
+        return User::where('email', $email)->first();
     }
 
     /**
@@ -181,11 +184,30 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     }
 
     /**
-     * Execute a flashcard action.
+     * Execute a flashcard action based on the selected option.
      */
     protected function executeAction(string $action): void
     {
-        $flashcardAction = FlashcardActionFactory::create($action, $this, $this->shouldKeepRunning);
-        $flashcardAction->execute();
+        match ($action) {
+            'list' => $this->commandService->listFlashcards($this->user),
+            'create' => $this->commandService->createFlashcard($this->user),
+            'delete' => $this->commandService->deleteFlashcard($this->user),
+            'practice' => $this->commandService->practiceFlashcards($this->user),
+            'statistics' => $this->commandService->showStatistics($this->user),
+            'reset' => $this->commandService->resetPracticeData($this->user),
+            'logs' => $this->commandService->viewLogs($this->user),
+            'trash-bin' => $this->commandService->accessTrashBin($this->user),
+            'exit' => $this->exitCommand(),
+            default => $this->renderer->error("Invalid action: {$action}"),
+        };
+    }
+
+    /**
+     * Exit the command.
+     */
+    private function exitCommand(): void
+    {
+        $this->commandService->logExit($this->user);
+        $this->shouldKeepRunning = false;
     }
 }

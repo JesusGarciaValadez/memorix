@@ -5,19 +5,16 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Unit\app\Http\Controllers\Api\V1;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Flashcard\app\Http\Controllers\Api\V1\LogController;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
 use Modules\Flashcard\app\Services\LogService;
-use Tests\TestCase;
+use Modules\Flashcard\Tests\TestCase;
 
 final class LogControllerTest extends TestCase
 {
-    use RefreshDatabase;
-
     private LogController $controller;
 
     private LogService $service;
