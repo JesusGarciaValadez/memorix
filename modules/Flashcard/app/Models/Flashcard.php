@@ -24,6 +24,8 @@ final class Flashcard extends Model
 
     use SoftDeletes;
 
+    public $table = 'flashcards';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -92,6 +94,14 @@ final class Flashcard extends Model
             ->forceDelete();
 
         return $result > 0;
+    }
+
+    /**
+     * Scope a query to only include flashcards for a specific user.
+     */
+    public static function forUser(int $userId)
+    {
+        return self::where('user_id', $userId);
     }
 
     /**
