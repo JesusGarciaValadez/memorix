@@ -10,10 +10,10 @@ use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
-final class StudySessionRepository implements StudySessionRepositoryInterface
+final readonly class StudySessionRepository implements StudySessionRepositoryInterface
 {
     public function __construct(
-        private readonly PracticeResultRepositoryInterface $practiceResultRepository
+        private PracticeResultRepositoryInterface $practiceResultRepository
     ) {}
 
     /**
@@ -72,39 +72,35 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
         // Then get cards that haven't been practiced recently
         $unpracticedFlashcards = Flashcard::where('user_id', $userId)
             ->whereNotIn('id', $incorrectIds)
-            ->whereNot(function ($query) {
-                $query->whereHas('practiceResults', function ($query) {
+            ->whereNot(function ($query): void {
+                $query->whereHas('practiceResults', function ($query): void {
                     $query->where('created_at', '>', now()->subDays(7));
                 });
             })
             ->inRandomOrder()
             ->limit(10)
             ->get()
-            ->map(function ($flashcard) {
-                return [
-                    'id' => $flashcard->id,
-                    'question' => $flashcard->question,
-                    'answer' => $flashcard->answer,
-                ];
-            })
+            ->map(fn ($flashcard): array => [
+                'id' => $flashcard->id,
+                'question' => $flashcard->question,
+                'answer' => $flashcard->answer,
+            ])
             ->toArray();
 
         // Combine both sets
         $flashcards = array_merge($incorrectFlashcards, $unpracticedFlashcards);
 
-        if (empty($flashcards)) {
+        if ($flashcards === []) {
             // If no specific cards to practice, get 10 random cards
-            $flashcards = Flashcard::where('user_id', $userId)
+            return Flashcard::where('user_id', $userId)
                 ->inRandomOrder()
                 ->limit(10)
                 ->get()
-                ->map(function ($flashcard) {
-                    return [
-                        'id' => $flashcard->id,
-                        'question' => $flashcard->question,
-                        'answer' => $flashcard->answer,
-                    ];
-                })
+                ->map(fn ($flashcard): array => [
+                    'id' => $flashcard->id,
+                    'question' => $flashcard->question,
+                    'answer' => $flashcard->answer,
+                ])
                 ->toArray();
         }
 
@@ -118,7 +114,7 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
     {
         $session = $this->getActiveSessionForUser($userId);
 
-        if (! $session) {
+        if (! $session instanceof StudySession) {
             $session = $this->startSession($userId);
         }
 
@@ -137,7 +133,7 @@ final class StudySessionRepository implements StudySessionRepositoryInterface
     {
         // End active session if exists
         $activeSession = $this->getActiveSessionForUser($userId);
-        if ($activeSession) {
+        if ($activeSession instanceof StudySession) {
             $this->endSession($activeSession);
         }
 

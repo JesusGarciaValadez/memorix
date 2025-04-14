@@ -24,7 +24,7 @@ final class LogRepository implements LogRepositoryInterface
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(fn (Log $log) => [
+            ->map(fn (Log $log): array => [
                 'id' => $log->id,
                 'user_id' => $log->user_id,
                 'action' => $log->action,

@@ -5,25 +5,16 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Feature\app\Services;
 
 use Mockery;
-use Modules\Flashcard\app\Services\LogServiceInterface;
-use Modules\Flashcard\app\Services\StatisticServiceInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardServiceTest extends TestCase
 {
-    private $service;
-
-    private $logService;
-
-    private $statisticService;
+    private FlashcardServiceTestDouble $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->logService = Mockery::mock(LogServiceInterface::class);
-        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
 
         // Use a simple PHP class since we're only checking method existence
         $this->service = new FlashcardServiceTestDouble();
@@ -138,40 +129,32 @@ final class FlashcardServiceTest extends TestCase
 
 final class FlashcardServiceTestDouble
 {
-    public function getAllForUser(int $userId, int $perPage = 15) {}
-
-    public function getDeletedForUser(int $userId, int $perPage = 15) {}
-
-    public function findForUser(int $userId, int $flashcardId, bool $withTrashed = false) {}
-
-    public function create(int $userId, array $data) {}
-
-    public function update(int $userId, int $flashcardId, array $data): bool
+    public function update(): bool
     {
         return true;
     }
 
-    public function delete(int $userId, int $flashcardId): bool
+    public function delete(): bool
     {
         return true;
     }
 
-    public function restore(int $userId, int $flashcardId): bool
+    public function restore(): bool
     {
         return true;
     }
 
-    public function forceDelete(int $userId, int $flashcardId): bool
+    public function forceDelete(): bool
     {
         return true;
     }
 
-    public function restoreAllForUser(int $userId): bool
+    public function restoreAllForUser(): bool
     {
         return true;
     }
 
-    public function permanentlyDeleteAllForUser(int $userId): bool
+    public function permanentlyDeleteAllForUser(): bool
     {
         return true;
     }

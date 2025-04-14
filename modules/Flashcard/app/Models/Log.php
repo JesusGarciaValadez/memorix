@@ -19,13 +19,13 @@ final class Log extends Model
     /** @use HasFactory<LogFactory> */
     use HasFactory;
 
-    public const LEVEL_DEBUG = 'debug';
+    public const string LEVEL_DEBUG = 'debug';
 
-    public const LEVEL_INFO = 'info';
+    public const string LEVEL_INFO = 'info';
 
-    public const LEVEL_WARNING = 'warning';
+    public const string LEVEL_WARNING = 'warning';
 
-    public const LEVEL_ERROR = 'error';
+    public const string LEVEL_ERROR = 'error';
 
     /**
      * Indicates if the model should be timestamped.

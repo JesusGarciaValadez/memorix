@@ -68,7 +68,7 @@ final class Statistic extends Model
     {
         $statistics = self::getForUser($userId);
 
-        if (! $statistics) {
+        if (! $statistics instanceof self) {
             return false;
         }
 

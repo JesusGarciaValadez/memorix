@@ -91,7 +91,7 @@ final class LogSeeder extends Seeder
                     }
                 }
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             // Skip real model logging if there's an error
             // This ensures the seeder completes even if related models are not available
         }

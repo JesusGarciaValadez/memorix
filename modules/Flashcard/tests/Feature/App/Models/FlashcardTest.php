@@ -5,53 +5,21 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\app\Models;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
-use Modules\Flashcard\app\Providers\FlashcardServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardTest extends TestCase
 {
-    protected User $user;
+    private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Disable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=OFF;');
-        }
-
-        // Run core Laravel migrations first
-        $this->artisan('migrate', ['--path' => 'database/migrations']);
-
-        // Run module migrations
-        $this->artisan('migrate', ['--path' => 'modules/Flashcard/database/migrations']);
-
         // Create a test user
         $this->user = User::factory()->create();
-    }
-
-    protected function tearDown(): void
-    {
-        // Re-enable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=ON;');
-        }
-
-        parent::tearDown();
-    }
-
-    public function createApplication()
-    {
-        $app = require __DIR__.'/../../../../../../bootstrap/app.php';
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-        $app->register(FlashcardServiceProvider::class);
-
-        return $app;
     }
 
     #[Test]

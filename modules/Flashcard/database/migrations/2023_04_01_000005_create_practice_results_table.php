@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('practice_results', static function (Blueprint $table) {
+        Schema::create('practice_results', static function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('flashcard_id')->constrained()->onDelete('cascade');

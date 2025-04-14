@@ -42,7 +42,7 @@ final readonly class StudySessionService
     {
         $session = $this->studySessionRepository->findForUser($sessionId, $userId);
 
-        if (! $session || $session->ended_at !== null) {
+        if (! $session instanceof StudySession || $session->ended_at !== null) {
             return false;
         }
 
@@ -64,7 +64,7 @@ final readonly class StudySessionService
     {
         // Ensure we have an active session
         $activeSession = $this->studySessionRepository->getActiveSessionForUser($userId);
-        if (! $activeSession) {
+        if (! $activeSession instanceof StudySession) {
             $this->startSession($userId);
         }
 
@@ -80,7 +80,7 @@ final readonly class StudySessionService
         // Get the flashcard
         $flashcard = $this->flashcardRepository->findForUser($flashcardId, $userId);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof Flashcard) {
             return false;
         }
 

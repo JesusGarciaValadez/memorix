@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Services;
 
 use App\Models\User;
+use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 
 interface FlashcardCommandServiceInterface
 {
     /**
      * List all flashcards for a user.
      */
-    public function listFlashcards(User $user): void;
+    public function listFlashcards(User $user, FlashcardInteractiveCommand $command): void;
 
     /**
      * Create a new flashcard for a user.

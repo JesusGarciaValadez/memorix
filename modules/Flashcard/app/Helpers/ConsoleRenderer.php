@@ -173,24 +173,4 @@ final class ConsoleRenderer implements ConsoleRendererInterface
             echo implode(' | ', $row).PHP_EOL;
         }
     }
-
-    /**
-     * Render a message in the console, but only if not in testing or if TERMWIND_SILENT is not true
-     */
-    private function render(string $html): void
-    {
-        // During testing, capture output instead of rendering
-        if (self::$testOutput !== null) {
-            self::$testOutput .= strip_tags($html).PHP_EOL;
-
-            return;
-        }
-
-        // During testing, don't output anything
-        if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__')) {
-            return;
-        }
-
-        echo $html;
-    }
 }

@@ -62,7 +62,7 @@ interface LogServiceInterface
     /**
      * Log study session start.
      */
-    public function logStudySessionStart(int $userId, StudySession $studySession): Log;
+    public function logStudySessionStart(int $userId, StudySession $studyStudySession): Log;
 
     /**
      * Log study session end.

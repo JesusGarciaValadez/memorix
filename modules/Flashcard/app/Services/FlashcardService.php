@@ -7,11 +7,11 @@ namespace Modules\Flashcard\app\Services;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Models\Flashcard;
 
-final class FlashcardService implements FlashcardServiceInterface
+final readonly class FlashcardService implements FlashcardServiceInterface
 {
     public function __construct(
-        private readonly LogServiceInterface $logService,
-        private readonly StatisticServiceInterface $statisticService,
+        private LogServiceInterface $logService,
+        private StatisticServiceInterface $statisticService,
     ) {}
 
     /**
@@ -28,6 +28,11 @@ final class FlashcardService implements FlashcardServiceInterface
     public function getDeletedForUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return Flashcard::getAllDeletedForUser($userId, $perPage);
+    }
+
+    public function setGetAllForUserResult(array $flashcards): LengthAwarePaginator
+    {
+        return Flashcard::getAllForUser();
     }
 
     /**
@@ -64,7 +69,7 @@ final class FlashcardService implements FlashcardServiceInterface
         // Find the flashcard
         $flashcard = Flashcard::findForUser($flashcardId, $userId);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof Flashcard) {
             return false;
         }
 
@@ -86,7 +91,7 @@ final class FlashcardService implements FlashcardServiceInterface
     {
         $flashcard = Flashcard::findForUser($flashcardId, $userId);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof Flashcard) {
             return false;
         }
 
@@ -105,7 +110,7 @@ final class FlashcardService implements FlashcardServiceInterface
         // Find the flashcard
         $flashcard = Flashcard::findForUser($flashcardId, $userId, true);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof Flashcard) {
             return false;
         }
 
@@ -127,7 +132,7 @@ final class FlashcardService implements FlashcardServiceInterface
     {
         $flashcard = Flashcard::findForUser($flashcardId, $userId, true);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof Flashcard) {
             return false;
         }
 

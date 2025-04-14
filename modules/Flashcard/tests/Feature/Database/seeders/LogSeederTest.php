@@ -62,19 +62,19 @@ final class LogSeederTest extends TestCase
         $userLogs = Log::where('user_id', $user->id)->get();
 
         // Check flashcard creation logs
-        $creationLogs = $userLogs->filter(fn ($log) => $log->action === 'created_flashcard');
+        $creationLogs = $userLogs->filter(fn ($log): bool => $log->action === 'created_flashcard');
         $this->assertGreaterThanOrEqual(3, $creationLogs->count());
 
         // Check flashcard deletion logs
-        $deletionLogs = $userLogs->filter(fn ($log) => $log->action === 'deleted_flashcard');
+        $deletionLogs = $userLogs->filter(fn ($log): bool => $log->action === 'deleted_flashcard');
         $this->assertGreaterThanOrEqual(2, $deletionLogs->count());
 
         // Check study session start logs
-        $startLogs = $userLogs->filter(fn ($log) => $log->action === 'started_study_session');
+        $startLogs = $userLogs->filter(fn ($log): bool => $log->action === 'started_study_session');
         $this->assertGreaterThanOrEqual(3, $startLogs->count());
 
         // Check study session end logs
-        $endLogs = $userLogs->filter(fn ($log) => $log->action === 'ended_study_session');
+        $endLogs = $userLogs->filter(fn ($log): bool => $log->action === 'ended_study_session');
         $this->assertGreaterThanOrEqual(2, $endLogs->count());
     }
 

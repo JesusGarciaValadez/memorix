@@ -15,7 +15,7 @@ final class FlashcardPolicy
     /**
      * Determine whether the user can view any flashcards.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(): bool
     {
         return true;
     }
@@ -31,7 +31,7 @@ final class FlashcardPolicy
     /**
      * Determine whether the user can create flashcards.
      */
-    public function create(User $user): bool
+    public function create(): bool
     {
         return true;
     }

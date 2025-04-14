@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Feature\app\Console\Commands;
 
-use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardImportCommandTest extends TestCase
 {
     private string $filePath = 'test-file.csv';
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     #[Test]
     public function it_imports_flashcards_from_file_for_user(): void

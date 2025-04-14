@@ -11,37 +11,6 @@ use Tests\TestCase;
 
 final class StudySessionsTableTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Disable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=OFF;');
-        }
-
-        // Run module migrations
-        $this->artisan('migrate', ['--path' => 'modules/Flashcard/database/migrations']);
-    }
-
-    protected function tearDown(): void
-    {
-        // Re-enable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=ON;');
-        }
-
-        parent::tearDown();
-    }
-
-    public function createApplication()
-    {
-        $app = require __DIR__.'/../../../../../../bootstrap/app.php';
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        return $app;
-    }
-
     #[Test]
     public function study_sessions_table_exists(): void
     {

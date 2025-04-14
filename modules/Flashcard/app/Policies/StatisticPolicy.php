@@ -15,7 +15,7 @@ final class StatisticPolicy
     /**
      * Determine whether the user can view any statistics.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(): bool
     {
         return true;
     }
@@ -31,7 +31,7 @@ final class StatisticPolicy
     /**
      * Determine whether the user can create statistics.
      */
-    public function create(User $user): bool
+    public function create(): bool
     {
         // Statistics are typically created automatically
         // This might be restricted to system processes
@@ -41,7 +41,7 @@ final class StatisticPolicy
     /**
      * Determine whether the user can update the statistic.
      */
-    public function update(User $user, Statistic $statistic): bool
+    public function update(): bool
     {
         // Statistics should be updated through the increment methods
         // Direct updates might be restricted
@@ -51,7 +51,7 @@ final class StatisticPolicy
     /**
      * Determine whether the user can delete the statistic.
      */
-    public function delete(User $user, Statistic $statistic): bool
+    public function delete(): bool
     {
         // Statistics should generally not be deleted
         return false;

@@ -7,38 +7,36 @@ namespace Modules\Flashcard\app\Services;
 use App\Models\User;
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
+use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\note;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
-/**
- * A unified service class that consolidates the functionality previously spread
- * across multiple small Action classes. This reduces unnecessary abstraction
- * while maintaining separation of concerns between UI and business logic.
- */
-final class FlashcardCommandService implements FlashcardCommandServiceInterface
+final readonly class FlashcardCommandService implements FlashcardCommandServiceInterface
 {
     public function __construct(
-        private readonly FlashcardService $flashcardService,
-        private readonly StudySessionService $studySessionService,
-        private readonly StatisticServiceInterface $statisticService,
-        private readonly LogService $logService,
-        private readonly PracticeResultRepositoryInterface $practiceResultRepository,
-        private readonly StudySessionRepositoryInterface $studySessionRepository,
-        private readonly ConsoleRendererInterface $renderer,
+        private FlashcardService $flashcardService,
+        private StudySessionService $studySessionService,
+        private StatisticServiceInterface $statisticService,
+        private LogService $logService,
+        private PracticeResultRepositoryInterface $practiceResultRepository,
+        private StudySessionRepositoryInterface $studySessionRepository,
     ) {}
 
     /**
      * List all flashcards for a user.
      */
-    public function listFlashcards(User $user): void
+    public function listFlashcards(User $user, FlashcardInteractiveCommand $command): void
     {
-        $this->renderer->info('Listing all flashcards...');
+        note('Listing all flashcards...');
 
         // Log the action
         $this->logService->logFlashcardList($user->id);
@@ -47,9 +45,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
         if (count($flashcards) === 0) {
-            $this->renderer->warning('You have no flashcards yet.');
+            warning('You have no flashcards yet.');
 
-            return;
+            $command->shouldKeepRunning = false;
         }
 
         // Prepare the data for the table
@@ -75,14 +73,14 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function createFlashcard(User $user): void
     {
-        $this->renderer->info('Creating a new flashcard...');
+        info('Creating a new flashcard...');
 
         // Get user input for the flashcard
         $question = text(
             label: 'Enter the flashcard question:',
             placeholder: 'What is Laravel?',
             required: true,
-            validate: fn (string $value) => mb_strlen($value) < 3
+            validate: fn (string $value): ?string => mb_strlen($value) < 3
                 ? 'The question must be at least 3 characters.'
                 : null
         );
@@ -91,14 +89,14 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             label: 'Enter the flashcard answer:',
             placeholder: 'A PHP web application framework',
             required: true,
-            validate: fn (string $value) => mb_strlen($value) < 3
+            validate: fn (string $value): ?string => mb_strlen($value) < 3
                 ? 'The answer must be at least 3 characters.'
                 : null
         );
 
         // Review the input
-        $this->renderer->info('Question: '.$question);
-        $this->renderer->info('Answer: '.$answer);
+        info('Question: '.$question);
+        info('Answer: '.$answer);
 
         // Create the flashcard
         $flashcard = $this->flashcardService->create(
@@ -110,9 +108,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if ($flashcard) {
-            $this->renderer->success('Flashcard created successfully!');
+            note('Flashcard created successfully!');
         } else {
-            $this->renderer->error('Failed to create flashcard.');
+            error('Failed to create flashcard.');
         }
     }
 
@@ -121,13 +119,13 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function deleteFlashcard(User $user): void
     {
-        $this->renderer->info('Deleting a flashcard...');
+        info('Deleting a flashcard...');
 
         // Get all flashcards for the current user
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
         if (count($flashcards) === 0) {
-            $this->renderer->warning('You have no flashcards to delete.');
+            warning('You have no flashcards to delete.');
 
             return;
         }
@@ -135,7 +133,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         // Prepare the flashcards for selection
         $options = [];
         foreach ($flashcards as $flashcard) {
-            $options[$flashcard->id] = mb_substr($flashcard->question, 0, 50);
+            $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
         $options['cancel'] = 'Cancel deletion';
 
@@ -147,7 +145,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if ($selectedId === 'cancel') {
-            $this->renderer->info('Deletion cancelled.');
+            info('Deletion cancelled.');
 
             return;
         }
@@ -159,7 +157,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if (! $confirmDelete) {
-            $this->renderer->info('Deletion cancelled.');
+            info('Deletion cancelled.');
 
             return;
         }
@@ -168,9 +166,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         $success = $this->flashcardService->delete((int) $selectedId, $user->id);
 
         if ($success) {
-            $this->renderer->success('Flashcard deleted successfully!');
+            note('Flashcard deleted successfully!');
         } else {
-            $this->renderer->error('Failed to delete flashcard.');
+            error('Failed to delete flashcard.');
         }
     }
 
@@ -179,7 +177,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function showStatistics(User $user): void
     {
-        $this->renderer->info('Showing statistics...');
+        info('Showing statistics...');
 
         // Log the action
         $this->logService->logStatisticsView($user->id);
@@ -187,17 +185,17 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         // Get statistics for the user
         $statistics = $this->statisticService->getStatisticsForUser($user->id);
 
-        if (! $statistics) {
-            $this->renderer->warning('No statistics available yet.');
+        if ($statistics === []) {
+            warning('No statistics available yet.');
 
             return;
         }
 
         // Display the statistics
-        $this->renderer->info('Total Flashcards: '.$statistics['flashcards_created']);
-        $this->renderer->info('Study Sessions: '.$statistics['study_sessions']);
-        $this->renderer->info('Correct Answers: '.$statistics['correct_answers']);
-        $this->renderer->info('Incorrect Answers: '.$statistics['incorrect_answers']);
+        info('Total Flashcards: '.$statistics['flashcards_created']);
+        info('Study Sessions: '.$statistics['study_sessions']);
+        info('Correct Answers: '.$statistics['correct_answers']);
+        info('Incorrect Answers: '.$statistics['incorrect_answers']);
 
         // Calculate success rate
         $totalAnswers = $statistics['correct_answers'] + $statistics['incorrect_answers'];
@@ -205,13 +203,13 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         if ($totalAnswers > 0) {
             $successRate = round(($statistics['correct_answers'] / $totalAnswers) * 100, 2);
         }
-        $this->renderer->info('Success Rate: '.$successRate.'%');
+        info('Success Rate: '.$successRate.'%');
 
         // Get additional statistics
         $averageDuration = $this->statisticService->getAverageStudySessionDuration($user->id);
         $totalStudyTime = $this->statisticService->getTotalStudyTime($user->id);
-        $this->renderer->info('Average Study Session Duration: '.$averageDuration.' minutes');
-        $this->renderer->info('Total Study Time: '.$totalStudyTime.' minutes');
+        info('Average Study Session Duration: '.$averageDuration.' minutes');
+        info('Total Study Time: '.$totalStudyTime.' minutes');
     }
 
     /**
@@ -219,7 +217,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function resetPracticeData(User $user): void
     {
-        $this->renderer->info('Resetting flashcard data...');
+        info('Resetting flashcard data...');
 
         // Confirm reset
         $confirmReset = confirm(
@@ -228,7 +226,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if (! $confirmReset) {
-            $this->renderer->info('Reset cancelled.');
+            info('Reset cancelled.');
 
             return;
         }
@@ -240,7 +238,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
 
             // Reset statistics
             $statistics = $this->statisticService->getStatisticsForUser($user->id);
-            if ($statistics) {
+            if ($statistics !== []) {
                 $statistics['correct_answers'] = 0;
                 $statistics['incorrect_answers'] = 0;
                 $this->statisticService->updateStatistics($user->id, $statistics);
@@ -249,9 +247,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             // Log the reset
             $this->logService->logPracticeReset($user->id);
 
-            $this->renderer->success('Practice data reset successfully!');
+            note('Practice data reset successfully!');
         } catch (Exception $e) {
-            $this->renderer->error('Failed to reset practice data: '.$e->getMessage());
+            error('Failed to reset practice data: '.$e->getMessage());
         }
     }
 
@@ -263,14 +261,14 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         try {
             $logs = $this->logService->getLatestActivityForUser($user->id);
 
-            if (empty($logs)) {
-                $this->renderer->warning('No activity logs found');
+            if ($logs === []) {
+                warning('No activity logs found');
 
                 return;
             }
 
             foreach ($logs as $log) {
-                $this->renderer->info(sprintf(
+                info(sprintf(
                     '[%s] %s - %s',
                     $log['level'],
                     $log['action'],
@@ -278,7 +276,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
                 ));
             }
         } catch (Exception $e) {
-            $this->renderer->error('An error occurred while fetching logs: '.$e->getMessage());
+            error('An error occurred while fetching logs: '.$e->getMessage());
         }
     }
 
@@ -287,13 +285,13 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function accessTrashBin(User $user): void
     {
-        $this->renderer->info('Accessing trash bin...');
+        info('Accessing trash bin...');
 
         // Get deleted flashcards
         $deletedFlashcards = $this->flashcardService->getDeletedForUser($user->id);
 
         if ($deletedFlashcards->isEmpty()) {
-            $this->renderer->warning('Your trash bin is empty.');
+            warning('Your trash bin is empty.');
 
             return;
         }
@@ -305,8 +303,8 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         foreach ($deletedFlashcards as $flashcard) {
             $rows[] = [
                 'ID' => (string) $flashcard->id,
-                'Question' => mb_substr($flashcard->question, 0, 30).(mb_strlen($flashcard->question) > 30 ? '...' : ''),
-                'Answer' => mb_substr($flashcard->answer, 0, 30).(mb_strlen($flashcard->answer) > 30 ? '...' : ''),
+                'Question' => mb_substr((string) $flashcard->question, 0, 30).(mb_strlen((string) $flashcard->question) > 30 ? '...' : ''),
+                'Answer' => mb_substr((string) $flashcard->answer, 0, 30).(mb_strlen((string) $flashcard->answer) > 30 ? '...' : ''),
                 'Deleted At' => $flashcard->deleted_at?->format('Y-m-d H:i:s') ?? 'N/A',
             ];
         }
@@ -334,7 +332,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             'restore-all' => $this->restoreAllFlashcards($user),
             'delete' => $this->permanentlyDeleteFlashcard($user, $deletedFlashcards),
             'delete-all' => $this->permanentlyDeleteAllFlashcards($user),
-            default => $this->renderer->info('Returning to main menu...'),
+            default => info('Returning to main menu...'),
         };
     }
 
@@ -344,7 +342,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
     public function logExit(User $user): void
     {
         $this->logService->logUserExit($user->id);
-        $this->renderer->success('See you!');
+        note('See you!');
     }
 
     /**
@@ -354,13 +352,13 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
      */
     public function practiceFlashcards(User $user): void
     {
-        $this->renderer->info('Starting practice mode...');
+        info('Starting practice mode...');
 
         // Get available flashcards for practice
         $flashcards = $this->studySessionRepository->getFlashcardsForPractice($user->id);
 
         if ($flashcards->isEmpty()) {
-            $this->renderer->warning('You have no flashcards to practice.');
+            warning('You have no flashcards to practice.');
 
             return;
         }
@@ -370,7 +368,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         if (! $studySession) {
             $studySession = $this->studySessionService->startSession($user->id);
             if (! $studySession) {
-                $this->renderer->error('Failed to start study session.');
+                error('Failed to start study session.');
 
                 return;
             }
@@ -385,7 +383,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         $practiceComplete = false;
 
         // Get statistics to show progress
-        $statistics = $this->statisticService->getStatisticsForUser($user->id);
+        $this->statisticService->getStatisticsForUser($user->id);
 
         // Main practice loop
         while (! $practiceComplete) {
@@ -398,11 +396,11 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
                 ['Completion', $totalFlashcards > 0 ? round(($correctAnswers / $totalFlashcards) * 100, 2).'%' : '0%'],
             ];
 
-            $this->renderer->table(['Statistic', 'Value'], $progressTable);
+            table(['Statistic', 'Value'], $progressTable);
 
             // If all questions are correct, end practice
             if ($correctAnswers === $totalFlashcards) {
-                $this->renderer->success('Congratulations! You have correctly answered all flashcards.');
+                note('Congratulations! You have correctly answered all flashcards.');
                 $practiceComplete = true;
 
                 continue;
@@ -418,14 +416,14 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
                     ->isNotEmpty();
 
                 if (! $alreadyCorrect) {
-                    $options[$flashcard->id] = mb_substr($flashcard->question, 0, 50);
+                    $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
                 }
             }
             $options['exit'] = 'Exit practice mode';
 
             // If no questions left to answer, end practice
             if (count($options) === 1) { // Only 'exit' option
-                $this->renderer->success('Congratulations! You have correctly answered all flashcards.');
+                note('Congratulations! You have correctly answered all flashcards.');
                 $practiceComplete = true;
 
                 continue;
@@ -439,7 +437,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             );
 
             if ($selectedId === 'exit') {
-                $this->renderer->info('Exiting practice mode...');
+                info('Exiting practice mode...');
                 $practiceComplete = true;
 
                 continue;
@@ -447,7 +445,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
 
             // Show the question
             $flashcard = $flashcards->firstWhere('id', $selectedId);
-            $this->renderer->info('Question: '.$flashcard->question);
+            info('Question: '.$flashcard->question);
 
             // Get the user's answer
             $userAnswer = text(
@@ -464,11 +462,11 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
 
             // Update tracking variables
             if ($isCorrect) {
-                $this->renderer->success('Correct! The answer is: '.$flashcard->answer);
+                note('Correct! The answer is: '.$flashcard->answer);
                 $correctAnswers++;
                 $notAnswered--;
             } else {
-                $this->renderer->error('Incorrect. The correct answer is: '.$flashcard->answer);
+                error('Incorrect. The correct answer is: '.$flashcard->answer);
                 $incorrectAnswers++;
                 $notAnswered--;
             }
@@ -480,7 +478,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             );
 
             if (! $continue) {
-                $this->renderer->info('Ending practice session...');
+                info('Ending practice session...');
                 $practiceComplete = true;
             }
         }
@@ -488,7 +486,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         // End the study session if all questions are answered correctly
         if ($correctAnswers === $totalFlashcards) {
             $this->studySessionService->endSession($studySession->id, $user->id);
-            $this->renderer->success('Study session completed successfully!');
+            note('Study session completed successfully!');
         }
     }
 
@@ -501,10 +499,10 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             label: 'Enter your user name:',
             placeholder: 'John Doe',
             required: true,
-            validate: fn (string $value) => mb_strlen($value) < 3
+            validate: fn (string $value): ?string => mb_strlen($value) < 3
                 ? 'The name must be at least 3 characters.'
                 : null,
-            transform: fn (string $value) => mb_trim($value)
+            transform: fn (string $value): string => mb_trim($value)
         );
 
         $email = text(
@@ -512,17 +510,17 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             placeholder: 'john@doe.com',
             required: true,
             validate: ['email' => 'required|email|unique:users,email'],
-            transform: fn (string $value) => mb_trim($value)
+            transform: fn (string $value): string => mb_trim($value)
         );
 
         $password = text(
             label: 'Enter your password:',
             placeholder: '********',
             required: true,
-            validate: fn (string $value) => mb_strlen($value) < 8
+            validate: fn (string $value): ?string => mb_strlen($value) < 8
                 ? 'The password must be at least 8 characters.'
                 : null,
-            transform: fn (string $value) => mb_trim($value)
+            transform: fn (string $value): string => mb_trim($value)
         );
 
         // Create a new user
@@ -532,24 +530,17 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             'password' => bcrypt($password),
         ]);
 
-        $this->renderer->success("User {$user->name} registered successfully with email {$user->email}.");
+        note("User {$user->name} registered successfully with email {$user->email}.");
 
         return $user;
     }
 
-    /**
-     * Import flashcards from a CSV file for a user.
-     *
-     * @param  int  $userId  The ID of the user to import flashcards for
-     * @param  string  $filePath  The path to the CSV file
-     * @return bool True if the import was successful, false otherwise
-     */
     public function importFlashcardsFromFile(int $userId, string $filePath): bool
     {
         try {
             // Check if file exists
             if (! file_exists($filePath)) {
-                $this->renderer->error("File not found: {$filePath}");
+                error("File not found: {$filePath}");
 
                 return false;
             }
@@ -557,7 +548,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             // Check if user exists
             $user = User::find($userId);
             if (! $user) {
-                $this->renderer->error("User not found with ID: {$userId}");
+                error("User not found with ID: {$userId}");
 
                 return false;
             }
@@ -565,26 +556,26 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             // Open file and read contents
             $file = fopen($filePath, 'r');
             if (! $file) {
-                $this->renderer->error("Could not open file: {$filePath}");
+                error("Could not open file: {$filePath}");
 
                 return false;
             }
 
             // Read header row
-            $header = fgetcsv($file);
-            if (! $header || count($header) < 2) {
-                $this->renderer->error('Invalid CSV format. Expected at least 2 columns (question, answer).');
+            $header = fgetcsv($file, escape: '\\');
+            if ($header === [] || $header === false || count($header) < 2) {
+                error('Invalid CSV format. Expected at least 2 columns (question, answer).');
                 fclose($file);
 
                 return false;
             }
 
             // Find the column indices for question and answer
-            $questionIndex = array_search('question', array_map('strtolower', $header));
-            $answerIndex = array_search('answer', array_map('strtolower', $header));
+            $questionIndex = in_array('question', array_map('strtolower', $header), true);
+            $answerIndex = in_array('answer', array_map('strtolower', $header), true);
 
             if ($questionIndex === false || $answerIndex === false) {
-                $this->renderer->error("CSV must contain 'question' and 'answer' columns.");
+                error("CSV must contain 'question' and 'answer' columns.");
                 fclose($file);
 
                 return false;
@@ -593,12 +584,12 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             // Read and import flashcards
             $importCount = 0;
             $rowNumber = 1; // Start at 1 because we already read the header row
-            while (($row = fgetcsv($file)) !== false) {
+            while (($row = fgetcsv($file, escape: '\\')) !== false) {
                 $rowNumber++;
 
                 // Skip empty rows
-                if (empty($row) || count($row) <= max($questionIndex, $answerIndex)) {
-                    $this->renderer->warning("Skipping row {$rowNumber}: Insufficient columns.");
+                if ($row === [] || count($row) <= max($questionIndex, $answerIndex)) {
+                    warning("Skipping row {$rowNumber}: Insufficient columns.");
 
                     continue;
                 }
@@ -607,8 +598,8 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
                 $answer = mb_trim($row[$answerIndex]);
 
                 // Validate data
-                if (empty($question) || empty($answer)) {
-                    $this->renderer->warning("Skipping row {$rowNumber}: Empty question or answer.");
+                if ($question === '' || $question === '0' || ($answer === '' || $answer === '0')) {
+                    warning("Skipping row {$rowNumber}: Empty question or answer.");
 
                     continue;
                 }
@@ -622,7 +613,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
                 if ($flashcard) {
                     $importCount++;
                 } else {
-                    $this->renderer->warning("Failed to create flashcard at row {$rowNumber}.");
+                    warning("Failed to create flashcard at row {$rowNumber}.");
                 }
             }
 
@@ -631,11 +622,11 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
             // Log the import
             $this->logService->logFlashcardImport($userId, $importCount);
 
-            $this->renderer->success("Successfully imported {$importCount} flashcards for user ID {$userId}.");
+            note("Successfully imported {$importCount} flashcards for user ID {$userId}.");
 
             return true;
         } catch (Exception $e) {
-            $this->renderer->error('Error importing flashcards: '.$e->getMessage());
+            error('Error importing flashcards: '.$e->getMessage());
 
             return false;
         }
@@ -644,12 +635,12 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
     /**
      * Restore a flashcard.
      */
-    private function restoreFlashcard(User $user, $deletedFlashcards): void
+    private function restoreFlashcard(User $user, \Illuminate\Contracts\Pagination\LengthAwarePaginator $deletedFlashcards): void
     {
         // Prepare options for selection
         $options = [];
         foreach ($deletedFlashcards as $flashcard) {
-            $options[$flashcard->id] = mb_substr($flashcard->question, 0, 50);
+            $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
         $options['cancel'] = 'Cancel';
 
@@ -661,7 +652,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if ($selectedId === 'cancel') {
-            $this->renderer->info('Restore cancelled.');
+            info('Restore cancelled.');
 
             return;
         }
@@ -670,9 +661,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         $success = $this->flashcardService->restore((int) $selectedId, $user->id);
 
         if ($success) {
-            $this->renderer->success('Flashcard restored successfully!');
+            note('Flashcard restored successfully!');
         } else {
-            $this->renderer->error('Failed to restore flashcard.');
+            error('Failed to restore flashcard.');
         }
     }
 
@@ -688,7 +679,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if (! $confirmRestore) {
-            $this->renderer->info('Restore cancelled.');
+            info('Restore cancelled.');
 
             return;
         }
@@ -699,21 +690,21 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         if ($success) {
             // Log the action
             $this->logService->logAllFlashcardsRestore($user->id);
-            $this->renderer->success('All flashcards restored successfully!');
+            note('All flashcards restored successfully!');
         } else {
-            $this->renderer->error('Failed to restore flashcards.');
+            error('Failed to restore flashcards.');
         }
     }
 
     /**
      * Permanently delete a flashcard.
      */
-    private function permanentlyDeleteFlashcard(User $user, $deletedFlashcards): void
+    private function permanentlyDeleteFlashcard(User $user, \Illuminate\Contracts\Pagination\LengthAwarePaginator $deletedFlashcards): void
     {
         // Prepare options for selection
         $options = [];
         foreach ($deletedFlashcards as $flashcard) {
-            $options[$flashcard->id] = mb_substr($flashcard->question, 0, 50);
+            $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
         $options['cancel'] = 'Cancel';
 
@@ -725,7 +716,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if ($selectedId === 'cancel') {
-            $this->renderer->info('Deletion cancelled.');
+            info('Deletion cancelled.');
 
             return;
         }
@@ -737,7 +728,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if (! $confirmDelete) {
-            $this->renderer->info('Deletion cancelled.');
+            info('Deletion cancelled.');
 
             return;
         }
@@ -746,9 +737,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         $success = $this->flashcardService->forceDelete((int) $selectedId, $user->id);
 
         if ($success) {
-            $this->renderer->success('Flashcard permanently deleted!');
+            note('Flashcard permanently deleted!');
         } else {
-            $this->renderer->error('Failed to delete flashcard.');
+            error('Failed to delete flashcard.');
         }
     }
 
@@ -764,7 +755,7 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         );
 
         if (! $confirmDelete) {
-            $this->renderer->info('Deletion cancelled.');
+            info('Deletion cancelled.');
 
             return;
         }
@@ -775,9 +766,9 @@ final class FlashcardCommandService implements FlashcardCommandServiceInterface
         if ($success) {
             // Log the action
             $this->logService->logAllFlashcardsPermanentDelete($user->id);
-            $this->renderer->success('All flashcards permanently deleted!');
+            note('All flashcards permanently deleted!');
         } else {
-            $this->renderer->error('Failed to delete flashcards.');
+            error('Failed to delete flashcards.');
         }
     }
 }

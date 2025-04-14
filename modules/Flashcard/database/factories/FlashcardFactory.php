@@ -35,9 +35,7 @@ final class FlashcardFactory extends Factory
             'question' => fake()->sentence(random_int(5, 10)).'?',
             'answer' => fake()->paragraph(random_int(1, 3)),
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
-            'updated_at' => function (array $attributes) {
-                return fake()->dateTimeBetween($attributes['created_at'], 'now');
-            },
+            'updated_at' => fn (array $attributes) => fake()->dateTimeBetween($attributes['created_at'], 'now'),
         ];
     }
 
@@ -46,11 +44,9 @@ final class FlashcardFactory extends Factory
      */
     public function shortAnswer(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'answer' => fake()->sentence(random_int(1, 5)),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'answer' => fake()->sentence(random_int(1, 5)),
+        ]);
     }
 
     /**
@@ -58,13 +54,9 @@ final class FlashcardFactory extends Factory
      */
     public function recent(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'created_at' => fake()->dateTimeBetween('-1 week', 'now'),
-                'updated_at' => function (array $attributes) {
-                    return fake()->dateTimeBetween($attributes['created_at'], 'now');
-                },
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => fake()->dateTimeBetween('-1 week', 'now'),
+            'updated_at' => fn (array $attributes) => fake()->dateTimeBetween($attributes['created_at'], 'now'),
+        ]);
     }
 }

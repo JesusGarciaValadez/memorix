@@ -39,7 +39,7 @@ final class FlashcardController extends Controller
 
         $flashcard = $this->flashcardService->findForUser($userId, $flashcard);
 
-        if (! $flashcard) {
+        if (! $flashcard instanceof \Modules\Flashcard\app\Models\Flashcard) {
             return response()->json([
                 'message' => 'Flashcard not found',
             ], Response::HTTP_NOT_FOUND);

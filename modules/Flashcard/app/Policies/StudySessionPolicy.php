@@ -15,7 +15,7 @@ final class StudySessionPolicy
     /**
      * Determine whether the user can view any study sessions.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(): bool
     {
         return true;
     }
@@ -31,7 +31,7 @@ final class StudySessionPolicy
     /**
      * Determine whether the user can create study sessions.
      */
-    public function create(User $user): bool
+    public function create(): bool
     {
         return true;
     }
@@ -47,7 +47,7 @@ final class StudySessionPolicy
     /**
      * Determine whether the user can delete the study session.
      */
-    public function delete(User $user, StudySession $studySession): bool
+    public function delete(): bool
     {
         // Study sessions should generally not be deleted once created
         return false;

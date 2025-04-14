@@ -7,28 +7,18 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Modules\Flashcard\app\Http\Requests\LogRequest;
-use Modules\Flashcard\app\Models\Log;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
 use Tests\TestCase;
 
 final class LogRequestTest extends TestCase
 {
-    private Log $log;
-
     private LogRequest $request;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $user = User::factory()->create();
-        $this->log = Log::factory()->create([
-            'user_id' => $user->id,
-            'action' => 'test_action',
-            'details' => 'Test log details',
-            'created_at' => now(),
-        ]);
+        User::factory()->create();
 
         $this->request = new LogRequest();
     }

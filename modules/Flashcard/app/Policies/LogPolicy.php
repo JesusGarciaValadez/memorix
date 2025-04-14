@@ -15,7 +15,7 @@ final class LogPolicy
     /**
      * Determine whether the user can view any logs.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(): bool
     {
         return true;
     }
@@ -31,7 +31,7 @@ final class LogPolicy
     /**
      * Determine whether the user can create logs.
      */
-    public function create(User $user): bool
+    public function create(): bool
     {
         return true;
     }
@@ -39,7 +39,7 @@ final class LogPolicy
     /**
      * Determine whether the user can update the log.
      */
-    public function update(User $user, Log $log): bool
+    public function update(): bool
     {
         // Logs should not be updated after creation
         return false;
@@ -48,7 +48,7 @@ final class LogPolicy
     /**
      * Determine whether the user can delete the log.
      */
-    public function delete(User $user, Log $log): bool
+    public function delete(): bool
     {
         // Regular users should not be able to delete logs
         // This could be extended to allow admins to delete logs
@@ -58,7 +58,7 @@ final class LogPolicy
     /**
      * Determine whether the user can view their own activity log.
      */
-    public function viewActivity(User $user): bool
+    public function viewActivity(): bool
     {
         return true;
     }

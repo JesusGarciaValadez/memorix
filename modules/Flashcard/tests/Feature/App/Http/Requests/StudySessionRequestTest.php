@@ -7,27 +7,18 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Modules\Flashcard\app\Http\Requests\StudySessionRequest;
-use Modules\Flashcard\app\Models\StudySession;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
 use Tests\TestCase;
 
 final class StudySessionRequestTest extends TestCase
 {
-    private StudySession $studySession;
-
     private StudySessionRequest $request;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $user = User::factory()->create();
-        $this->studySession = StudySession::factory()->create([
-            'user_id' => $user->id,
-            'started_at' => now()->subHour(),
-            'ended_at' => null,
-        ]);
+        User::factory()->create();
 
         $this->request = new StudySessionRequest();
     }

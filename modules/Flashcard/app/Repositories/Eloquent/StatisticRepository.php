@@ -160,8 +160,8 @@ final class StatisticRepository implements StatisticRepositoryInterface
     {
         $statistic = $this->getForUser($userId);
 
-        if (! $statistic) {
-            $statistic = $this->createForUser($userId);
+        if (! $statistic instanceof Statistic) {
+            return $this->createForUser($userId);
         }
 
         return $statistic;

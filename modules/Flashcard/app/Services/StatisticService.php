@@ -18,7 +18,7 @@ final class StatisticService implements StatisticServiceInterface
         $statistics = Statistic::getForUser($userId);
 
         // If no statistics exist yet, create an empty statistics record
-        if (! $statistics) {
+        if (! $statistics instanceof Statistic) {
             $statistics = Statistic::createForUser($userId);
         }
 
@@ -38,7 +38,7 @@ final class StatisticService implements StatisticServiceInterface
     {
         $statistics = $this->getByUserId($userId);
 
-        if (! $statistics) {
+        if (! $statistics instanceof Statistic) {
             return 0.0;
         }
 
@@ -117,11 +117,6 @@ final class StatisticService implements StatisticServiceInterface
         ]);
     }
 
-    /**
-     * Increment correct answers count
-     *
-     * @return Statistic
-     */
     public function incrementCorrectAnswers(int $userId): bool
     {
         $statistic = $this->getOrCreateStatistic($userId);
@@ -129,11 +124,6 @@ final class StatisticService implements StatisticServiceInterface
         return (bool) $statistic->increment('total_correct_answers');
     }
 
-    /**
-     * Increment incorrect answers count
-     *
-     * @return Statistic
-     */
     public function incrementIncorrectAnswers(int $userId): bool
     {
         $statistic = $this->getOrCreateStatistic($userId);
@@ -141,11 +131,6 @@ final class StatisticService implements StatisticServiceInterface
         return (bool) $statistic->increment('total_incorrect_answers');
     }
 
-    /**
-     * Increment study sessions count
-     *
-     * @return Statistic
-     */
     public function incrementStudySessions(int $userId): bool
     {
         $statistic = $this->getOrCreateStatistic($userId);
@@ -153,11 +138,6 @@ final class StatisticService implements StatisticServiceInterface
         return (bool) $statistic->increment('total_study_sessions');
     }
 
-    /**
-     * Increment total flashcards count
-     *
-     * @return Statistic
-     */
     public function incrementTotalFlashcards(int $userId): bool
     {
         $statistic = $this->getOrCreateStatistic($userId);
@@ -165,11 +145,6 @@ final class StatisticService implements StatisticServiceInterface
         return (bool) $statistic->increment('total_flashcards');
     }
 
-    /**
-     * Decrement total flashcards count
-     *
-     * @return Statistic
-     */
     public function decrementTotalFlashcards(int $userId): bool
     {
         $statistic = $this->getOrCreateStatistic($userId);
@@ -181,20 +156,16 @@ final class StatisticService implements StatisticServiceInterface
         return true;
     }
 
-    /**
-     * Add study time
-     *
-     * @param  int  $userId
-     */
     public function addStudyTime(User $user, int $minutes): bool
     {
-        $statistic = $this->getOrCreateStatistic($user->id);
+        $this->getOrCreateStatistic($user->id);
 
         // Create a new study session record
-        $studySession = new StudySession();
-        $studySession->user_id = $user->id;
-        $studySession->started_at = now()->subMinutes($minutes);
-        $studySession->ended_at = now();
+        $studySession = new StudySession([
+            'user_id' => $user->id,
+            'started_at' => now()->subMinutes($minutes),
+            'ended_at' => now(),
+        ]);
 
         return $studySession->save();
     }
@@ -222,7 +193,7 @@ final class StatisticService implements StatisticServiceInterface
     {
         $statistics = Statistic::getForUser($userId);
 
-        if (! $statistics) {
+        if (! $statistics instanceof Statistic) {
             return false;
         }
 
@@ -239,8 +210,8 @@ final class StatisticService implements StatisticServiceInterface
     {
         $statistic = $this->getByUserId($userId);
 
-        if (! $statistic) {
-            $statistic = $this->createStatistic($userId);
+        if (! $statistic instanceof Statistic) {
+            return $this->createStatistic($userId);
         }
 
         return $statistic;

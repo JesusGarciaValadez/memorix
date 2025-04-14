@@ -9,6 +9,9 @@ use Illuminate\Console\Command;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\note;
+
 final class FlashcardImportCommand extends Command
 {
     /**
@@ -16,7 +19,7 @@ final class FlashcardImportCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'flashcard:import 
+    protected $signature = 'flashcard:import
                             {--file= : Path to the CSV file containing flashcards}
                             {--email= : Email of the user to import flashcards for}';
 
@@ -37,14 +40,14 @@ final class FlashcardImportCommand extends Command
         // Get file path from the option
         $filePath = $this->option('file');
         if (! $filePath) {
-            $renderer->error('File path is required. Use --file option to specify the CSV file path.');
+            error('File path is required. Use --file option to specify the CSV file path.');
 
             return 1;
         }
 
         // Check if file exists
         if (! file_exists($filePath)) {
-            $renderer->error("File not found: {$filePath}");
+            error("File not found: {$filePath}");
 
             return 1;
         }
@@ -52,7 +55,7 @@ final class FlashcardImportCommand extends Command
         // Get user email from the option
         $email = $this->option('email');
         if (! $email) {
-            $renderer->error('User email is required. Use --email option to specify the user email.');
+            error('User email is required. Use --email option to specify the user email.');
 
             return 1;
         }
@@ -60,7 +63,7 @@ final class FlashcardImportCommand extends Command
         // Find user by email
         $user = User::where('email', $email)->first();
         if (! $user) {
-            $renderer->error("User not found with email: {$email}");
+            error("User not found with email: {$email}");
 
             return 1;
         }
@@ -69,11 +72,11 @@ final class FlashcardImportCommand extends Command
         $success = $commandService->importFlashcardsFromFile($user->id, $filePath);
 
         if ($success) {
-            $renderer->success('Flashcards imported successfully!');
+            note('Flashcards imported successfully!');
 
             return 0;
         }
-        $renderer->error('Failed to import flashcards.');
+        error('Failed to import flashcards.');
 
         return 1;
     }

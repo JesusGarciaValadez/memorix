@@ -70,9 +70,7 @@ final class FlashcardSeederTest extends TestCase
         $flashcards = Flashcard::where('user_id', $user->id)->get();
 
         // Check for recent flashcards (created within the last week)
-        $recentFlashcards = $flashcards->filter(function ($flashcard) {
-            return $flashcard->created_at->isAfter(now()->subWeek());
-        });
+        $recentFlashcards = $flashcards->filter(fn ($flashcard) => $flashcard->created_at->isAfter(now()->subWeek()));
         $this->assertGreaterThanOrEqual(3, $recentFlashcards->count());
 
         // We can't directly test for short answers since that's in the factory state

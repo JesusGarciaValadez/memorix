@@ -35,9 +35,7 @@ final class PracticeResultFactory extends Factory
             'study_session_id' => StudySession::factory(),
             'is_correct' => fake()->boolean(70), // 70% chance of being correct
             'created_at' => fake()->dateTimeBetween('-3 months', 'now'),
-            'updated_at' => function (array $attributes) {
-                return fake()->dateTimeBetween($attributes['created_at'], 'now');
-            },
+            'updated_at' => fn (array $attributes) => fake()->dateTimeBetween($attributes['created_at'], 'now'),
         ];
     }
 
@@ -46,11 +44,9 @@ final class PracticeResultFactory extends Factory
      */
     public function correct(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'is_correct' => true,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'is_correct' => true,
+        ]);
     }
 
     /**
@@ -58,11 +54,9 @@ final class PracticeResultFactory extends Factory
      */
     public function incorrect(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'is_correct' => false,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'is_correct' => false,
+        ]);
     }
 
     /**
@@ -70,13 +64,9 @@ final class PracticeResultFactory extends Factory
      */
     public function recent(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'created_at' => fake()->dateTimeBetween('-1 week', 'now'),
-                'updated_at' => function (array $attributes) {
-                    return fake()->dateTimeBetween($attributes['created_at'], 'now');
-                },
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => fake()->dateTimeBetween('-1 week', 'now'),
+            'updated_at' => fn (array $attributes) => fake()->dateTimeBetween($attributes['created_at'], 'now'),
+        ]);
     }
 }

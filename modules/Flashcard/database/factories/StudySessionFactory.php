@@ -39,7 +39,7 @@ final class StudySessionFactory extends Factory
      */
     public function completed(): Factory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $startedAt = $attributes['started_at'];
 
             return [
@@ -53,11 +53,9 @@ final class StudySessionFactory extends Factory
      */
     public function recent(): Factory
     {
-        return $this->state(function () {
-            return [
-                'started_at' => fake()->dateTimeBetween('-2 days', 'now'),
-            ];
-        });
+        return $this->state(fn (): array => [
+            'started_at' => fake()->dateTimeBetween('-2 days', 'now'),
+        ]);
     }
 
     /**
@@ -65,7 +63,7 @@ final class StudySessionFactory extends Factory
      */
     public function shortSession(): Factory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $startedAt = $attributes['started_at'];
             $minutesToAdd = random_int(1, 10);
 

@@ -53,14 +53,10 @@ final class FlashcardServiceProvider extends BaseServiceProvider
             \Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardImportCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardLogsCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardStatsCommand::class,
-            \Modules\Flashcard\app\Console\Commands\FlashcardResetCommand::class,
         ]);
         $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
-
         $this->registerPolicies();
     }
 
@@ -69,14 +65,14 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     public function register(): void
     {
+        $this->registerRepositories();
+        $this->registerServices();
+        $this->registerHelpers();
         $this->configureCommands();
         $this->configureModels();
         $this->configureDates();
         $this->configureUrls();
         $this->configureVite();
-        $this->registerRepositories();
-        $this->registerServices();
-        $this->registerHelpers();
     }
 
     /**

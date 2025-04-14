@@ -175,7 +175,7 @@ final class StatisticServiceTest extends TestCase
     public function it_can_reset_practice_statistics(): void
     {
         // Arrange
-        $statistic = $this->createTestStatistic();
+        $this->createTestStatistic();
 
         $this->statisticRepository->shouldReceive('resetPracticeStatistics')
             ->once()
@@ -286,20 +286,12 @@ final class StatisticServiceTest extends TestCase
 
         return $statistic;
     }
-
-    private function createTestUser(): object
-    {
-        $user = new stdClass();
-        $user->id = $this->userId;
-
-        return $user;
-    }
 }
 
 /**
  * Test implementation of StatisticService for unit testing
  */
-final class TestStatisticService implements StatisticServiceInterface
+final readonly class TestStatisticService implements StatisticServiceInterface
 {
     public function __construct(
         private StatisticRepositoryInterface $repository

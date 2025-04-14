@@ -6,26 +6,17 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 
 use App\Models\User;
 use Modules\Flashcard\app\Http\Requests\FlashcardRequest;
-use Modules\Flashcard\app\Models\Flashcard;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardRequestTest extends TestCase
 {
-    private Flashcard $flashcard;
-
     private FlashcardRequest $request;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $user = User::factory()->create();
-        $this->flashcard = Flashcard::factory()->create([
-            'user_id' => $user->id,
-            'question' => 'What is Laravel?',
-            'answer' => 'A PHP framework',
-        ]);
+        User::factory()->create();
 
         $this->request = new FlashcardRequest();
     }

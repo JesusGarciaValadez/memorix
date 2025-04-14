@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/html/modules/Flashcard/app/Services</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../../../../_css/bootstrap.min.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/nv.d3.min.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/style.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../../../../index.html">/var/www/html</a></li>
+         <li class="breadcrumb-item"><a href="../../../index.html">modules</a></li>
+         <li class="breadcrumb-item"><a href="../../index.html">Flashcard</a></li>
+         <li class="breadcrumb-item"><a href="../index.html">app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Services</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="StatisticService.php.html#11">Modules\Flashcard\app\Services\StatisticService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#24">Modules\Flashcard\app\Services\FlashcardCommandService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#10">Modules\Flashcard\app\Services\FlashcardService</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="LogService.php.html#13">Modules\Flashcard\app\Services\LogService</a></td><td class="text-right">4%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="FlashcardCommandService.php.html#24">Modules\Flashcard\app\Services\FlashcardCommandService</a></td><td class="text-right">7424</td></tr>
+       <tr><td><a href="StatisticService.php.html#11">Modules\Flashcard\app\Services\StatisticService</a></td><td class="text-right">650</td></tr>
+       <tr><td><a href="LogService.php.html#13">Modules\Flashcard\app\Services\LogService</a></td><td class="text-right">442</td></tr>
+       <tr><td><a href="FlashcardService.php.html#10">Modules\Flashcard\app\Services\FlashcardService</a></td><td class="text-right">433</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="FlashcardCommandService.php.html#39"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::listFlashcards">listFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#76"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::createFlashcard">createFlashcard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#122"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::deleteFlashcard">deleteFlashcard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#180"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::showStatistics">showStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#220"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::resetPracticeData">resetPracticeData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#261"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::viewLogs">viewLogs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#288"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::accessTrashBin">accessTrashBin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#344"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::logExit">logExit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#355"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::practiceFlashcards">practiceFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#498"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::registerUser">registerUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#547"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::importFlashcardsFromFile">importFlashcardsFromFile</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#647"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::restoreFlashcard">restoreFlashcard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#682"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::restoreAllFlashcards">restoreAllFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#711"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::permanentlyDeleteFlashcard">permanentlyDeleteFlashcard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#758"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::permanentlyDeleteAllFlashcards">permanentlyDeleteAllFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#20"><abbr title="Modules\Flashcard\app\Services\FlashcardService::getAllForUser">getAllForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#28"><abbr title="Modules\Flashcard\app\Services\FlashcardService::getDeletedForUser">getDeletedForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#33"><abbr title="Modules\Flashcard\app\Services\FlashcardService::setGetAllForUserResult">setGetAllForUserResult</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#41"><abbr title="Modules\Flashcard\app\Services\FlashcardService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#59"><abbr title="Modules\Flashcard\app\Services\FlashcardService::findForUser">findForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#67"><abbr title="Modules\Flashcard\app\Services\FlashcardService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#90"><abbr title="Modules\Flashcard\app\Services\FlashcardService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#108"><abbr title="Modules\Flashcard\app\Services\FlashcardService::restore">restore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#131"><abbr title="Modules\Flashcard\app\Services\FlashcardService::forceDelete">forceDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#156"><abbr title="Modules\Flashcard\app\Services\FlashcardService::restoreAllForUser">restoreAllForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FlashcardService.php.html#170"><abbr title="Modules\Flashcard\app\Services\FlashcardService::forceDeleteAllForUser">forceDeleteAllForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#42"><abbr title="Modules\Flashcard\app\Services\LogService::logUserLogin">logUserLogin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#50"><abbr title="Modules\Flashcard\app\Services\LogService::createLog">createLog</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#58"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardCreation">logFlashcardCreation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#71"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardUpdate">logFlashcardUpdate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#84"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardDeletion">logFlashcardDeletion</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#97"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardList">logFlashcardList</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#105"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardRestoration">logFlashcardRestoration</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#113"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardPractice">logFlashcardPractice</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#129"><abbr title="Modules\Flashcard\app\Services\LogService::logStudySessionStart">logStudySessionStart</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#142"><abbr title="Modules\Flashcard\app\Services\LogService::logStudySessionEnd">logStudySessionEnd</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#158"><abbr title="Modules\Flashcard\app\Services\LogService::logStatisticsView">logStatisticsView</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#166"><abbr title="Modules\Flashcard\app\Services\LogService::logPracticeReset">logPracticeReset</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#178"><abbr title="Modules\Flashcard\app\Services\LogService::logExit">logExit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#190"><abbr title="Modules\Flashcard\app\Services\LogService::logUserExit">logUserExit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#198"><abbr title="Modules\Flashcard\app\Services\LogService::logAllFlashcardsRestore">logAllFlashcardsRestore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#206"><abbr title="Modules\Flashcard\app\Services\LogService::logAllFlashcardsPermanentDelete">logAllFlashcardsPermanentDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#214"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardForceDelete">logFlashcardForceDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LogService.php.html#222"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardImport">logFlashcardImport</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#16"><abbr title="Modules\Flashcard\app\Services\StatisticService::getStatisticsForUser">getStatisticsForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#37"><abbr title="Modules\Flashcard\app\Services\StatisticService::getPracticeSuccessRate">getPracticeSuccessRate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#57"><abbr title="Modules\Flashcard\app\Services\StatisticService::getAverageStudySessionDuration">getAverageStudySessionDuration</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#79"><abbr title="Modules\Flashcard\app\Services\StatisticService::getTotalStudyTime">getTotalStudyTime</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#101"><abbr title="Modules\Flashcard\app\Services\StatisticService::getByUserId">getByUserId</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#109"><abbr title="Modules\Flashcard\app\Services\StatisticService::createStatistic">createStatistic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#120"><abbr title="Modules\Flashcard\app\Services\StatisticService::incrementCorrectAnswers">incrementCorrectAnswers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#127"><abbr title="Modules\Flashcard\app\Services\StatisticService::incrementIncorrectAnswers">incrementIncorrectAnswers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#134"><abbr title="Modules\Flashcard\app\Services\StatisticService::incrementStudySessions">incrementStudySessions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#141"><abbr title="Modules\Flashcard\app\Services\StatisticService::incrementTotalFlashcards">incrementTotalFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#148"><abbr title="Modules\Flashcard\app\Services\StatisticService::decrementTotalFlashcards">decrementTotalFlashcards</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#159"><abbr title="Modules\Flashcard\app\Services\StatisticService::addStudyTime">addStudyTime</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#178"><abbr title="Modules\Flashcard\app\Services\StatisticService::resetPracticeStatistics">resetPracticeStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#192"><abbr title="Modules\Flashcard\app\Services\StatisticService::updateStatistics">updateStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StatisticService.php.html#209"><abbr title="Modules\Flashcard\app\Services\StatisticService::getOrCreateStatistic">getOrCreateStatistic</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="FlashcardCommandService.php.html#547"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::importFlashcardsFromFile">importFlashcardsFromFile</abbr></a></td><td class="text-right">342</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#355"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::practiceFlashcards">practiceFlashcards</abbr></a></td><td class="text-right">210</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#288"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::accessTrashBin">accessTrashBin</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#122"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::deleteFlashcard">deleteFlashcard</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#711"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::permanentlyDeleteFlashcard">permanentlyDeleteFlashcard</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#76"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::createFlashcard">createFlashcard</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#220"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::resetPracticeData">resetPracticeData</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#261"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::viewLogs">viewLogs</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#647"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::restoreFlashcard">restoreFlashcard</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#39"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::listFlashcards">listFlashcards</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#180"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::showStatistics">showStatistics</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#498"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::registerUser">registerUser</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#682"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::restoreAllFlashcards">restoreAllFlashcards</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardCommandService.php.html#758"><abbr title="Modules\Flashcard\app\Services\FlashcardCommandService::permanentlyDeleteAllFlashcards">permanentlyDeleteAllFlashcards</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardService.php.html#67"><abbr title="Modules\Flashcard\app\Services\FlashcardService::update">update</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardService.php.html#108"><abbr title="Modules\Flashcard\app\Services\FlashcardService::restore">restore</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardService.php.html#131"><abbr title="Modules\Flashcard\app\Services\FlashcardService::forceDelete">forceDelete</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="StatisticService.php.html#37"><abbr title="Modules\Flashcard\app\Services\StatisticService::getPracticeSuccessRate">getPracticeSuccessRate</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="StatisticService.php.html#57"><abbr title="Modules\Flashcard\app\Services\StatisticService::getAverageStudySessionDuration">getAverageStudySessionDuration</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="StatisticService.php.html#79"><abbr title="Modules\Flashcard\app\Services\StatisticService::getTotalStudyTime">getTotalStudyTime</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FlashcardService.php.html#90"><abbr title="Modules\Flashcard\app\Services\FlashcardService::delete">delete</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FlashcardService.php.html#156"><abbr title="Modules\Flashcard\app\Services\FlashcardService::restoreAllForUser">restoreAllForUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FlashcardService.php.html#170"><abbr title="Modules\Flashcard\app\Services\FlashcardService::forceDeleteAllForUser">forceDeleteAllForUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="LogService.php.html#113"><abbr title="Modules\Flashcard\app\Services\LogService::logFlashcardPractice">logFlashcardPractice</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StatisticService.php.html#16"><abbr title="Modules\Flashcard\app\Services\StatisticService::getStatisticsForUser">getStatisticsForUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StatisticService.php.html#148"><abbr title="Modules\Flashcard\app\Services\StatisticService::decrementTotalFlashcards">decrementTotalFlashcards</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StatisticService.php.html#192"><abbr title="Modules\Flashcard\app\Services\StatisticService::updateStatistics">updateStatistics</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StatisticService.php.html#209"><abbr title="Modules\Flashcard\app\Services\StatisticService::getOrCreateStatistic">getOrCreateStatistic</abbr></a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.9</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.5</a> and <a href="https://phpunit.de/">PHPUnit 11.5.15</a> at Sun Apr 13 0:14:56 UTC 2025.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../../../../_js/jquery.min.js?v=11.0.9" type="text/javascript"></script>
+  <script src="../../../../_js/d3.min.js?v=11.0.9" type="text/javascript"></script>
+  <script src="../../../../_js/nv.d3.min.js?v=11.0.9" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([1,3,0,0,0,0,0,0,0,0,0,1], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([59,0,0,0,0,0,0,0,0,0,0,11], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0.2597402597402597,86,"<a href=\"FlashcardCommandService.php.html#24\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService<\/a>"],[2.2222222222222223,21,"<a href=\"FlashcardService.php.html#10\">Modules\\Flashcard\\app\\Services\\FlashcardService<\/a>"],[4.615384615384616,22,"<a href=\"LogService.php.html#13\">Modules\\Flashcard\\app\\Services\\LogService<\/a>"],[0,25,"<a href=\"StatisticService.php.html#11\">Modules\\Flashcard\\app\\Services\\StatisticService<\/a>"],[100,14,"<a href=\"StudySessionService.php.html#12\">Modules\\Flashcard\\app\\Services\\StudySessionService<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[100,1,"<a href=\"FlashcardCommandService.php.html#26\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::__construct<\/a>"],[0,3,"<a href=\"FlashcardCommandService.php.html#39\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::listFlashcards<\/a>"],[0,4,"<a href=\"FlashcardCommandService.php.html#76\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::createFlashcard<\/a>"],[0,6,"<a href=\"FlashcardCommandService.php.html#122\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::deleteFlashcard<\/a>"],[0,3,"<a href=\"FlashcardCommandService.php.html#180\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::showStatistics<\/a>"],[0,4,"<a href=\"FlashcardCommandService.php.html#220\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::resetPracticeData<\/a>"],[0,4,"<a href=\"FlashcardCommandService.php.html#261\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::viewLogs<\/a>"],[0,10,"<a href=\"FlashcardCommandService.php.html#288\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::accessTrashBin<\/a>"],[0,1,"<a href=\"FlashcardCommandService.php.html#344\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::logExit<\/a>"],[0,14,"<a href=\"FlashcardCommandService.php.html#355\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::practiceFlashcards<\/a>"],[0,3,"<a href=\"FlashcardCommandService.php.html#498\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::registerUser<\/a>"],[0,18,"<a href=\"FlashcardCommandService.php.html#547\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::importFlashcardsFromFile<\/a>"],[0,4,"<a href=\"FlashcardCommandService.php.html#647\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::restoreFlashcard<\/a>"],[0,3,"<a href=\"FlashcardCommandService.php.html#682\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::restoreAllFlashcards<\/a>"],[0,5,"<a href=\"FlashcardCommandService.php.html#711\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::permanentlyDeleteFlashcard<\/a>"],[0,3,"<a href=\"FlashcardCommandService.php.html#758\">Modules\\Flashcard\\app\\Services\\FlashcardCommandService::permanentlyDeleteAllFlashcards<\/a>"],[100,1,"<a href=\"FlashcardService.php.html#12\">Modules\\Flashcard\\app\\Services\\FlashcardService::__construct<\/a>"],[0,1,"<a href=\"FlashcardService.php.html#20\">Modules\\Flashcard\\app\\Services\\FlashcardService::getAllForUser<\/a>"],[0,1,"<a href=\"FlashcardService.php.html#28\">Modules\\Flashcard\\app\\Services\\FlashcardService::getDeletedForUser<\/a>"],[0,1,"<a href=\"FlashcardService.php.html#33\">Modules\\Flashcard\\app\\Services\\FlashcardService::setGetAllForUserResult<\/a>"],[0,1,"<a href=\"FlashcardService.php.html#41\">Modules\\Flashcard\\app\\Services\\FlashcardService::create<\/a>"],[0,1,"<a href=\"FlashcardService.php.html#59\">Modules\\Flashcard\\app\\Services\\FlashcardService::findForUser<\/a>"],[0,3,"<a href=\"FlashcardService.php.html#67\">Modules\\Flashcard\\app\\Services\\FlashcardService::update<\/a>"],[0,2,"<a href=\"FlashcardService.php.html#90\">Modules\\Flashcard\\app\\Services\\FlashcardService::delete<\/a>"],[0,3,"<a href=\"FlashcardService.php.html#108\">Modules\\Flashcard\\app\\Services\\FlashcardService::restore<\/a>"],[0,3,"<a href=\"FlashcardService.php.html#131\">Modules\\Flashcard\\app\\Services\\FlashcardService::forceDelete<\/a>"],[0,2,"<a href=\"FlashcardService.php.html#156\">Modules\\Flashcard\\app\\Services\\FlashcardService::restoreAllForUser<\/a>"],[0,2,"<a href=\"FlashcardService.php.html#170\">Modules\\Flashcard\\app\\Services\\FlashcardService::forceDeleteAllForUser<\/a>"],[100,1,"<a href=\"LogService.php.html#15\">Modules\\Flashcard\\app\\Services\\LogService::__construct<\/a>"],[100,1,"<a href=\"LogService.php.html#24\">Modules\\Flashcard\\app\\Services\\LogService::getLogsForUser<\/a>"],[100,1,"<a href=\"LogService.php.html#34\">Modules\\Flashcard\\app\\Services\\LogService::getLatestActivityForUser<\/a>"],[0,1,"<a href=\"LogService.php.html#42\">Modules\\Flashcard\\app\\Services\\LogService::logUserLogin<\/a>"],[0,1,"<a href=\"LogService.php.html#50\">Modules\\Flashcard\\app\\Services\\LogService::createLog<\/a>"],[0,1,"<a href=\"LogService.php.html#58\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardCreation<\/a>"],[0,1,"<a href=\"LogService.php.html#71\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardUpdate<\/a>"],[0,1,"<a href=\"LogService.php.html#84\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardDeletion<\/a>"],[0,1,"<a href=\"LogService.php.html#97\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardList<\/a>"],[0,1,"<a href=\"LogService.php.html#105\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardRestoration<\/a>"],[0,2,"<a href=\"LogService.php.html#113\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardPractice<\/a>"],[0,1,"<a href=\"LogService.php.html#129\">Modules\\Flashcard\\app\\Services\\LogService::logStudySessionStart<\/a>"],[0,1,"<a href=\"LogService.php.html#142\">Modules\\Flashcard\\app\\Services\\LogService::logStudySessionEnd<\/a>"],[0,1,"<a href=\"LogService.php.html#158\">Modules\\Flashcard\\app\\Services\\LogService::logStatisticsView<\/a>"],[0,1,"<a href=\"LogService.php.html#166\">Modules\\Flashcard\\app\\Services\\LogService::logPracticeReset<\/a>"],[0,1,"<a href=\"LogService.php.html#178\">Modules\\Flashcard\\app\\Services\\LogService::logExit<\/a>"],[0,1,"<a href=\"LogService.php.html#190\">Modules\\Flashcard\\app\\Services\\LogService::logUserExit<\/a>"],[0,1,"<a href=\"LogService.php.html#198\">Modules\\Flashcard\\app\\Services\\LogService::logAllFlashcardsRestore<\/a>"],[0,1,"<a href=\"LogService.php.html#206\">Modules\\Flashcard\\app\\Services\\LogService::logAllFlashcardsPermanentDelete<\/a>"],[0,1,"<a href=\"LogService.php.html#214\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardForceDelete<\/a>"],[0,1,"<a href=\"LogService.php.html#222\">Modules\\Flashcard\\app\\Services\\LogService::logFlashcardImport<\/a>"],[0,2,"<a href=\"StatisticService.php.html#16\">Modules\\Flashcard\\app\\Services\\StatisticService::getStatisticsForUser<\/a>"],[0,3,"<a href=\"StatisticService.php.html#37\">Modules\\Flashcard\\app\\Services\\StatisticService::getPracticeSuccessRate<\/a>"],[0,3,"<a href=\"StatisticService.php.html#57\">Modules\\Flashcard\\app\\Services\\StatisticService::getAverageStudySessionDuration<\/a>"],[0,3,"<a href=\"StatisticService.php.html#79\">Modules\\Flashcard\\app\\Services\\StatisticService::getTotalStudyTime<\/a>"],[0,1,"<a href=\"StatisticService.php.html#101\">Modules\\Flashcard\\app\\Services\\StatisticService::getByUserId<\/a>"],[0,1,"<a href=\"StatisticService.php.html#109\">Modules\\Flashcard\\app\\Services\\StatisticService::createStatistic<\/a>"],[0,1,"<a href=\"StatisticService.php.html#120\">Modules\\Flashcard\\app\\Services\\StatisticService::incrementCorrectAnswers<\/a>"],[0,1,"<a href=\"StatisticService.php.html#127\">Modules\\Flashcard\\app\\Services\\StatisticService::incrementIncorrectAnswers<\/a>"],[0,1,"<a href=\"StatisticService.php.html#134\">Modules\\Flashcard\\app\\Services\\StatisticService::incrementStudySessions<\/a>"],[0,1,"<a href=\"StatisticService.php.html#141\">Modules\\Flashcard\\app\\Services\\StatisticService::incrementTotalFlashcards<\/a>"],[0,2,"<a href=\"StatisticService.php.html#148\">Modules\\Flashcard\\app\\Services\\StatisticService::decrementTotalFlashcards<\/a>"],[0,1,"<a href=\"StatisticService.php.html#159\">Modules\\Flashcard\\app\\Services\\StatisticService::addStudyTime<\/a>"],[0,1,"<a href=\"StatisticService.php.html#178\">Modules\\Flashcard\\app\\Services\\StatisticService::resetPracticeStatistics<\/a>"],[0,2,"<a href=\"StatisticService.php.html#192\">Modules\\Flashcard\\app\\Services\\StatisticService::updateStatistics<\/a>"],[0,2,"<a href=\"StatisticService.php.html#209\">Modules\\Flashcard\\app\\Services\\StatisticService::getOrCreateStatistic<\/a>"],[100,1,"<a href=\"StudySessionService.php.html#14\">Modules\\Flashcard\\app\\Services\\StudySessionService::__construct<\/a>"],[100,1,"<a href=\"StudySessionService.php.html#24\">Modules\\Flashcard\\app\\Services\\StudySessionService::startSession<\/a>"],[100,4,"<a href=\"StudySessionService.php.html#41\">Modules\\Flashcard\\app\\Services\\StudySessionService::endSession<\/a>"],[100,2,"<a href=\"StudySessionService.php.html#63\">Modules\\Flashcard\\app\\Services\\StudySessionService::getFlashcardsForPractice<\/a>"],[100,4,"<a href=\"StudySessionService.php.html#78\">Modules\\Flashcard\\app\\Services\\StudySessionService::recordPracticeResult<\/a>"],[100,2,"<a href=\"StudySessionService.php.html#108\">Modules\\Flashcard\\app\\Services\\StudySessionService::resetPracticeProgress<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

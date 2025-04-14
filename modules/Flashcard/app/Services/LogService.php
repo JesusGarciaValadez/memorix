@@ -10,7 +10,7 @@ use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 
-final class LogService implements LogServiceInterface
+final readonly class LogService implements LogServiceInterface
 {
     public function __construct(
         private LogRepositoryInterface $logRepository,
@@ -126,28 +126,28 @@ final class LogService implements LogServiceInterface
     /**
      * Log a study session start event
      */
-    public function logStudySessionStart(int $userId, StudySession $session): Log
+    public function logStudySessionStart(int $userId, StudySession $studySession): Log
     {
         return $this->createLog(
             $userId,
             'study_session_started',
             'Started a study session',
-            ['session_id' => $session->id]
+            ['session_id' => $studySession->id]
         );
     }
 
     /**
      * Log a study session end event
      */
-    public function logStudySessionEnd(int $userId, StudySession $session): Log
+    public function logStudySessionEnd(int $userId, StudySession $studySession): Log
     {
         return $this->createLog(
             $userId,
             'study_session_ended',
             'Ended a study session',
             [
-                'session_id' => $session->id,
-                'duration' => $session->duration,
+                'session_id' => $studySession->id,
+                'duration' => $studySession->duration,
             ]
         );
     }

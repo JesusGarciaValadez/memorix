@@ -37,6 +37,7 @@ final class LogFactory extends Factory
                 'viewed_flashcard',
                 'edited_flashcard',
             ]),
+            'level' => fake()->randomElement(['info', 'warning', 'error']),
             'details' => fake()->sentence(10),
             'created_at' => fake()->dateTimeBetween('-30 days', 'now'),
         ];
@@ -47,13 +48,11 @@ final class LogFactory extends Factory
      */
     public function flashcardCreation(): Factory
     {
-        return $this->state(function () {
-            return [
-                'action' => 'created_flashcard',
-                'details' => 'Created flashcard ID: '.fake()->numberBetween(1, 100).
-                    ', Question: '.fake()->sentence(6).'?',
-            ];
-        });
+        return $this->state(fn (): array => [
+            'action' => 'created_flashcard',
+            'details' => 'Created flashcard ID: '.fake()->numberBetween(1, 100).
+                ', Question: '.fake()->sentence(6).'?',
+        ]);
     }
 
     /**
@@ -61,13 +60,11 @@ final class LogFactory extends Factory
      */
     public function flashcardDeletion(): Factory
     {
-        return $this->state(function () {
-            return [
-                'action' => 'deleted_flashcard',
-                'details' => 'Deleted flashcard ID: '.fake()->numberBetween(1, 100).
-                    ', Question: '.fake()->sentence(6).'?',
-            ];
-        });
+        return $this->state(fn (): array => [
+            'action' => 'deleted_flashcard',
+            'details' => 'Deleted flashcard ID: '.fake()->numberBetween(1, 100).
+                ', Question: '.fake()->sentence(6).'?',
+        ]);
     }
 
     /**
@@ -75,12 +72,10 @@ final class LogFactory extends Factory
      */
     public function studySessionStart(): Factory
     {
-        return $this->state(function () {
-            return [
-                'action' => 'started_study_session',
-                'details' => 'Started study session ID: '.fake()->numberBetween(1, 50),
-            ];
-        });
+        return $this->state(fn (): array => [
+            'action' => 'started_study_session',
+            'details' => 'Started study session ID: '.fake()->numberBetween(1, 50),
+        ]);
     }
 
     /**
@@ -88,12 +83,10 @@ final class LogFactory extends Factory
      */
     public function studySessionEnd(): Factory
     {
-        return $this->state(function () {
-            return [
-                'action' => 'ended_study_session',
-                'details' => 'Ended study session ID: '.fake()->numberBetween(1, 50),
-            ];
-        });
+        return $this->state(fn (): array => [
+            'action' => 'ended_study_session',
+            'details' => 'Ended study session ID: '.fake()->numberBetween(1, 50),
+        ]);
     }
 
     /**
@@ -101,10 +94,8 @@ final class LogFactory extends Factory
      */
     public function recent(): Factory
     {
-        return $this->state(function () {
-            return [
-                'created_at' => fake()->dateTimeBetween('-1 day', 'now'),
-            ];
-        });
+        return $this->state(fn (): array => [
+            'created_at' => fake()->dateTimeBetween('-1 day', 'now'),
+        ]);
     }
 }

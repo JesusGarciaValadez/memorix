@@ -93,12 +93,10 @@ final class PracticeResultRepository implements PracticeResultRepositoryInterfac
             ->limit($limit)
             ->get();
 
-        return $incorrectFlashcards->map(function ($flashcard) {
-            return [
-                'id' => $flashcard->id,
-                'question' => $flashcard->question,
-                'answer' => $flashcard->answer,
-            ];
-        })->toArray();
+        return $incorrectFlashcards->map(fn ($flashcard): array => [
+            'id' => $flashcard->id,
+            'question' => $flashcard->question,
+            'answer' => $flashcard->answer,
+        ])->toArray();
     }
 }

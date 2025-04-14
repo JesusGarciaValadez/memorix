@@ -56,27 +56,19 @@ final class StatisticSeederTest extends TestCase
         $statistics = Statistic::all();
 
         // Test high success user
-        $highSuccessStats = $statistics->first(function ($stat) {
-            return $stat->getCorrectPercentage() >= 80;
-        });
+        $highSuccessStats = $statistics->first(fn ($stat): bool => $stat->getCorrectPercentage() >= 80);
         $this->assertNotNull($highSuccessStats);
 
         // Test low success user
-        $lowSuccessStats = $statistics->first(function ($stat) {
-            return $stat->getCorrectPercentage() <= 40 && $stat->getCorrectPercentage() > 0;
-        });
+        $lowSuccessStats = $statistics->first(fn ($stat): bool => $stat->getCorrectPercentage() <= 40 && $stat->getCorrectPercentage() > 0);
         $this->assertNotNull($lowSuccessStats);
 
         // Test power user
-        $powerUserStats = $statistics->first(function ($stat) {
-            return $stat->total_flashcards >= 200;
-        });
+        $powerUserStats = $statistics->first(fn ($stat): bool => $stat->total_flashcards >= 200);
         $this->assertNotNull($powerUserStats);
 
         // Test new user
-        $newUserStats = $statistics->first(function ($stat) {
-            return $stat->total_flashcards <= 5;
-        });
+        $newUserStats = $statistics->first(fn ($stat): bool => $stat->total_flashcards <= 5);
         $this->assertNotNull($newUserStats);
     }
 }

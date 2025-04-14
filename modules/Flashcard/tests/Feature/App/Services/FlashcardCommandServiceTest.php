@@ -4,70 +4,76 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Services;
 
-use Mockery;
-use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
-use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
-use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
-use Modules\Flashcard\app\Services\StatisticServiceInterface;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Flashcard\app\Helpers\ConsoleRenderer;
+use Modules\Flashcard\app\Models\Flashcard;
+use Modules\Flashcard\app\Repositories\Eloquent\FlashcardRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\LogRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\PracticeResultRepository;
+use Modules\Flashcard\app\Repositories\Eloquent\StudySessionRepository;
+use Modules\Flashcard\app\Services\FlashcardCommandService;
+use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\LogService;
+use Modules\Flashcard\app\Services\StatisticService;
+use Modules\Flashcard\app\Services\StudySessionService;
 use PHPUnit\Framework\Attributes\Test;
-use stdClass;
 use Tests\TestCase;
 
 final class FlashcardCommandServiceTest extends TestCase
 {
-    private TestFlashcardCommandService $service;
+    use RefreshDatabase;
 
-    private stdClass $user;
+    private FlashcardCommandService $service;
 
-    private $renderer;
+    private User $user;
 
-    private TestLogService $logService;
+    private ConsoleRenderer $renderer;
 
-    private TestFlashcardService $flashcardService;
+    private LogService $logService;
 
-    private TestStudySessionService $studySessionService;
+    private FlashcardService $flashcardService;
 
-    private $studySessionRepository;
-
-    private $practiceResultRepository;
-
-    private $statisticService;
+    private StatisticService $statisticService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = $this->createTestUser();
-        $this->renderer = Mockery::mock(ConsoleRendererInterface::class);
-        $this->logService = new TestLogService();
-        $this->flashcardService = new TestFlashcardService();
-        $this->studySessionService = new TestStudySessionService();
-        $this->studySessionRepository = Mockery::mock(StudySessionRepositoryInterface::class);
-        $this->practiceResultRepository = Mockery::mock(PracticeResultRepositoryInterface::class);
-        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
+        $this->renderer = new ConsoleRenderer();
+        $logRepository = new LogRepository();
+        $studySessionRepository = new StudySessionRepository(new PracticeResultRepository());
+        $flashcardRepository = new FlashcardRepository();
+        $practiceResultRepository = new PracticeResultRepository();
+        $this->statisticService = new StatisticService();
+        $this->logService = new LogService($logRepository);
+        $this->flashcardService = new FlashcardService($this->logService, $this->statisticService);
+        $studySessionService = new StudySessionService(
+            $studySessionRepository,
+            $flashcardRepository,
+            $this->logService,
+            $this->statisticService
+        );
+        $studySessionRepository = new StudySessionRepository($practiceResultRepository);
+        $practiceResultRepository1 = new PracticeResultRepository();
 
-        $this->service = new TestFlashcardCommandService(
+        $this->service = new FlashcardCommandService(
             $this->flashcardService,
-            $this->studySessionService,
+            $studySessionService,
             $this->statisticService,
             $this->logService,
-            $this->practiceResultRepository,
-            $this->studySessionRepository,
+            $practiceResultRepository1,
+            $studySessionRepository,
             $this->renderer
         );
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 
     #[Test]
     public function it_can_list_flashcards_when_none_exist(): void
     {
         // Arrange
-        $this->flashcardService->setGetAllForUserResult([]);
+        $this->flashcardService->setGetAllForUserResult(1);
 
         $this->renderer->shouldReceive('info')
             ->with('Listing all flashcards...')
@@ -89,7 +95,7 @@ final class FlashcardCommandServiceTest extends TestCase
     public function it_can_list_flashcards_when_some_exist(): void
     {
         // Arrange
-        $flashcard = $this->createTestFlashcard();
+        $flashcard = $this->createFlashcard();
         $this->flashcardService->setGetAllForUserResult([$flashcard]);
 
         $this->renderer->shouldReceive('info')
@@ -171,177 +177,24 @@ final class FlashcardCommandServiceTest extends TestCase
     /**
      * Helper method to create a test user
      */
-    private function createTestUser(): stdClass
+    private function createTestUser(): User
     {
-        $user = new stdClass();
-        $user->id = 1;
-        $user->name = 'Test User';
-
-        return $user;
+        return User::factory([
+            'id' => 1,
+            'name' => 'Test User',
+        ])->create();
     }
 
     /**
      * Helper method to create a test flashcard
      */
-    private function createTestFlashcard(): stdClass
+    private function createFlashcard(): Flashcard
     {
-        $flashcard = new stdClass();
-        $flashcard->id = 1;
-        $flashcard->user_id = $this->user->id;
-        $flashcard->question = 'Test Question';
-        $flashcard->answer = 'Test Answer';
-
-        return $flashcard;
-    }
-}
-
-final class TestFlashcardCommandService
-{
-    public function __construct(
-        private $flashcardService,
-        private $studySessionService,
-        private $statisticService,
-        private $logService,
-        private $practiceResultRepository,
-        private $studySessionRepository,
-        private $renderer,
-    ) {}
-
-    public function listFlashcards($user): void
-    {
-        $this->renderer->info('Listing all flashcards...');
-
-        // Log the action
-        $this->logService->logFlashcardList($user->id);
-
-        // Get all flashcards for the current user
-        $flashcards = $this->flashcardService->getAllForUser($user->id, 15);
-
-        if (count($flashcards) === 0) {
-            $this->renderer->warning('You have no flashcards yet.');
-
-            return;
-        }
-    }
-
-    public function showStatistics($user): void
-    {
-        $this->renderer->info('Showing statistics...');
-
-        // Log the action
-        $this->logService->logStatisticsView($user->id);
-
-        // Get statistics for the user
-        $statistics = $this->statisticService->getStatisticsForUser($user->id);
-
-        if (! $statistics) {
-            $this->renderer->warning('No statistics available yet.');
-
-            return;
-        }
-
-        // Display the statistics
-        $this->renderer->info('Total Flashcards: '.$statistics['flashcards_created']);
-        $this->renderer->info('Study Sessions: '.$statistics['study_sessions']);
-        $this->renderer->info('Correct Answers: '.$statistics['correct_answers']);
-        $this->renderer->info('Incorrect Answers: '.$statistics['incorrect_answers']);
-
-        // Calculate success rate
-        $totalAnswers = $statistics['correct_answers'] + $statistics['incorrect_answers'];
-        $successRate = 0;
-        if ($totalAnswers > 0) {
-            $successRate = round(($statistics['correct_answers'] / $totalAnswers) * 100, 2);
-        }
-        $this->renderer->info('Success Rate: '.$successRate.'%');
-
-        // Get additional statistics
-        $averageDuration = $this->statisticService->getAverageStudySessionDuration($user->id);
-        $totalStudyTime = $this->statisticService->getTotalStudyTime($user->id);
-        $this->renderer->info('Average Study Session Duration: '.$averageDuration.' minutes');
-        $this->renderer->info('Total Study Time: '.$totalStudyTime.' minutes');
-    }
-
-    public function logExit($user): void
-    {
-        $this->renderer->info('See you!');
-        $this->logService->logUserExit($user->id);
-    }
-
-    public function createFlashcard($user): void
-    {
-        // Simplified version, not actually called in tests
-
-    }
-}
-
-final class TestLogService
-{
-    public bool $logFlashcardListCalled = false;
-
-    public bool $logStatisticsViewCalled = false;
-
-    public bool $logUserExitCalled = false;
-
-    public ?int $lastUserId = null;
-
-    public function logFlashcardList(int $userId): object
-    {
-        $this->logFlashcardListCalled = true;
-        $this->lastUserId = $userId;
-
-        $log = new stdClass();
-        $log->action = 'viewed_flashcard_list';
-
-        return $log;
-    }
-
-    public function logStatisticsView(int $userId): object
-    {
-        $this->logStatisticsViewCalled = true;
-        $this->lastUserId = $userId;
-
-        $log = new stdClass();
-        $log->action = 'statistics_viewed';
-
-        return $log;
-    }
-
-    public function logUserExit(int $userId): object
-    {
-        $this->logUserExitCalled = true;
-        $this->lastUserId = $userId;
-
-        $log = new stdClass();
-        $log->action = 'user_exit';
-
-        return $log;
-    }
-}
-
-final class TestFlashcardService
-{
-    private array $getAllForUserResult = [];
-
-    public function setGetAllForUserResult(array $result): void
-    {
-        $this->getAllForUserResult = $result;
-    }
-
-    public function getAllForUser(int $userId, int $perPage = 15)
-    {
-        return $this->getAllForUserResult;
-    }
-}
-
-final class TestStudySessionService
-{
-    public function startSession(int $userId): ?object
-    {
-        return new stdClass();
-    }
-
-    public function endSession(int $userId, int $sessionId): bool
-    {
-        return true;
+        return Flashcard::factory([
+            'id' => 1,
+            'user_id' => $this->user->id,
+            'question' => 'Test Question',
+            'answer' => 'Test Answer',
+        ])->make();
     }
 }

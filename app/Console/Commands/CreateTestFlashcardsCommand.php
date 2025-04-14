@@ -34,7 +34,7 @@ final class CreateTestFlashcardsCommand extends Command
         FlashcardService $flashcardService,
         StudySessionService $studySessionService,
         StatisticRepositoryInterface $statisticRepository
-    ) {
+    ): void {
         $email = $this->argument('email');
         $password = $this->argument('password');
 

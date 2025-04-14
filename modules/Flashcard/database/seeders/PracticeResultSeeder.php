@@ -49,7 +49,7 @@ final class PracticeResultSeeder extends Seeder
             foreach ($flashcards as $flashcard) {
                 // Create correct answers
                 PracticeResult::factory()
-                    ->count(rand(2, 5))
+                    ->count(random_int(2, 5))
                     ->correct()
                     ->create([
                         'user_id' => $user->id,
@@ -59,7 +59,7 @@ final class PracticeResultSeeder extends Seeder
 
                 // Create incorrect answers
                 PracticeResult::factory()
-                    ->count(rand(0, 2))
+                    ->count(random_int(0, 2))
                     ->incorrect()
                     ->create([
                         'user_id' => $user->id,
@@ -69,7 +69,7 @@ final class PracticeResultSeeder extends Seeder
 
                 // Create recent practice results
                 PracticeResult::factory()
-                    ->count(rand(1, 3))
+                    ->count(random_int(1, 3))
                     ->recent()
                     ->create([
                         'user_id' => $user->id,

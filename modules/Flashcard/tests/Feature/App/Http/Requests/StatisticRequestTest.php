@@ -6,29 +6,18 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 
 use App\Models\User;
 use Modules\Flashcard\app\Http\Requests\StatisticRequest;
-use Modules\Flashcard\app\Models\Statistic;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
 use Tests\TestCase;
 
 final class StatisticRequestTest extends TestCase
 {
-    private Statistic $statistic;
-
     private StatisticRequest $request;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $user = User::factory()->create();
-        $this->statistic = Statistic::factory()->create([
-            'user_id' => $user->id,
-            'total_flashcards' => 10,
-            'total_study_sessions' => 5,
-            'total_correct_answers' => 8,
-            'total_incorrect_answers' => 2,
-        ]);
+        User::factory()->create();
 
         $this->request = new StatisticRequest();
     }

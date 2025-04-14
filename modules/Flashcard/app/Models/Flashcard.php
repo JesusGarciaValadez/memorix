@@ -99,7 +99,7 @@ final class Flashcard extends Model
     /**
      * Scope a query to only include flashcards for a specific user.
      */
-    public static function forUser(int $userId)
+    public static function forUser(int $userId): self
     {
         return self::where('user_id', $userId);
     }

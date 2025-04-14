@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Models;
 
-use Mockery;
 use Modules\Flashcard\app\Models\Log;
 use PHPUnit\Framework\Attributes\Test;
 use stdClass;
@@ -12,12 +11,6 @@ use Tests\TestCase;
 
 final class LogTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
-
     #[Test]
     public function it_has_correct_fillable_attributes(): void
     {

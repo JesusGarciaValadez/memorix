@@ -41,7 +41,7 @@ final class StatisticFactory extends Factory
      */
     public function highSuccess(): Factory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $totalAnswers = 100;
             $correctAnswers = random_int(80, 95); // 80-95% correct
 
@@ -58,7 +58,7 @@ final class StatisticFactory extends Factory
      */
     public function lowSuccess(): Factory
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $totalAnswers = 100;
             $correctAnswers = random_int(20, 40); // 20-40% correct
 
@@ -75,7 +75,7 @@ final class StatisticFactory extends Factory
      */
     public function newUser(): Factory
     {
-        return $this->state(function () {
+        return $this->state(function (): array {
             $totalFlashcards = random_int(1, 5);
             $totalStudySessions = random_int(0, 2);
             $totalCorrectAnswers = random_int(0, 3);
@@ -95,7 +95,7 @@ final class StatisticFactory extends Factory
      */
     public function powerUser(): Factory
     {
-        return $this->state(function () {
+        return $this->state(function (): array {
             $totalFlashcards = random_int(200, 500);
             $totalStudySessions = random_int(50, 100);
             $totalCorrectAnswers = random_int(150, 400);

@@ -4,46 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Feature\database\migrations;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardsTableTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Disable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=OFF;');
-        }
-
-        // Run core Laravel migrations first
-        $this->artisan('migrate', ['--path' => 'database/migrations']);
-
-        // Run module migrations
-        $this->artisan('migrate', ['--path' => 'modules/Flashcard/database/migrations']);
-    }
-
-    protected function tearDown(): void
-    {
-        // Re-enable foreign key checks for SQLite
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys=ON;');
-        }
-
-        parent::tearDown();
-    }
-
-    public function createApplication()
-    {
-        $app = require __DIR__.'/../../../../../../bootstrap/app.php';
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        return $app;
-    }
-
     #[Test]
     public function flashcards_table_exists(): void
     {

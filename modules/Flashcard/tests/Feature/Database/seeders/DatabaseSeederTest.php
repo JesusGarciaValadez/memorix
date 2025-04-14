@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\Statistic;
@@ -14,6 +15,8 @@ use Tests\TestCase;
 
 final class DatabaseSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_runs_all_seeders(): void
     {

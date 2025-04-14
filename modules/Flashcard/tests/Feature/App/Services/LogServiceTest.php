@@ -19,14 +19,11 @@ final class LogServiceTest extends TestCase
 
     private stdClass $user;
 
-    private stdClass $flashcard;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = $this->createTestUser();
-        $this->flashcard = $this->createTestFlashcard();
         $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
         $this->service = new LogService($this->logRepository);
     }
@@ -93,19 +90,5 @@ final class LogServiceTest extends TestCase
         $user->name = 'Test User';
 
         return $user;
-    }
-
-    /**
-     * Create a test flashcard object
-     */
-    private function createTestFlashcard(int $id = 1, int $userId = 1): stdClass
-    {
-        $flashcard = new stdClass();
-        $flashcard->id = $id;
-        $flashcard->user_id = $userId;
-        $flashcard->question = 'Test Question';
-        $flashcard->answer = 'Test Answer';
-
-        return $flashcard;
     }
 }

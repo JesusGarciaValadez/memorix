@@ -8,9 +8,12 @@ use AllowDynamicProperties;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Support\Facades\Hash;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
@@ -18,7 +21,9 @@ use function Laravel\Prompts\text;
 #[AllowDynamicProperties]
 final class FlashcardInteractiveCommand extends Command implements Isolatable
 {
-    public ?User $user;
+    public ?User $user = null;
+
+    public bool $shouldKeepRunning = true;
 
     protected $signature = 'flashcard:interactive
         {email? : The email of the user}
@@ -36,8 +41,6 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
     protected $description = 'Display a main menu of available Flashcard options';
 
-    protected bool $shouldKeepRunning = true;
-
     public function __construct(
         private readonly ConsoleRendererInterface $renderer,
         private readonly FlashcardCommandServiceInterface $commandService,
@@ -47,7 +50,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
 
     public function handle(): void
     {
-        $this->trap([SIGTERM, SIGABRT, SIGQUIT], fn () => $this->shouldKeepRunning = false);
+        $this->trap([SIGTERM, SIGABRT, SIGQUIT], fn (): false => $this->shouldKeepRunning = false);
 
         // Handle primary command options first
         if ($this->option('register')) {
@@ -59,17 +62,15 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
         $this->user = $this->validateUserInformation();
 
         if (is_null($this->user)) {
-            $this->renderer->error('User not found. Please register first.');
+            error('User not found. Please register first.');
             $this->user = $this->commandService->registerUser();
 
             return;
         }
 
-        $this->renderer->success('Hi '.$this->user?->name.', welcome to your flashcards');
-
         // Check for direct action options
         if ($this->option('list')) {
-            $this->commandService->listFlashcards($this->user);
+            $this->commandService->listFlashcards($this->user, $this);
 
             return;
         }
@@ -116,9 +117,10 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             return;
         }
 
+        info('Hi '.$this->user?->name.', welcome to your flashcards');
         // If no specific action option was provided, enter the interactive menu
         while ($this->shouldKeepRunning) {
-            $action = $this->selectMenuOption();
+            $action = $this->displayMenuOption();
             $this->executeAction($action);
         }
     }
@@ -139,21 +141,21 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
             placeholder: 'john@doe.com',
             required: true,
             validate: ['email' => 'required|email|exists:users,email'],
-            transform: fn (string $value) => mb_trim($value)
+            transform: fn (string $value): string => mb_trim($value)
         );
 
         $this->argument('password') ?? password(
             label: 'Enter your password:',
             placeholder: '********',
             required: true,
-            validate: fn (string $value) => match (true) {
-                ! \Illuminate\Support\Facades\Hash::check(
+            validate: fn (string $value): ?string => match (true) {
+                ! Hash::check(
                     $value,
                     User::where('email', $email)->value('password')
                 ) => 'Invalid password. Please try again.',
                 default => null,
             },
-            transform: fn (string $value) => mb_trim($value)
+            transform: fn (string $value): string => mb_trim($value)
         );
 
         return User::where('email', $email)->first();
@@ -162,7 +164,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     /**
      * Display a select menu for flashcard options.
      */
-    protected function selectMenuOption(): string
+    private function displayMenuOption(): string
     {
         return select(
             label: 'Please, select an option:',
@@ -186,7 +188,7 @@ final class FlashcardInteractiveCommand extends Command implements Isolatable
     /**
      * Execute a flashcard action based on the selected option.
      */
-    protected function executeAction(string $action): void
+    private function executeAction(string $action): void
     {
         match ($action) {
             'list' => $this->commandService->listFlashcards($this->user),

@@ -88,7 +88,7 @@ final class StudySessionController extends Controller
     {
         $userId = $request->user()->id;
 
-        $result = $this->studySessionService->resetPracticeProgress($userId);
+        $this->studySessionService->resetPracticeProgress($userId);
 
         return response()->json([
             'message' => 'Practice progress reset successfully',

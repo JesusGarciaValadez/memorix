@@ -71,7 +71,7 @@ final class StudySessionSeederTest extends TestCase
         $this->assertCount(3, $activeSessions);
 
         // Check completed sessions (regular completed + short)
-        $completedSessions = $userSessions->filter(fn ($session) => ! $session->isActive());
+        $completedSessions = $userSessions->filter(fn ($session): bool => ! $session->isActive());
         $this->assertCount(8, $completedSessions);
 
         // Just verify we have some short sessions (we can't accurately test the exact duration

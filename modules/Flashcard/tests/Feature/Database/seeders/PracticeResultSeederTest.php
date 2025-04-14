@@ -20,7 +20,7 @@ final class PracticeResultSeederTest extends TestCase
         // Create some users, flashcards, and a study session
         $user = User::factory()->create();
         $flashcards = Flashcard::factory()->count(3)->for($user)->create();
-        $studySession = StudySession::factory()->for($user)->create([
+        StudySession::factory()->for($user)->create([
             'ended_at' => null,
         ]);
 
@@ -84,9 +84,7 @@ final class PracticeResultSeederTest extends TestCase
         $this->assertNotEmpty($incorrectResults);
 
         // Assert we have recent practice results
-        $recentResults = $practiceResults->filter(function ($result) {
-            return $result->created_at->isAfter(now()->subWeek());
-        });
+        $recentResults = $practiceResults->filter(fn ($result) => $result->created_at->isAfter(now()->subWeek()));
 
         $this->assertNotEmpty($recentResults);
     }
@@ -96,8 +94,8 @@ final class PracticeResultSeederTest extends TestCase
     {
         // Create a user
         $user = User::factory()->create();
-        $flashcards = Flashcard::factory()->count(3)->for($user)->create();
-        $studySession = StudySession::factory()->for($user)->create([
+        Flashcard::factory()->count(3)->for($user)->create();
+        StudySession::factory()->for($user)->create([
             'ended_at' => null,
         ]);
 

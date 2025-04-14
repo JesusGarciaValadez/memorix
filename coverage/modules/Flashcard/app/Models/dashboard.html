@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/html/modules/Flashcard/app/Models</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../../../../_css/bootstrap.min.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/nv.d3.min.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/style.css?v=11.0.9" rel="stylesheet" type="text/css">
+  <link href="../../../../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../../../../index.html">/var/www/html</a></li>
+         <li class="breadcrumb-item"><a href="../../../index.html">modules</a></li>
+         <li class="breadcrumb-item"><a href="../../index.html">Flashcard</a></li>
+         <li class="breadcrumb-item"><a href="../index.html">app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Models</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Log.php.html#17">Modules\Flashcard\app\Models\Log</a></td><td class="text-right">1%</td></tr>
+       <tr><td><a href="Statistic.php.html#17">Modules\Flashcard\app\Models\Statistic</a></td><td class="text-right">37%</td></tr>
+       <tr><td><a href="StudySession.php.html#17">Modules\Flashcard\app\Models\StudySession</a></td><td class="text-right">42%</td></tr>
+       <tr><td><a href="Flashcard.php.html#20">Modules\Flashcard\app\Models\Flashcard</a></td><td class="text-right">79%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Log.php.html#17">Modules\Flashcard\app\Models\Log</a></td><td class="text-right">261</td></tr>
+       <tr><td><a href="Statistic.php.html#17">Modules\Flashcard\app\Models\Statistic</a></td><td class="text-right">142</td></tr>
+       <tr><td><a href="Flashcard.php.html#20">Modules\Flashcard\app\Models\Flashcard</a></td><td class="text-right">13</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Flashcard.php.html#53"><abbr title="Modules\Flashcard\app\Models\Flashcard::getAllDeletedForUser">getAllDeletedForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Flashcard.php.html#102"><abbr title="Modules\Flashcard\app\Models\Flashcard::forUser">forUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#62"><abbr title="Modules\Flashcard\app\Models\Log::createEntry">createEntry</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#80"><abbr title="Modules\Flashcard\app\Models\Log::logUserLogin">logUserLogin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#93"><abbr title="Modules\Flashcard\app\Models\Log::logFlashcardCreation">logFlashcardCreation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#106"><abbr title="Modules\Flashcard\app\Models\Log::logFlashcardDeletion">logFlashcardDeletion</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#119"><abbr title="Modules\Flashcard\app\Models\Log::logFlashcardList">logFlashcardList</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#132"><abbr title="Modules\Flashcard\app\Models\Log::logStudySessionStart">logStudySessionStart</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#145"><abbr title="Modules\Flashcard\app\Models\Log::logStudySessionEnd">logStudySessionEnd</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#158"><abbr title="Modules\Flashcard\app\Models\Log::logPracticeAnswer">logPracticeAnswer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#171"><abbr title="Modules\Flashcard\app\Models\Log::logStatisticsView">logStatisticsView</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#184"><abbr title="Modules\Flashcard\app\Models\Log::logPracticeReset">logPracticeReset</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#197"><abbr title="Modules\Flashcard\app\Models\Log::logUserExit">logUserExit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Log.php.html#210"><abbr title="Modules\Flashcard\app\Models\Log::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Statistic.php.html#45"><abbr title="Modules\Flashcard\app\Models\Statistic::getForUser">getForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Statistic.php.html#53"><abbr title="Modules\Flashcard\app\Models\Statistic::createForUser">createForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Statistic.php.html#67"><abbr title="Modules\Flashcard\app\Models\Statistic::resetPracticeStats">resetPracticeStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Statistic.php.html#84"><abbr title="Modules\Flashcard\app\Models\Statistic::getAverageStudySessionDuration">getAverageStudySessionDuration</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Statistic.php.html#110"><abbr title="Modules\Flashcard\app\Models\Statistic::getTotalStudyTime">getTotalStudyTime</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StudySession.php.html#72"><abbr title="Modules\Flashcard\app\Models\StudySession::isEnded">isEnded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StudySession.php.html#80"><abbr title="Modules\Flashcard\app\Models\StudySession::end">end</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Flashcard.php.html#64"><abbr title="Modules\Flashcard\app\Models\Flashcard::findForUser">findForUser</abbr></a></td><td class="text-right">80%</td></tr>
+       <tr><td><a href="Statistic.php.html#154"><abbr title="Modules\Flashcard\app\Models\Statistic::getCompletionPercentage">getCompletionPercentage</abbr></a></td><td class="text-right">83%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Statistic.php.html#84"><abbr title="Modules\Flashcard\app\Models\Statistic::getAverageStudySessionDuration">getAverageStudySessionDuration</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Log.php.html#158"><abbr title="Modules\Flashcard\app\Models\Log::logPracticeAnswer">logPracticeAnswer</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Statistic.php.html#110"><abbr title="Modules\Flashcard\app\Models\Statistic::getTotalStudyTime">getTotalStudyTime</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Statistic.php.html#67"><abbr title="Modules\Flashcard\app\Models\Statistic::resetPracticeStats">resetPracticeStats</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Flashcard.php.html#64"><abbr title="Modules\Flashcard\app\Models\Flashcard::findForUser">findForUser</abbr></a></td><td class="text-right">2</td></tr>
+       <tr><td><a href="Statistic.php.html#154"><abbr title="Modules\Flashcard\app\Models\Statistic::getCompletionPercentage">getCompletionPercentage</abbr></a></td><td class="text-right">2</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.9</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.5</a> and <a href="https://phpunit.de/">PHPUnit 11.5.15</a> at Sun Apr 13 0:14:56 UTC 2025.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../../../../_js/jquery.min.js?v=11.0.9" type="text/javascript"></script>
+  <script src="../../../../_js/d3.min.js?v=11.0.9" type="text/javascript"></script>
+  <script src="../../../../_js/nv.d3.min.js?v=11.0.9" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([0,1,0,0,1,1,0,0,1,0,0,1], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([21,0,0,0,0,0,0,0,0,2,0,23], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[79.3103448275862,12,"<a href=\"Flashcard.php.html#20\">Modules\\Flashcard\\app\\Models\\Flashcard<\/a>"],[1.4492753623188406,16,"<a href=\"Log.php.html#17\">Modules\\Flashcard\\app\\Models\\Log<\/a>"],[100,4,"<a href=\"PracticeResult.php.html#17\">Modules\\Flashcard\\app\\Models\\PracticeResult<\/a>"],[37.096774193548384,22,"<a href=\"Statistic.php.html#17\">Modules\\Flashcard\\app\\Models\\Statistic<\/a>"],[42.857142857142854,5,"<a href=\"StudySession.php.html#17\">Modules\\Flashcard\\app\\Models\\StudySession<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[100,1,"<a href=\"Flashcard.php.html#43\">Modules\\Flashcard\\app\\Models\\Flashcard::getAllForUser<\/a>"],[0,1,"<a href=\"Flashcard.php.html#53\">Modules\\Flashcard\\app\\Models\\Flashcard::getAllDeletedForUser<\/a>"],[80,2,"<a href=\"Flashcard.php.html#64\">Modules\\Flashcard\\app\\Models\\Flashcard::findForUser<\/a>"],[100,1,"<a href=\"Flashcard.php.html#79\">Modules\\Flashcard\\app\\Models\\Flashcard::restoreAllForUser<\/a>"],[100,1,"<a href=\"Flashcard.php.html#91\">Modules\\Flashcard\\app\\Models\\Flashcard::forceDeleteAllForUser<\/a>"],[0,1,"<a href=\"Flashcard.php.html#102\">Modules\\Flashcard\\app\\Models\\Flashcard::forUser<\/a>"],[100,1,"<a href=\"Flashcard.php.html#110\">Modules\\Flashcard\\app\\Models\\Flashcard::user<\/a>"],[100,1,"<a href=\"Flashcard.php.html#118\">Modules\\Flashcard\\app\\Models\\Flashcard::practiceResults<\/a>"],[100,1,"<a href=\"Flashcard.php.html#126\">Modules\\Flashcard\\app\\Models\\Flashcard::isCorrectlyAnswered<\/a>"],[100,1,"<a href=\"Flashcard.php.html#136\">Modules\\Flashcard\\app\\Models\\Flashcard::isIncorrectlyAnswered<\/a>"],[100,1,"<a href=\"Flashcard.php.html#146\">Modules\\Flashcard\\app\\Models\\Flashcard::newFactory<\/a>"],[0,1,"<a href=\"Log.php.html#62\">Modules\\Flashcard\\app\\Models\\Log::createEntry<\/a>"],[0,1,"<a href=\"Log.php.html#80\">Modules\\Flashcard\\app\\Models\\Log::logUserLogin<\/a>"],[0,1,"<a href=\"Log.php.html#93\">Modules\\Flashcard\\app\\Models\\Log::logFlashcardCreation<\/a>"],[0,1,"<a href=\"Log.php.html#106\">Modules\\Flashcard\\app\\Models\\Log::logFlashcardDeletion<\/a>"],[0,1,"<a href=\"Log.php.html#119\">Modules\\Flashcard\\app\\Models\\Log::logFlashcardList<\/a>"],[0,1,"<a href=\"Log.php.html#132\">Modules\\Flashcard\\app\\Models\\Log::logStudySessionStart<\/a>"],[0,1,"<a href=\"Log.php.html#145\">Modules\\Flashcard\\app\\Models\\Log::logStudySessionEnd<\/a>"],[0,4,"<a href=\"Log.php.html#158\">Modules\\Flashcard\\app\\Models\\Log::logPracticeAnswer<\/a>"],[0,1,"<a href=\"Log.php.html#171\">Modules\\Flashcard\\app\\Models\\Log::logStatisticsView<\/a>"],[0,1,"<a href=\"Log.php.html#184\">Modules\\Flashcard\\app\\Models\\Log::logPracticeReset<\/a>"],[0,1,"<a href=\"Log.php.html#197\">Modules\\Flashcard\\app\\Models\\Log::logUserExit<\/a>"],[0,1,"<a href=\"Log.php.html#210\">Modules\\Flashcard\\app\\Models\\Log::user<\/a>"],[100,1,"<a href=\"Log.php.html#218\">Modules\\Flashcard\\app\\Models\\Log::newFactory<\/a>"],[100,1,"<a href=\"PracticeResult.php.html#45\">Modules\\Flashcard\\app\\Models\\PracticeResult::user<\/a>"],[100,1,"<a href=\"PracticeResult.php.html#50\">Modules\\Flashcard\\app\\Models\\PracticeResult::flashcard<\/a>"],[100,1,"<a href=\"PracticeResult.php.html#55\">Modules\\Flashcard\\app\\Models\\PracticeResult::studySession<\/a>"],[100,1,"<a href=\"PracticeResult.php.html#63\">Modules\\Flashcard\\app\\Models\\PracticeResult::newFactory<\/a>"],[0,1,"<a href=\"Statistic.php.html#45\">Modules\\Flashcard\\app\\Models\\Statistic::getForUser<\/a>"],[0,1,"<a href=\"Statistic.php.html#53\">Modules\\Flashcard\\app\\Models\\Statistic::createForUser<\/a>"],[0,2,"<a href=\"Statistic.php.html#67\">Modules\\Flashcard\\app\\Models\\Statistic::resetPracticeStats<\/a>"],[0,5,"<a href=\"Statistic.php.html#84\">Modules\\Flashcard\\app\\Models\\Statistic::getAverageStudySessionDuration<\/a>"],[0,3,"<a href=\"Statistic.php.html#110\">Modules\\Flashcard\\app\\Models\\Statistic::getTotalStudyTime<\/a>"],[100,1,"<a href=\"Statistic.php.html#132\">Modules\\Flashcard\\app\\Models\\Statistic::user<\/a>"],[100,2,"<a href=\"Statistic.php.html#140\">Modules\\Flashcard\\app\\Models\\Statistic::getCorrectPercentage<\/a>"],[83.33333333333334,2,"<a href=\"Statistic.php.html#154\">Modules\\Flashcard\\app\\Models\\Statistic::getCompletionPercentage<\/a>"],[100,1,"<a href=\"Statistic.php.html#172\">Modules\\Flashcard\\app\\Models\\Statistic::incrementTotalFlashcards<\/a>"],[100,1,"<a href=\"Statistic.php.html#183\">Modules\\Flashcard\\app\\Models\\Statistic::incrementTotalStudySessions<\/a>"],[100,1,"<a href=\"Statistic.php.html#194\">Modules\\Flashcard\\app\\Models\\Statistic::incrementTotalCorrectAnswers<\/a>"],[100,1,"<a href=\"Statistic.php.html#205\">Modules\\Flashcard\\app\\Models\\Statistic::incrementTotalIncorrectAnswers<\/a>"],[100,1,"<a href=\"Statistic.php.html#216\">Modules\\Flashcard\\app\\Models\\Statistic::newFactory<\/a>"],[100,1,"<a href=\"StudySession.php.html#64\">Modules\\Flashcard\\app\\Models\\StudySession::user<\/a>"],[0,1,"<a href=\"StudySession.php.html#72\">Modules\\Flashcard\\app\\Models\\StudySession::isEnded<\/a>"],[0,1,"<a href=\"StudySession.php.html#80\">Modules\\Flashcard\\app\\Models\\StudySession::end<\/a>"],[100,1,"<a href=\"StudySession.php.html#91\">Modules\\Flashcard\\app\\Models\\StudySession::isActive<\/a>"],[100,1,"<a href=\"StudySession.php.html#99\">Modules\\Flashcard\\app\\Models\\StudySession::newFactory<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

@@ -67,14 +67,6 @@ final class StudySession extends Model
     }
 
     /**
-     * Check if the study session is active.
-     */
-    public function isActive(): bool
-    {
-        return ! $this->ended_at;
-    }
-
-    /**
      * Check if the study session has ended.
      */
     public function isEnded(): bool
@@ -91,6 +83,14 @@ final class StudySession extends Model
         $this->save();
 
         return $this;
+    }
+
+    /**
+     * Check if the study session is active.
+     */
+    public function isActive(): bool
+    {
+        return ! (bool) $this->ended_at;
     }
 
     /**

@@ -21,7 +21,7 @@ use Modules\Flashcard\app\Http\Controllers\Api\V1\StudySessionController;
 
 // API v1 routes
 Route::prefix('v1')
-    ->group(function () {
+    ->group(function (): void {
         Route::apiResource('flashcards', FlashcardController::class)->name('api.flashcards');
         Route::apiResource('study-sessions', StudySessionController::class)->name('api.study-sessions');
         Route::apiResource('statistics', StatisticController::class)->name('api.statistics');

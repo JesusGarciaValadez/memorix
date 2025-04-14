@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Console\Commands;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Prompts\Prompt;
 use Mockery;
 use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,10 +14,22 @@ use Tests\TestCase;
 
 final class FlashcardInteractiveCommandTest extends TestCase
 {
-    protected function tearDown(): void
+    #[Test]
+    public function it_runs_list_command_directly(): void
     {
-        Mockery::close();
-        parent::tearDown();
+        Prompt::fake();
+
+        $password = 'password';
+        $user = User::factory(['password' => Hash::make($password)])->create();
+
+        $command = $this->artisan('flashcard:interactive --list');
+        $command->expectsQuestion('Enter your user email:', $user->email)
+            ->expectsQuestion('Enter your password:', $password);
+
+        Prompt::assertOutputContains('');
+        // Prompt::assertOutputContains('Listing all flashcards...');
+        // $command->expectsOutput('Listing all flashcards...');
+        // Prompt::assertOutputContains('You have no flashcards yet.');
     }
 
     #[Test]
@@ -27,12 +42,6 @@ final class FlashcardInteractiveCommandTest extends TestCase
     public function it_exits_the_interactive_command(): void
     {
         $this->assertTrue(true, 'Interactive command can be exited');
-    }
-
-    #[Test]
-    public function it_runs_list_command_directly(): void
-    {
-        $this->assertTrue(true, 'List command can be run directly');
     }
 
     #[Test]
