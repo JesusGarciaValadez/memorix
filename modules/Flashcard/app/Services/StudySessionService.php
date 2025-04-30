@@ -9,7 +9,7 @@ use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
-final readonly class StudySessionService
+final readonly class StudySessionService implements StudySessionServiceInterface
 {
     public function __construct(
         private StudySessionRepositoryInterface $studySessionRepository,
@@ -58,7 +58,9 @@ final readonly class StudySessionService
     }
 
     /**
-     * Get flashcards for practice.
+     * Get flashcards for practice, prioritizing those answered incorrectly.
+     *
+     * @return array<int, array{id: int, question: string, answer: string}> An array of flashcards ready for practice.
      */
     public function getFlashcardsForPractice(int $userId): array
     {

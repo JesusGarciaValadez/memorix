@@ -19,7 +19,10 @@ interface StudySessionServiceInterface
     public function endSession(int $userId, int $sessionId): bool;
 
     /**
-     * Get flashcards for practice.
+     * Get flashcards for a practice session.
+     *
+     * @param  int  $userId  The ID of the user.
+     * @return array<int, array{id: int, question: string, answer: string}> An array of flashcards for practice.
      */
     public function getFlashcardsForPractice(int $userId): array;
 

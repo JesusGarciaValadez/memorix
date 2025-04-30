@@ -6,8 +6,12 @@ namespace Modules\Flashcard\app\Services;
 
 use App\Models\User;
 use Exception;
-use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Hash;
 use Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand;
+use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 
@@ -16,17 +20,16 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\select;
-use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
 final readonly class FlashcardCommandService implements FlashcardCommandServiceInterface
 {
     public function __construct(
-        private FlashcardService $flashcardService,
-        private StudySessionService $studySessionService,
+        private FlashcardServiceInterface $flashcardService,
+        private StudySessionServiceInterface $studySessionService,
         private StatisticServiceInterface $statisticService,
-        private LogService $logService,
+        private LogServiceInterface $logService,
         private PracticeResultRepositoryInterface $practiceResultRepository,
         private StudySessionRepositoryInterface $studySessionRepository,
     ) {}
@@ -36,7 +39,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
      */
     public function listFlashcards(User $user, FlashcardInteractiveCommand $command): void
     {
-        note('Listing all flashcards...');
+        $command->info('Listing all flashcards...');
 
         // Log the action
         $this->logService->logFlashcardList($user->id);
@@ -45,15 +48,18 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
         if (count($flashcards) === 0) {
-            warning('You have no flashcards yet.');
+            $command->warn('You have no flashcards yet.');
 
             $command->shouldKeepRunning = false;
+
+            return;
         }
 
         // Prepare the data for the table
         $headers = ['Question', 'Answer'];
         $rows = [];
 
+        /** @var Flashcard $flashcard */
         foreach ($flashcards as $flashcard) {
             $rows[] = [
                 'Question' => $flashcard->question,
@@ -62,7 +68,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         }
 
         // Render the flashcards using Laravel Prompts table
-        table(
+        $command->table(
             headers: $headers,
             rows: $rows
         );
@@ -71,9 +77,9 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
     /**
      * Create a new flashcard for a user.
      */
-    public function createFlashcard(User $user): void
+    public function createFlashcard(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Creating a new flashcard...');
+        $command->info('Creating a new flashcard...');
 
         // Get user input for the flashcard
         $question = text(
@@ -84,7 +90,6 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
                 ? 'The question must be at least 3 characters.'
                 : null
         );
-
         $answer = text(
             label: 'Enter the flashcard answer:',
             placeholder: 'A PHP web application framework',
@@ -95,8 +100,8 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         );
 
         // Review the input
-        info('Question: '.$question);
-        info('Answer: '.$answer);
+        $command->info('Question: '.$question);
+        $command->info('Answer: '.$answer);
 
         // Create the flashcard
         $flashcard = $this->flashcardService->create(
@@ -107,31 +112,32 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             ]
         );
 
-        if ($flashcard) {
-            note('Flashcard created successfully!');
+        if ($flashcard::exists()) {
+            $command->info('Flashcard created successfully!');
         } else {
-            error('Failed to create flashcard.');
+            $command->error('Failed to create flashcard.');
         }
     }
 
     /**
      * Delete a flashcard for a user.
      */
-    public function deleteFlashcard(User $user): void
+    public function deleteFlashcard(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Deleting a flashcard...');
+        $command->info('Deleting a flashcard...');
 
         // Get all flashcards for the current user
         $flashcards = $this->flashcardService->getAllForUser($user->id)->items();
 
         if (count($flashcards) === 0) {
-            warning('You have no flashcards to delete.');
+            $command->warn('You have no flashcards to delete.');
 
             return;
         }
 
         // Prepare the flashcards for selection
         $options = [];
+        /** @var Flashcard $flashcard */
         foreach ($flashcards as $flashcard) {
             $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
@@ -145,7 +151,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         );
 
         if ($selectedId === 'cancel') {
-            info('Deletion cancelled.');
+            $command->info('Deletion cancelled.');
 
             return;
         }
@@ -157,7 +163,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         );
 
         if (! $confirmDelete) {
-            info('Deletion cancelled.');
+            $command->info('Deletion cancelled.');
 
             return;
         }
@@ -166,18 +172,18 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         $success = $this->flashcardService->delete((int) $selectedId, $user->id);
 
         if ($success) {
-            note('Flashcard deleted successfully!');
+            $command->info('Flashcard deleted successfully!');
         } else {
-            error('Failed to delete flashcard.');
+            $command->error('Failed to delete flashcard.');
         }
     }
 
     /**
      * Show statistics for a user.
      */
-    public function showStatistics(User $user): void
+    public function showStatistics(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Showing statistics...');
+        $command->info('Showing statistics...');
 
         // Log the action
         $this->logService->logStatisticsView($user->id);
@@ -186,38 +192,40 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         $statistics = $this->statisticService->getStatisticsForUser($user->id);
 
         if ($statistics === []) {
-            warning('No statistics available yet.');
+            $command->warn('No statistics available yet.');
 
             return;
         }
 
         // Display the statistics
-        info('Total Flashcards: '.$statistics['flashcards_created']);
-        info('Study Sessions: '.$statistics['study_sessions']);
-        info('Correct Answers: '.$statistics['correct_answers']);
-        info('Incorrect Answers: '.$statistics['incorrect_answers']);
+        $command->info('Total Flashcards: '.$statistics['flashcards_created']);
+        $command->info('Study Sessions: '.$statistics['study_sessions']);
+        $command->info('Correct Answers: '.$statistics['correct_answers']);
+        $command->info('Incorrect Answers: '.$statistics['incorrect_answers']);
 
         // Calculate success rate
-        $totalAnswers = $statistics['correct_answers'] + $statistics['incorrect_answers'];
+        $correct = $statistics['correct_answers'];
+        $incorrect = $statistics['incorrect_answers'];
+        $totalAnswers = $correct + $incorrect;
         $successRate = 0;
         if ($totalAnswers > 0) {
-            $successRate = round(($statistics['correct_answers'] / $totalAnswers) * 100, 2);
+            $successRate = round(($correct / $totalAnswers) * 100, 2);
         }
-        info('Success Rate: '.$successRate.'%');
+        $command->info('Success Rate: '.$successRate.'%');
 
         // Get additional statistics
         $averageDuration = $this->statisticService->getAverageStudySessionDuration($user->id);
         $totalStudyTime = $this->statisticService->getTotalStudyTime($user->id);
-        info('Average Study Session Duration: '.$averageDuration.' minutes');
-        info('Total Study Time: '.$totalStudyTime.' minutes');
+        $command->info('Average Study Session Duration: '.$averageDuration.' minutes');
+        $command->info('Total Study Time: '.$totalStudyTime.' minutes');
     }
 
     /**
      * Reset practice data for a user.
      */
-    public function resetPracticeData(User $user): void
+    public function resetPracticeData(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Resetting flashcard data...');
+        $command->info('Resetting flashcard data...');
 
         // Confirm reset
         $confirmReset = confirm(
@@ -226,7 +234,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         );
 
         if (! $confirmReset) {
-            info('Reset cancelled.');
+            $command->info('Reset cancelled.');
 
             return;
         }
@@ -247,51 +255,51 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             // Log the reset
             $this->logService->logPracticeReset($user->id);
 
-            note('Practice data reset successfully!');
+            $command->info('Practice data reset successfully!');
         } catch (Exception $e) {
-            error('Failed to reset practice data: '.$e->getMessage());
+            $command->error('Failed to reset practice data: '.$e->getMessage());
         }
     }
 
     /**
      * View logs for a user.
      */
-    public function viewLogs(User $user): void
+    public function viewLogs(User $user, FlashcardInteractiveCommand $command): void
     {
         try {
             $logs = $this->logService->getLatestActivityForUser($user->id);
 
             if ($logs === []) {
-                warning('No activity logs found');
+                $command->warn('No activity logs found');
 
                 return;
             }
 
             foreach ($logs as $log) {
-                info(sprintf(
+                $command->info(sprintf(
                     '[%s] %s - %s',
-                    $log['level'],
-                    $log['action'],
-                    $log['details'] ?? ''
+                    (string) $log['level'],
+                    (string) $log['action'],
+                    (string) ($log['details'] ?? '')
                 ));
             }
         } catch (Exception $e) {
-            error('An error occurred while fetching logs: '.$e->getMessage());
+            $command->error('An error occurred while fetching logs: '.$e->getMessage());
         }
     }
 
     /**
      * Access the trash bin for a user.
      */
-    public function accessTrashBin(User $user): void
+    public function accessTrashBin(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Accessing trash bin...');
+        $command->info('Accessing trash bin...');
 
         // Get deleted flashcards
         $deletedFlashcards = $this->flashcardService->getDeletedForUser($user->id);
 
         if ($deletedFlashcards->isEmpty()) {
-            warning('Your trash bin is empty.');
+            $command->warn('Your trash bin is empty.');
 
             return;
         }
@@ -300,16 +308,18 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         $headers = ['ID', 'Question', 'Answer', 'Deleted At'];
         $rows = [];
 
-        foreach ($deletedFlashcards as $flashcard) {
+        /** @var Flashcard $flashcard */
+        foreach ($deletedFlashcards->items() as $flashcard) {
             $rows[] = [
                 'ID' => (string) $flashcard->id,
                 'Question' => mb_substr((string) $flashcard->question, 0, 30).(mb_strlen((string) $flashcard->question) > 30 ? '...' : ''),
                 'Answer' => mb_substr((string) $flashcard->answer, 0, 30).(mb_strlen((string) $flashcard->answer) > 30 ? '...' : ''),
+                // @phpstan-ignore-next-line class.notFound
                 'Deleted At' => $flashcard->deleted_at?->format('Y-m-d H:i:s') ?? 'N/A',
             ];
         }
 
-        table(
+        $command->table(
             headers: $headers,
             rows: $rows
         );
@@ -339,42 +349,42 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
     /**
      * Log user exit.
      */
-    public function logExit(User $user): void
+    public function logExit(User $user, FlashcardInteractiveCommand $command): void
     {
         $this->logService->logUserExit($user->id);
-        note('See you!');
+        $command->info('See you!');
     }
 
     /**
      * Practice flashcards for a user.
-     *
-     * @throws BindingResolutionException
      */
-    public function practiceFlashcards(User $user): void
+    public function practiceFlashcards(User $user, FlashcardInteractiveCommand $command): void
     {
-        info('Starting practice mode...');
+        $command->info('Starting practice mode...');
 
         // Get available flashcards for practice
-        $flashcards = $this->studySessionRepository->getFlashcardsForPractice($user->id);
+        /** @var EloquentCollection<int, Flashcard> $flashcards */
+        $flashcards = Flashcard::hydrate($this->studySessionRepository->getFlashcardsForPractice($user->id));
 
         if ($flashcards->isEmpty()) {
-            warning('You have no flashcards to practice.');
+            $command->warn('You have no flashcards to practice.');
 
             return;
         }
 
         // Start or get active study session
-        $studySession = $this->studySessionRepository->getActiveForUser($user->id);
-        if (! $studySession) {
+        $studySession = $this->studySessionRepository->getActiveSessionForUser($user->id);
+        if (! $studySession instanceof \Modules\Flashcard\app\Models\StudySession) {
             $studySession = $this->studySessionService->startSession($user->id);
             if (! $studySession) {
-                error('Failed to start study session.');
+                $command->error('Failed to start study session.');
 
                 return;
             }
         }
 
         // Prepare tracking variables
+        /** @var EloquentCollection<int, \Modules\Flashcard\app\Models\PracticeResult> $practiceResults */
         $practiceResults = $this->practiceResultRepository->getForUser($user->id);
         $totalFlashcards = $flashcards->count();
         $correctAnswers = $practiceResults->where('is_correct', true)->count();
@@ -393,14 +403,14 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
                 ['Correct Answers', (string) $correctAnswers],
                 ['Incorrect Answers', (string) $incorrectAnswers],
                 ['Not Answered', (string) $notAnswered],
-                ['Completion', $totalFlashcards > 0 ? round(($correctAnswers / $totalFlashcards) * 100, 2).'%' : '0%'],
+                ['Completion', $totalFlashcards > 0 ? round((int) $correctAnswers / (int) $totalFlashcards * 100, 2).'%' : '0%'],
             ];
 
-            table(['Statistic', 'Value'], $progressTable);
+            $command->table(['Statistic', 'Value'], $progressTable);
 
             // If all questions are correct, end practice
             if ($correctAnswers === $totalFlashcards) {
-                note('Congratulations! You have correctly answered all flashcards.');
+                $command->info('Congratulations! You have correctly answered all flashcards.');
                 $practiceComplete = true;
 
                 continue;
@@ -408,6 +418,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
             // Prepare question options
             $options = [];
+            /** @var Flashcard $flashcard */
             foreach ($flashcards as $flashcard) {
                 // Skip correctly answered flashcards
                 $alreadyCorrect = $practiceResults
@@ -423,7 +434,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
             // If no questions left to answer, end practice
             if (count($options) === 1) { // Only 'exit' option
-                note('Congratulations! You have correctly answered all flashcards.');
+                $command->info('Congratulations! You have correctly answered all flashcards.');
                 $practiceComplete = true;
 
                 continue;
@@ -437,15 +448,34 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             );
 
             if ($selectedId === 'exit') {
-                info('Exiting practice mode...');
+                $command->info('Exiting practice mode...');
                 $practiceComplete = true;
+                $command->shouldKeepRunning = false;
 
                 continue;
             }
 
             // Show the question
-            $flashcard = $flashcards->firstWhere('id', $selectedId);
-            info('Question: '.$flashcard->question);
+            $selectedFlashcardById = Flashcard::find($selectedId);
+
+            if (! $selectedFlashcardById) {
+                $command->error("Flashcard with ID {$selectedId} not found. Skipping.");
+
+                continue; // Skip to the next iteration
+            }
+
+            // Now find the corresponding flashcard in the current practice collection
+            $flashcard = $flashcards->firstWhere('id', $selectedFlashcardById->id);
+
+            // It's theoretically possible the flashcard found by ID isn't in the $flashcards collection
+            // if the collection logic is flawed, though unlikely with current setup. Better safe than sorry.
+            if (! $flashcard) {
+                $command->error("Flashcard with ID {$selectedId} found in DB but not in current practice set. Skipping.");
+
+                continue; // Skip to the next iteration
+            }
+
+            $command->info('Question: '.$flashcard->question);
 
             // Get the user's answer
             $userAnswer = text(
@@ -462,14 +492,13 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
             // Update tracking variables
             if ($isCorrect) {
-                note('Correct! The answer is: '.$flashcard->answer);
+                $command->info('Correct! The answer is: '.$flashcard->answer);
                 $correctAnswers++;
-                $notAnswered--;
             } else {
-                error('Incorrect. The correct answer is: '.$flashcard->answer);
+                $command->error('Incorrect. The correct answer is: '.$flashcard->answer);
                 $incorrectAnswers++;
-                $notAnswered--;
             }
+            $notAnswered--;
 
             // Ask if user wants to continue
             $continue = confirm(
@@ -478,7 +507,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             );
 
             if (! $continue) {
-                info('Ending practice session...');
+                $command->info('Ending practice session...');
                 $practiceComplete = true;
             }
         }
@@ -486,22 +515,20 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
         // End the study session if all questions are answered correctly
         if ($correctAnswers === $totalFlashcards) {
             $this->studySessionService->endSession($studySession->id, $user->id);
-            note('Study session completed successfully!');
+            $command->info('Study session completed successfully!');
         }
     }
 
     /**
      * Register a new user.
      */
-    public function registerUser(): User
+    public function registerUser(Command $command): User
     {
         $name = text(
             label: 'Enter your user name:',
             placeholder: 'John Doe',
             required: true,
-            validate: fn (string $value): ?string => mb_strlen($value) < 3
-                ? 'The name must be at least 3 characters.'
-                : null,
+            validate: ['name' => 'required|string|min:3'],
             transform: fn (string $value): string => mb_trim($value)
         );
 
@@ -509,7 +536,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             label: 'Enter your user email:',
             placeholder: 'john@doe.com',
             required: true,
-            validate: ['email' => 'required|email|unique:users,email'],
+            validate: ['email' => 'required|email|unique:users,email|max:250'],
             transform: fn (string $value): string => mb_trim($value)
         );
 
@@ -517,20 +544,32 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
             label: 'Enter your password:',
             placeholder: '********',
             required: true,
-            validate: fn (string $value): ?string => mb_strlen($value) < 8
-                ? 'The password must be at least 8 characters.'
-                : null,
+            validate: [
+                'password' => [
+                    'required',
+                    'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,}$/i',
+                    'string',
+                    'min:8',
+                    'max:250',
+                ],
+            ],
             transform: fn (string $value): string => mb_trim($value)
         );
 
         // Create a new user
         $user = User::create([
-            'name' => $name,
+            'name' => str_replace('_', ' ', $name),
             'email' => $email,
-            'password' => bcrypt($password),
+            'password' => Hash::make($password),
         ]);
 
-        note("User {$user->name} registered successfully with email {$user->email}.");
+        $command->info(
+            sprintf(
+                'User %s registered successfully with email %s.',
+                $user->name,
+                $user->email
+            )
+        );
 
         return $user;
     }
@@ -555,6 +594,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
             // Open file and read contents
             $file = fopen($filePath, 'r');
+            // @phpstan-ignore-next-line booleanNot.alwaysFalse
             if (! $file) {
                 error("Could not open file: {$filePath}");
 
@@ -570,9 +610,11 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
                 return false;
             }
 
-            // Find the column indices for question and answer
-            $questionIndex = in_array('question', array_map('strtolower', $header), true);
-            $answerIndex = in_array('answer', array_map('strtolower', $header), true);
+            // Find the keys (indices) of 'question' and 'answer' in the lowercased header
+            // Ensure all header elements are strings before lowercasing
+            $headerLower = array_map(fn ($h) => is_string($h) ? mb_strtolower($h) : '', $header);
+            $questionIndex = array_search('question', $headerLower, true);
+            $answerIndex = array_search('answer', $headerLower, true);
 
             if ($questionIndex === false || $answerIndex === false) {
                 error("CSV must contain 'question' and 'answer' columns.");
@@ -588,14 +630,17 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
                 $rowNumber++;
 
                 // Skip empty rows
-                if ($row === [] || count($row) <= max($questionIndex, $answerIndex)) {
+                if ($row === [] || count($row) <= max((int) $questionIndex, (int) $answerIndex)) {
                     warning("Skipping row {$rowNumber}: Insufficient columns.");
 
                     continue;
                 }
 
-                $question = mb_trim($row[$questionIndex]);
-                $answer = mb_trim($row[$answerIndex]);
+                // Ensure value is string before trim
+                $questionRaw = $row[$questionIndex];
+                $answerRaw = $row[$answerIndex];
+                $question = is_string($questionRaw) ? mb_trim($questionRaw) : '';
+                $answer = is_string($answerRaw) ? mb_trim($answerRaw) : '';
 
                 // Validate data
                 if ($question === '' || $question === '0' || ($answer === '' || $answer === '0')) {
@@ -610,6 +655,7 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
                     'answer' => $answer,
                 ]);
 
+                // @phpstan-ignore-next-line if.alwaysTrue
                 if ($flashcard) {
                     $importCount++;
                 } else {
@@ -634,12 +680,15 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
     /**
      * Restore a flashcard.
+     *
+     * @param  LengthAwarePaginator<int, Flashcard>  $deletedFlashcards
      */
-    private function restoreFlashcard(User $user, \Illuminate\Contracts\Pagination\LengthAwarePaginator $deletedFlashcards): void
+    private function restoreFlashcard(User $user, LengthAwarePaginator $deletedFlashcards): void
     {
         // Prepare options for selection
         $options = [];
-        foreach ($deletedFlashcards as $flashcard) {
+        /** @var Flashcard $flashcard */
+        foreach ($deletedFlashcards->items() as $flashcard) {
             $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
         $options['cancel'] = 'Cancel';
@@ -698,12 +747,15 @@ final readonly class FlashcardCommandService implements FlashcardCommandServiceI
 
     /**
      * Permanently delete a flashcard.
+     *
+     * @param  LengthAwarePaginator<int, Flashcard>  $deletedFlashcards
      */
-    private function permanentlyDeleteFlashcard(User $user, \Illuminate\Contracts\Pagination\LengthAwarePaginator $deletedFlashcards): void
+    private function permanentlyDeleteFlashcard(User $user, LengthAwarePaginator $deletedFlashcards): void
     {
         // Prepare options for selection
         $options = [];
-        foreach ($deletedFlashcards as $flashcard) {
+        /** @var Flashcard $flashcard */
+        foreach ($deletedFlashcards->items() as $flashcard) {
             $options[$flashcard->id] = mb_substr((string) $flashcard->question, 0, 50);
         }
         $options['cancel'] = 'Cancel';

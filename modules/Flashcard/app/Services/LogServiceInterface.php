@@ -95,12 +95,12 @@ interface LogServiceInterface
     public function logAllFlashcardsPermanentDelete(int $userId): Log;
 
     /**
-     * Log flashcard force delete
-     */
-    public function logFlashcardForceDelete(int $userId, int $flashcardId, string $flashcardQuestion): Log;
-
-    /**
      * Log import of flashcards from file.
      */
     public function logFlashcardImport(int $userId, int $importCount): Log;
+
+    /**
+     * Log permanent deletion of a single flashcard.
+     */
+    public function logFlashcardForceDelete(int $userId, int $flashcardId, string $flashcardQuestion): Log;
 }

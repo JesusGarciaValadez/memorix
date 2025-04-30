@@ -83,20 +83,36 @@ final class PracticeResultRepository implements PracticeResultRepositoryInterfac
      */
     public function getRecentlyIncorrectFlashcards(int $userId, int $days = 7, int $limit = 10): array
     {
-        $incorrectFlashcards = DB::table('flashcards')
-            ->join('practice_results', 'flashcards.id', '=', 'practice_results.flashcard_id')
-            ->where('flashcards.user_id', $userId)
+        // Explicitly select columns to help PHPStan understand the result structure
+        $results = PracticeResult::query()
+            ->select(
+                'flashcards.id as flashcard_id', // Alias to avoid potential conflicts
+                'flashcards.question',
+                'flashcards.answer'
+            )
+            ->join('flashcards', 'practice_results.flashcard_id', '=', 'flashcards.id')
+            ->where('practice_results.user_id', $userId)
             ->where('practice_results.is_correct', false)
             ->where('practice_results.created_at', '>', now()->subDays($days))
-            ->select('flashcards.*')
             ->orderBy('practice_results.created_at', 'desc')
+            ->distinct('flashcards.id')
             ->limit($limit)
-            ->get();
+            ->get()
+            ->all(); // Revert to array of stdClass objects
 
-        return $incorrectFlashcards->map(fn ($flashcard): array => [
-            'id' => $flashcard->id,
-            'question' => $flashcard->question,
-            'answer' => $flashcard->answer,
-        ])->toArray();
+        $flashcards = [];
+        foreach ($results as $result) {
+            /** @var object{flashcard_id: int, question: string, answer: string} $result */
+            // Access properties directly from the stdClass object
+            if (isset($result->flashcard_id, $result->question, $result->answer)) {
+                $flashcards[] = [
+                    'id' => $result->flashcard_id,
+                    'question' => $result->question,
+                    'answer' => $result->answer,
+                ];
+            }
+        }
+
+        return $flashcards;
     }
 }

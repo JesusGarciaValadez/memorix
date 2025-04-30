@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Repositories\Eloquent;
 
 use App\Models\User;
-use JsonException;
+use Illuminate\Support\Collection;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
@@ -16,7 +16,8 @@ final class LogRepository implements LogRepositoryInterface
     /**
      * Get logs for a user.
      *
-     * @return array<int, array<string, mixed>>
+     *
+     * @return array<int, array{id: int, user_id: int, action: string, level: string, created_at: string|null, details: Collection<array-key, mixed>|null}>
      */
     public function getLogsForUser(int $userId, int $limit = 50): array
     {
@@ -29,7 +30,7 @@ final class LogRepository implements LogRepositoryInterface
                 'user_id' => $log->user_id,
                 'action' => $log->action,
                 'level' => $log->level,
-                'created_at' => $log->created_at->format('Y-m-d H:i:s'),
+                'created_at' => $log->created_at?->format('Y-m-d H:i:s'),
                 'details' => $log->details,
             ])
             ->all();
@@ -47,19 +48,12 @@ final class LogRepository implements LogRepositoryInterface
 
     /**
      * Log flashcard creation.
-     *
-     * @throws JsonException
      */
     public function logFlashcardCreation(int $userId, Flashcard $flashcard): Log
     {
         $user = User::findOrFail($userId);
 
-        return Log::createEntry(
-            $user,
-            'created_flashcard',
-            Log::LEVEL_INFO,
-            "Created flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
-        );
+        return Log::logFlashcardCreation($user, $flashcard);
     }
 
     /**
@@ -73,7 +67,8 @@ final class LogRepository implements LogRepositoryInterface
             $user,
             'updated_flashcard',
             Log::LEVEL_INFO,
-            "Updated flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+            "Updated flashcard ID: {$flashcard->id}, Question: {$flashcard->question}",
+            json_encode(['flashcard_id' => $flashcard->id], JSON_THROW_ON_ERROR)
         );
     }
 
@@ -133,7 +128,11 @@ final class LogRepository implements LogRepositoryInterface
             $user,
             $isCorrect ? 'flashcard_answered_correctly' : 'flashcard_answered_incorrectly',
             $isCorrect ? Log::LEVEL_INFO : Log::LEVEL_WARNING,
-            "Answered flashcard ID: {$flashcard->id}, Result: ".($isCorrect ? 'Correct' : 'Incorrect')
+            "Answered flashcard ID: {$flashcard->id}, Result: ".($isCorrect ? 'Correct' : 'Incorrect'),
+            json_encode([
+                'flashcard_id' => $flashcard->id,
+                'result' => $isCorrect ? 'correct' : 'incorrect',
+            ], JSON_THROW_ON_ERROR)
         );
     }
 
@@ -159,11 +158,21 @@ final class LogRepository implements LogRepositoryInterface
     {
         $user = User::findOrFail($userId);
 
+        $durationSeconds = null;
+        if ($studySession->ended_at && $studySession->started_at) {
+            // @phpstan-ignore-next-line
+            $durationSeconds = $studySession->ended_at->diffInSeconds($studySession->started_at);
+        }
+
         return Log::createEntry(
             $user,
             'ended_study_session',
             Log::LEVEL_INFO,
-            "Ended study session ID: {$studySession->id}"
+            "Ended study session ID: {$studySession->id}",
+            json_encode([
+                'session_id' => $studySession->id,
+                'duration_seconds' => $durationSeconds,
+            ], JSON_THROW_ON_ERROR)
         );
     }
 
@@ -188,7 +197,7 @@ final class LogRepository implements LogRepositoryInterface
             $user,
             'practice_reset',
             Log::LEVEL_WARNING,
-            null
+            'Reset practice progress'
         );
     }
 
@@ -199,7 +208,12 @@ final class LogRepository implements LogRepositoryInterface
     {
         $user = User::findOrFail($userId);
 
-        return Log::logUserExit($user);
+        return Log::createEntry(
+            $user,
+            'user_exit',
+            Log::LEVEL_INFO,
+            "User {$user->name} exited the application"
+        );
     }
 
     /**
@@ -243,7 +257,24 @@ final class LogRepository implements LogRepositoryInterface
             $user,
             'imported_flashcards',
             Log::LEVEL_INFO,
-            "Imported {$importCount} flashcards from file"
+            "Imported {$importCount} flashcards from file",
+            json_encode(['import_count' => $importCount], JSON_THROW_ON_ERROR)
+        );
+    }
+
+    /**
+     * Log permanent deletion of a single flashcard.
+     */
+    public function logFlashcardForceDelete(int $userId, int $flashcardId, string $flashcardQuestion): Log
+    {
+        $user = User::findOrFail($userId);
+
+        return Log::createEntry(
+            $user,
+            'force_deleted_flashcard',
+            Log::LEVEL_WARNING,
+            "Permanently deleted flashcard ID: {$flashcardId}, Question: {$flashcardQuestion}",
+            json_encode(['flashcard_id' => $flashcardId], JSON_THROW_ON_ERROR)
         );
     }
 }

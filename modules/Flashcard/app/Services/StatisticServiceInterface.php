@@ -15,9 +15,9 @@ interface StatisticServiceInterface
     public function getByUserId(int $userId): ?Statistic;
 
     /**
-     * Get statistics for a user as an array.
+     * Get statistics for a user.
      *
-     * @return array<string, mixed>
+     * @return array<string, int>
      */
     public function getStatisticsForUser(int $userId): array;
 

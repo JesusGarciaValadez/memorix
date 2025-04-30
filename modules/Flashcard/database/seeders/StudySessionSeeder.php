@@ -27,6 +27,7 @@ final class StudySessionSeeder extends Seeder
             // Create active study sessions
             StudySession::factory()
                 ->count(2)
+                ->active()
                 ->for($user)
                 ->create();
 
@@ -41,6 +42,7 @@ final class StudySessionSeeder extends Seeder
             StudySession::factory()
                 ->count(1)
                 ->recent()
+                ->active()
                 ->for($user)
                 ->create();
 

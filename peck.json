@@ -3,7 +3,20 @@
     "ignore": {
         "words": [
             "php",
-            "laravel"
+            "laravel",
+            "Laravel's",
+            "js",
+            "jquery",
+            "filesystem",
+            "filesystems",
+            "octicons",
+            "dockerfile",
+            "docker",
+            "supervisord",
+            "pgsql",
+            "favicon",
+            "isolatable",
+            "subclasses"
         ],
         "paths": []
     }

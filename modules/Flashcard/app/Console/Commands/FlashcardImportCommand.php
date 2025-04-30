@@ -6,11 +6,7 @@ namespace Modules\Flashcard\app\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
-
-use function Laravel\Prompts\error;
-use function Laravel\Prompts\note;
 
 final class FlashcardImportCommand extends Command
 {
@@ -35,19 +31,18 @@ final class FlashcardImportCommand extends Command
      */
     public function handle(
         FlashcardCommandServiceInterface $commandService,
-        ConsoleRendererInterface $renderer
     ): int {
         // Get file path from the option
         $filePath = $this->option('file');
         if (! $filePath) {
-            error('File path is required. Use --file option to specify the CSV file path.');
+            $this->error('File path is required. Use --file option to specify the CSV file path.');
 
             return 1;
         }
 
         // Check if file exists
         if (! file_exists($filePath)) {
-            error("File not found: {$filePath}");
+            $this->error("File not found: {$filePath}");
 
             return 1;
         }
@@ -55,7 +50,7 @@ final class FlashcardImportCommand extends Command
         // Get user email from the option
         $email = $this->option('email');
         if (! $email) {
-            error('User email is required. Use --email option to specify the user email.');
+            $this->error('User email is required. Use --email option to specify the user email.');
 
             return 1;
         }
@@ -63,7 +58,7 @@ final class FlashcardImportCommand extends Command
         // Find user by email
         $user = User::where('email', $email)->first();
         if (! $user) {
-            error("User not found with email: {$email}");
+            $this->error("User not found with email: {$email}");
 
             return 1;
         }
@@ -72,11 +67,11 @@ final class FlashcardImportCommand extends Command
         $success = $commandService->importFlashcardsFromFile($user->id, $filePath);
 
         if ($success) {
-            note('Flashcards imported successfully!');
+            $this->info('Flashcards imported successfully!');
 
             return 0;
         }
-        error('Failed to import flashcards.');
+        $this->error('Failed to import flashcards.');
 
         return 1;
     }

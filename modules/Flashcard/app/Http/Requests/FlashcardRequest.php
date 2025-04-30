@@ -16,11 +16,13 @@ final class FlashcardRequest extends FormRequest
     {
         $flashcard = Flashcard::find($this->route('flashcard'));
 
-        return $flashcard && $this->user()->can('update', $flashcard);
+        return $flashcard && $this->user()?->can('update', $flashcard);
     }
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array<string, list<string>|string>
      */
     public function rules(): array
     {
@@ -32,6 +34,8 @@ final class FlashcardRequest extends FormRequest
 
     /**
      * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {

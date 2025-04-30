@@ -23,14 +23,14 @@ namespace App\Models{
  * @property string|null $remember_token
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Modules\Flashcard\app\Models\Flashcard> $flashcards
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Flashcard> $flashcards
  * @property-read int|null $flashcards_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Modules\Flashcard\app\Models\Log> $logs
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Log> $logs
  * @property-read int|null $logs_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \Modules\Flashcard\app\Models\Statistic|null $statistic
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Modules\Flashcard\app\Models\StudySession> $studySessions
+ * @property-read Statistic|null $statistic
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, StudySession> $studySessions
  * @property-read int|null $study_sessions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
@@ -56,30 +56,32 @@ namespace Modules\Flashcard\app\Models{
 /**
  * 
  *
- * @property int $id
- * @property int $user_id
- * @property string $question
- * @property string $answer
- * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @property \Carbon\CarbonImmutable|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Modules\Flashcard\app\Models\PracticeResult> $practiceResults
+ * @property int $id The unique identifier for the flashcard.
+ * @property int $user_id The ID of the user who owns the flashcard.
+ * @property string $question The question on the flashcard.
+ * @property string $answer The answer to the flashcard question.
+ * @property Carbon|CarbonImmutable $created_at Timestamp of creation.
+ * @property Carbon|CarbonImmutable $updated_at Timestamp of last update.
+ * @property Carbon|CarbonImmutable|null $deleted_at
+ * @property-read User $user
+ * @property-read Collection<int, PracticeResult> $practiceResults
  * @property-read int|null $practice_results_count
- * @property-read \App\Models\User $user
- * @method static \Modules\Flashcard\database\factories\FlashcardFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereAnswer($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereQuestion($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard withTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Flashcard withoutTrashed()
+ * @method static \Modules\Flashcard\database\factories\FlashcardFactory factory($count = null, $state = []) Creates a new factory instance for the model.
+ * @method static Builder<Flashcard> newModelQuery() Creates a new query builder for the model.
+ * @method static Builder<Flashcard> newQuery() Creates a new query builder for the model.
+ * @method static Builder<Flashcard> query() Creates a new query builder for the model.
+ * @method static Builder<Flashcard> whereAnswer($value)
+ * @method static Builder<Flashcard> whereCreatedAt($value)
+ * @method static Builder<Flashcard> whereDeletedAt($value)
+ * @method static Builder<Flashcard> whereId($value)
+ * @method static Builder<Flashcard> whereQuestion($value)
+ * @method static Builder<Flashcard> whereUpdatedAt($value)
+ * @method static Builder<Flashcard> whereUserId($value)
+ * @method static Builder<Flashcard> onlyTrashed()
+ * @method static Builder<Flashcard> withTrashed()
+ * @method static Builder<Flashcard> withoutTrashed()
+ * @method static Builder<Flashcard> forUser(int $userId, bool $withTrashed = false)
+ * @mixin Eloquent
  * @mixin \Eloquent
  */
 	#[\AllowDynamicProperties]
@@ -93,20 +95,26 @@ namespace Modules\Flashcard\app\Models{
  * @property int $id
  * @property int $user_id
  * @property string $action
- * @property string|null $details
- * @property \Carbon\CarbonImmutable $created_at
  * @property string $level
- * @property-read \App\Models\User $user
- * @method static \Modules\Flashcard\database\factories\LogFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereAction($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereDetails($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Log whereUserId($value)
+ * @property string|null $description
+ * @property Collection<int, mixed>|null $details
+ * @property Carbon|CarbonImmutable|null $created_at
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property-read User $user
+ * @property array<string, mixed> $attributes
+ * @method static LogFactory factory($count = null, $state = [])
+ * @method static Builder<Log> newModelQuery()
+ * @method static Builder<Log> newQuery()
+ * @method static Builder<Log> query()
+ * @method static Builder<Log> whereAction($value)
+ * @method static Builder<Log> whereCreatedAt($value)
+ * @method static Builder<Log> whereDescription($value)
+ * @method static Builder<Log> whereDetails($value)
+ * @method static Builder<Log> whereId($value)
+ * @method static Builder<Log> whereLevel($value)
+ * @method static Builder<Log> whereUpdatedAt($value)
+ * @method static Builder<Log> whereUserId($value)
+ * @mixin Model
  * @mixin \Eloquent
  */
 	#[\AllowDynamicProperties]
@@ -122,22 +130,24 @@ namespace Modules\Flashcard\app\Models{
  * @property int $flashcard_id
  * @property int $study_session_id
  * @property bool $is_correct
+ * @property Carbon|CarbonImmutable|null $practiced_at*
+ * @property Carbon|CarbonImmutable|null $created_at*
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property-read Flashcard $flashcard
+ * @property-read StudySession $studySession
+ * @property-read User $user
+ * @method static PracticeResultFactory factory($count = null, $state = [])
+ * @method static Builder<PracticeResult> newModelQuery()
+ * @method static Builder<PracticeResult> newQuery()
+ * @method static Builder<PracticeResult> query()
+ * @method static Builder<PracticeResult> whereCreatedAt($value)
+ * @method static Builder<PracticeResult> whereFlashcardId($value)
+ * @method static Builder<PracticeResult> whereId($value)
+ * @method static Builder<PracticeResult> whereIsCorrect($value)
+ * @method static Builder<PracticeResult> whereStudySessionId($value)
+ * @method static Builder<PracticeResult> whereUpdatedAt($value)
+ * @method static Builder<PracticeResult> whereUserId($value)
  * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Modules\Flashcard\app\Models\Flashcard $flashcard
- * @property-read \Modules\Flashcard\app\Models\StudySession $studySession
- * @property-read \App\Models\User $user
- * @method static \Modules\Flashcard\database\factories\PracticeResultFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereFlashcardId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereIsCorrect($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereStudySessionId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PracticeResult whereUserId($value)
  * @mixin \Eloquent
  */
 	#[\AllowDynamicProperties]
@@ -154,21 +164,21 @@ namespace Modules\Flashcard\app\Models{
  * @property int $total_study_sessions
  * @property int $total_correct_answers
  * @property int $total_incorrect_answers
- * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \App\Models\User $user
- * @method static \Modules\Flashcard\database\factories\StatisticFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereTotalCorrectAnswers($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereTotalFlashcards($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereTotalIncorrectAnswers($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereTotalStudySessions($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Statistic whereUserId($value)
+ * @property Carbon|CarbonImmutable|null $created_at
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property-read User|null $user
+ * @method static StatisticFactory factory($count = null, $state = [])
+ * @method static Builder<Statistic> newModelQuery()
+ * @method static Builder<Statistic> newQuery()
+ * @method static Builder<Statistic> query()
+ * @method static Builder<Statistic> whereCreatedAt($value)
+ * @method static Builder<Statistic> whereId($value)
+ * @method static Builder<Statistic> whereTotalCorrectAnswers($value)
+ * @method static Builder<Statistic> whereTotalFlashcards($value)
+ * @method static Builder<Statistic> whereTotalIncorrectAnswers($value)
+ * @method static Builder<Statistic> whereTotalStudySessions($value)
+ * @method static Builder<Statistic> whereUpdatedAt($value)
+ * @method static Builder<Statistic> whereUserId($value)
  * @mixin \Eloquent
  */
 	#[\AllowDynamicProperties]
@@ -181,17 +191,24 @@ namespace Modules\Flashcard\app\Models{
  *
  * @property int $id
  * @property int $user_id
- * @property \Carbon\CarbonImmutable $started_at
- * @property \Carbon\CarbonImmutable|null $ended_at
- * @property-read \App\Models\User $user
- * @method static \Modules\Flashcard\database\factories\StudySessionFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession whereEndedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession whereStartedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySession whereUserId($value)
+ * @property Carbon|CarbonImmutable|CarbonInterface|null $started_at
+ * @property Carbon|CarbonImmutable|CarbonInterface|null $ended_at
+ * @property Carbon|CarbonImmutable|CarbonInterface|null $created_at
+ * @property Carbon|CarbonImmutable|CarbonInterface|null $updated_at
+ * @property-read EloquentCollection<int, PracticeResult> $practiceResults
+ * @property-read int|null $practice_results_count
+ * @property-read User $user
+ * @method static StudySessionFactory factory($count = null, $state = [])
+ * @method static Builder<StudySession> newModelQuery()
+ * @method static Builder<StudySession> newQuery()
+ * @method static Builder<StudySession> query()
+ * @method static Builder<StudySession> whereCreatedAt($value)
+ * @method static Builder<StudySession> whereEndedAt($value)
+ * @method static Builder<StudySession> whereId($value)
+ * @method static Builder<StudySession> whereStartedAt($value)
+ * @method static Builder<StudySession> whereUpdatedAt($value)
+ * @method static Builder<StudySession> whereUserId($value)
+ * @mixin Model
  * @mixin \Eloquent
  */
 	#[\AllowDynamicProperties]

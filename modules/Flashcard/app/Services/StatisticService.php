@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Services;
 
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\app\Models\StudySession;
 
@@ -12,6 +13,8 @@ final class StatisticService implements StatisticServiceInterface
 {
     /**
      * Get statistics for a user.
+     *
+     * @return array<string, int>
      */
     public function getStatisticsForUser(int $userId): array
     {
@@ -66,8 +69,13 @@ final class StatisticService implements StatisticServiceInterface
 
         $totalMinutes = 0;
 
+        /* @var StudySession $session */
         foreach ($completedSessions as $session) {
-            $totalMinutes += $session->started_at->diffInMinutes($session->ended_at);
+            /* @var CarbonInterface $startedAt */
+            $starterAt = $session->started_at;
+            /* @var CarbonInterface $endedAt */
+            $endedAt = $session->ended_at;
+            $totalMinutes += $starterAt?->diffInMinutes($endedAt);
         }
 
         return round($totalMinutes / count($completedSessions), 2);
@@ -88,8 +96,13 @@ final class StatisticService implements StatisticServiceInterface
 
         $totalMinutes = 0;
 
+        /* @var StudySession $session */
         foreach ($completedSessions as $session) {
-            $totalMinutes += $session->started_at->diffInMinutes($session->ended_at);
+            /* @var CarbonInterface $starterAt */
+            $starterAt = $session->started_at;
+            /* @var CarbonInterface $endedAt */
+            $endedAt = $session->ended_at;
+            $totalMinutes += $starterAt?->diffInMinutes($endedAt);
         }
 
         return (float) $totalMinutes;
@@ -172,8 +185,6 @@ final class StatisticService implements StatisticServiceInterface
 
     /**
      * Reset practice statistics
-     *
-     * @return Statistic
      */
     public function resetPracticeStatistics(int $userId): bool
     {

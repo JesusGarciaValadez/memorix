@@ -18,7 +18,7 @@ final class PracticeResultFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<PracticeResult>
      */
     protected $model = PracticeResult::class;
 
@@ -42,7 +42,7 @@ final class PracticeResultFactory extends Factory
     /**
      * Define a state for correct answers.
      */
-    public function correct(): Factory
+    public function correct(): static
     {
         return $this->state(fn (array $attributes): array => [
             'is_correct' => true,
@@ -52,7 +52,7 @@ final class PracticeResultFactory extends Factory
     /**
      * Define a state for incorrect answers.
      */
-    public function incorrect(): Factory
+    public function incorrect(): static
     {
         return $this->state(fn (array $attributes): array => [
             'is_correct' => false,
@@ -62,7 +62,7 @@ final class PracticeResultFactory extends Factory
     /**
      * Define a state for recent practice results.
      */
-    public function recent(): Factory
+    public function recent(): static
     {
         return $this->state(fn (array $attributes): array => [
             'created_at' => fake()->dateTimeBetween('-1 week', 'now'),

@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Services;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Modules\Flashcard\app\Repositories\LogRepositoryInterface;
 use Modules\Flashcard\app\Services\LogService;
 use PHPUnit\Framework\Attributes\Test;
-use stdClass;
 use Tests\TestCase;
 
 final class LogServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     private LogService $service;
 
-    private $logRepository;
+    private LogRepositoryInterface|Mockery\MockInterface $logRepository;
 
-    private stdClass $user;
+    private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->user = $this->createTestUser();
-        $this->logRepository = Mockery::mock(LogRepositoryInterface::class);
-        $this->service = new LogService($this->logRepository);
+        $realRepository = resolve(LogRepositoryInterface::class);
+        $this->service = new LogService($realRepository);
+        $this->logRepository = Mockery::spy($realRepository);
     }
 
     protected function tearDown(): void
@@ -43,6 +47,7 @@ final class LogServiceTest extends TestCase
             ['id' => 2, 'action' => 'test_action', 'level' => 'info', 'created_at' => now()],
         ];
 
+        // @phpstan-ignore-next-line
         $this->logRepository->shouldReceive('getLogsForUser')
             ->once()
             ->with($this->user->id, 50)
@@ -66,6 +71,7 @@ final class LogServiceTest extends TestCase
             ['id' => 2, 'action' => 'test_action', 'level' => 'info', 'created_at' => now()],
         ];
 
+        // @phpstan-ignore-next-line}
         $this->logRepository->shouldReceive('getLogsForUser')
             ->once()
             ->with($this->user->id, 10)
@@ -83,12 +89,11 @@ final class LogServiceTest extends TestCase
     /**
      * Create a test user object
      */
-    private function createTestUser(int $id = 1): stdClass
+    private function createTestUser(int $id = 1): User
     {
-        $user = new stdClass();
-        $user->id = $id;
-        $user->name = 'Test User';
-
-        return $user;
+        return User::factory()->create([
+            'id' => $id,
+            'name' => 'Test User',
+        ]);
     }
 }

@@ -22,8 +22,11 @@ final class FlashcardController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-        $perPage = (int) $request->input('per_page', 15);
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
+        $perPage = $request->integer('per_page', 15);
 
         $flashcards = $this->flashcardService->getAllForUser($userId, $perPage);
 
@@ -35,17 +38,20 @@ final class FlashcardController extends Controller
      */
     public function show(Request $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
-        $flashcard = $this->flashcardService->findForUser($userId, $flashcard);
+        $flashcardModel = $this->flashcardService->findForUser($userId, $flashcard);
 
-        if (! $flashcard instanceof \Modules\Flashcard\app\Models\Flashcard) {
+        if (! $flashcardModel instanceof \Modules\Flashcard\app\Models\Flashcard) {
             return response()->json([
                 'message' => 'Flashcard not found',
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json($flashcard);
+        return response()->json($flashcardModel);
     }
 
     /**
@@ -53,7 +59,10 @@ final class FlashcardController extends Controller
      */
     public function store(FormRequest $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
         $data = $request->validated();
 
         $flashcard = $this->flashcardService->create($userId, $data);
@@ -66,7 +75,10 @@ final class FlashcardController extends Controller
      */
     public function update(FormRequest $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
         $data = $request->validated();
 
         $result = $this->flashcardService->update($userId, $flashcard, $data);
@@ -87,8 +99,11 @@ final class FlashcardController extends Controller
      */
     public function trash(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-        $perPage = (int) $request->input('per_page', 15);
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
+        $perPage = $request->integer('per_page', 15);
 
         $flashcards = $this->flashcardService->getDeletedForUser($userId, $perPage);
 
@@ -100,7 +115,10 @@ final class FlashcardController extends Controller
      */
     public function destroy(Request $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $result = $this->flashcardService->delete($userId, $flashcard);
 
@@ -120,7 +138,10 @@ final class FlashcardController extends Controller
      */
     public function restore(Request $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $result = $this->flashcardService->restore($userId, $flashcard);
 
@@ -140,7 +161,10 @@ final class FlashcardController extends Controller
      */
     public function forceDelete(Request $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $result = $this->flashcardService->forceDelete($userId, $flashcard);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\app\Models;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 
 final class FlashcardTest extends TestCase
 {
+    use RefreshDatabase;
+
     private User $user;
 
     protected function setUp(): void
@@ -53,7 +56,8 @@ final class FlashcardTest extends TestCase
 
         // Delete the flashcard
         $flashcard->delete();
-        $this->assertNull(Flashcard::findForUser($flashcard->id, $this->user->id));
+        $deletedFlashcard = Flashcard::findForUser($flashcard->id, $this->user->id);
+        $this->assertNull($deletedFlashcard);
 
         // Restore the flashcard
         $flashcard->restore();
@@ -118,7 +122,7 @@ final class FlashcardTest extends TestCase
         $flashcard = Flashcard::create([
             'user_id' => $this->user->id,
             'question' => '',
-            'answer' => 'A PHP framework',
+            'answer' => 'An answer',
         ]);
         $this->assertNotNull($flashcard);
 
@@ -138,5 +142,16 @@ final class FlashcardTest extends TestCase
             'answer' => 'Special characters!',
         ]);
         $this->assertNotNull($flashcard);
+    }
+
+    #[Test]
+    public function it_can_be_soft_deleted_and_restored_with_actual_deleted_at(): void
+    {
+        $flashcard = Flashcard::factory()->for($this->user)->create();
+        $flashcard->delete();
+
+        // Reload the model to get the actual deleted_at timestamp from DB
+        $reloadedFlashcard = Flashcard::withTrashed()->find($flashcard->id);
+        $this->assertNotNull($reloadedFlashcard?->deleted_at);
     }
 }

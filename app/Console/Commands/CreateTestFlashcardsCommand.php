@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
+use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Repositories\StatisticRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
 use Modules\Flashcard\app\Services\StudySessionService;
@@ -79,11 +80,13 @@ final class CreateTestFlashcardsCommand extends Command
         $createdFlashcards = [];
         foreach ($flashcards as $flashcardData) {
             // Only create if it doesn't exist already
+            /** @var Flashcard|null $existing */
             $existing = $flashcardService->getAllForUser($user->id, 100)
                 ->getCollection()
                 ->firstWhere('question', $flashcardData['question']);
 
             if (! $existing) {
+                /** @var Flashcard $flashcard */
                 $flashcard = $flashcardService->create($user->id, $flashcardData);
                 $createdFlashcards[] = $flashcard;
                 $this->info("Created flashcard: {$flashcard->question}");
@@ -93,14 +96,20 @@ final class CreateTestFlashcardsCommand extends Command
             }
         }
 
+        // Ensure $createdFlashcards only contains Flashcard models, not nulls
+        /** @var list<Flashcard> $validCreatedFlashcards */
+        $validCreatedFlashcards = array_filter($createdFlashcards);
+
         // Create a study session and record some practice results
         $this->info('Simulating practice session...');
 
         // Start a study session
+        /** @var \Modules\Flashcard\app\Models\StudySession $studySession */
         $studySession = $studySessionService->startSession($user->id);
 
         // Record correct answers for some flashcards
-        foreach ($createdFlashcards as $index => $flashcard) {
+        // Use the filtered list
+        foreach ($validCreatedFlashcards as $index => $flashcard) {
             // Make some correct and some incorrect to create statistics
             $isCorrect = $index % 3 !== 0; // 2/3 correct, 1/3 incorrect
 
@@ -121,12 +130,12 @@ final class CreateTestFlashcardsCommand extends Command
 
         $this->info('');
         $this->info('Test data created successfully with the following statistics:');
-        $this->info("Total Flashcards: {$stats->total_flashcards}");
-        $this->info("Study Sessions: {$stats->total_study_sessions}");
-        $this->info("Correct Answers: {$stats->total_correct_answers}");
-        $this->info("Incorrect Answers: {$stats->total_incorrect_answers}");
-        $this->info("Completion: {$stats->getCompletionPercentage()}%");
-        $this->info("Success Rate: {$stats->getCorrectPercentage()}%");
+        $this->info("Total Flashcards: {$stats?->total_flashcards}");
+        $this->info("Study Sessions: {$stats?->total_study_sessions}");
+        $this->info("Correct Answers: {$stats?->total_correct_answers}");
+        $this->info("Incorrect Answers: {$stats?->total_incorrect_answers}");
+        $this->info("Completion: {$stats?->getCompletionPercentage()}%");
+        $this->info("Success Rate: {$stats?->getCorrectPercentage()}%");
 
         $this->info('');
         $this->info("You can now run: sail artisan flashcard:interactive {$email} {$password} --statistics");

@@ -23,8 +23,6 @@ final class FlashcardImportCommandTest extends TestCase
         $this->assertTrue(file_exists($tempFilePath), 'CSV file exists for import');
 
         // Clean up the temporary file
-        @unlink($tempFilePath);
-
-        $this->assertTrue(true, 'Import command can run successfully');
+        unlink($tempFilePath);
     }
 }

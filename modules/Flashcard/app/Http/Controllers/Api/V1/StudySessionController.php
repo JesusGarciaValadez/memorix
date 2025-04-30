@@ -21,7 +21,10 @@ final class StudySessionController extends Controller
      */
     public function start(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $session = $this->studySessionService->startSession($userId);
 
@@ -33,7 +36,10 @@ final class StudySessionController extends Controller
      */
     public function end(Request $request, int $studySession): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $result = $this->studySessionService->endSession($userId, $studySession);
 
@@ -53,7 +59,10 @@ final class StudySessionController extends Controller
      */
     public function getFlashcardsForPractice(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $flashcards = $this->studySessionService->getFlashcardsForPractice($userId);
 
@@ -65,7 +74,10 @@ final class StudySessionController extends Controller
      */
     public function recordPracticeResult(Request $request, int $flashcard): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
         $isCorrect = (bool) $request->input('is_correct', false);
 
         $result = $this->studySessionService->recordPracticeResult($userId, $flashcard, $isCorrect);
@@ -86,7 +98,10 @@ final class StudySessionController extends Controller
      */
     public function resetPractice(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $this->studySessionService->resetPracticeProgress($userId);
 

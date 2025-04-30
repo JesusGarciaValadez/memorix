@@ -16,7 +16,7 @@ final class StatisticFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Statistic>
      */
     protected $model = Statistic::class;
 
@@ -39,7 +39,7 @@ final class StatisticFactory extends Factory
     /**
      * Define a state for statistics with a high success rate.
      */
-    public function highSuccess(): Factory
+    public function highSuccess(): static
     {
         return $this->state(function (array $attributes): array {
             $totalAnswers = 100;
@@ -56,7 +56,7 @@ final class StatisticFactory extends Factory
     /**
      * Define a state for statistics with a low success rate.
      */
-    public function lowSuccess(): Factory
+    public function lowSuccess(): static
     {
         return $this->state(function (array $attributes): array {
             $totalAnswers = 100;
@@ -73,7 +73,7 @@ final class StatisticFactory extends Factory
     /**
      * Define a state for new user statistics (minimal activity).
      */
-    public function newUser(): Factory
+    public function newUser(): static
     {
         return $this->state(function (): array {
             $totalFlashcards = random_int(1, 5);
@@ -93,7 +93,7 @@ final class StatisticFactory extends Factory
     /**
      * Define a state for power user statistics (high activity).
      */
-    public function powerUser(): Factory
+    public function powerUser(): static
     {
         return $this->state(function (): array {
             $totalFlashcards = random_int(200, 500);

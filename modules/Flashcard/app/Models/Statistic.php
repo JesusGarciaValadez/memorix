@@ -5,19 +5,50 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Models;
 
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Modules\Flashcard\database\factories\StatisticFactory;
 
 /**
+ * @property int $id
+ * @property int $user_id
+ * @property int $total_flashcards
+ * @property int $total_study_sessions
+ * @property int $total_correct_answers
+ * @property int $total_incorrect_answers
+ * @property Carbon|CarbonImmutable|null $created_at
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property-read User|null $user
+ *
+ * @method static StatisticFactory factory($count = null, $state = [])
+ * @method static Builder<Statistic> newModelQuery()
+ * @method static Builder<Statistic> newQuery()
+ * @method static Builder<Statistic> query()
+ * @method static Builder<Statistic> whereCreatedAt($value)
+ * @method static Builder<Statistic> whereId($value)
+ * @method static Builder<Statistic> whereTotalCorrectAnswers($value)
+ * @method static Builder<Statistic> whereTotalFlashcards($value)
+ * @method static Builder<Statistic> whereTotalIncorrectAnswers($value)
+ * @method static Builder<Statistic> whereTotalStudySessions($value)
+ * @method static Builder<Statistic> whereUpdatedAt($value)
+ * @method static Builder<Statistic> whereUserId($value)
+ *
  * @mixin IdeHelperStatistic
  */
 final class Statistic extends Model
 {
-    /** @use HasFactory<StatisticFactory> */
+    /** @use HasFactory<\Modules\Flashcard\database\factories\StatisticFactory> */
     use HasFactory;
+
+    /**
+     * @var array<int, string>
+     */
+    protected static $columns = ['id', 'user_id', 'total_flashcards', 'total_study_sessions', 'total_practice_results', 'correct_practice_results', 'incorrect_practice_results', 'average_score', 'last_studied_at', 'created_at', 'updated_at'];
 
     /**
      * The table associated with the model.
@@ -27,9 +58,30 @@ final class Statistic extends Model
     protected $table = 'statistics';
 
     /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'id' => 'integer',
+        'user_id' => 'integer',
+        'total_flashcards' => 'integer',
+        'total_study_sessions' => 'integer',
+        'total_correct_answers' => 'integer',
+        'total_incorrect_answers' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'user_id',
@@ -92,8 +144,11 @@ final class Statistic extends Model
         }
 
         $totalDuration = 0;
+        /* @var StudySession $session */
         foreach ($studySessions as $session) {
+            /* @var Carbon|CarbonImmutable|null $startedAt */
             $startedAt = $session->started_at;
+            /* @var Carbon|CarbonImmutable|null $endedAt */
             $endedAt = $session->ended_at;
 
             if ($startedAt && $endedAt) {
@@ -112,8 +167,10 @@ final class Statistic extends Model
         $totalDuration = StudySession::where('user_id', $userId)
             ->whereNotNull('ended_at')
             ->get()
-            ->sum(function ($session) {
+            ->sum(function (StudySession $session) {
+                /* @var Carbon|CarbonImmutable|null $startedAt */
                 $startedAt = $session->started_at;
+                /* @var Carbon|CarbonImmutable|null $endedAt */
                 $endedAt = $session->ended_at;
 
                 if ($startedAt && $endedAt) {
@@ -127,10 +184,13 @@ final class Statistic extends Model
     }
 
     /**
-     * Get the user that owns the statistics.
+     * Get the user associated with the statistic.
+     *
+     * @return BelongsTo<User, Statistic>
      */
     public function user(): BelongsTo
     {
+        // @phpstan-ignore-next-line return.type
         return $this->belongsTo(User::class);
     }
 
@@ -149,7 +209,7 @@ final class Statistic extends Model
     }
 
     /**
-     * Get the completion percentage (answered vs total).
+     * Get the completion percentage (answered vs. total).
      */
     public function getCompletionPercentage(): float
     {
@@ -212,6 +272,8 @@ final class Statistic extends Model
 
     /**
      * Create a new factory instance for the model.
+     *
+     * @return StatisticFactory
      */
     protected static function newFactory(): Factory
     {

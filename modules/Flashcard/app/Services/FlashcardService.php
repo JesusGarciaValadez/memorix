@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\app\Services;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Modules\Flashcard\app\Models\Flashcard;
 
 final readonly class FlashcardService implements FlashcardServiceInterface
@@ -16,6 +16,8 @@ final readonly class FlashcardService implements FlashcardServiceInterface
 
     /**
      * Get all flashcards for a user.
+     *
+     * @return LengthAwarePaginator<int, Flashcard>
      */
     public function getAllForUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
@@ -24,19 +26,28 @@ final readonly class FlashcardService implements FlashcardServiceInterface
 
     /**
      * Get all deleted flashcards for a user.
+     *
+     * @return LengthAwarePaginator<int, Flashcard>
      */
     public function getDeletedForUser(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return Flashcard::getAllDeletedForUser($userId, $perPage);
     }
 
-    public function setGetAllForUserResult(array $flashcards): LengthAwarePaginator
+    /**
+     * Set the result for getting all flashcards for a user.
+     *
+     * @return LengthAwarePaginator<int, Flashcard>
+     */
+    public function setGetAllForUserResult(int $userId): LengthAwarePaginator
     {
-        return Flashcard::getAllForUser();
+        return Flashcard::getAllForUser($userId);
     }
 
     /**
      * Create a new flashcard for a user.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function create(int $userId, array $data): Flashcard
     {
@@ -63,6 +74,8 @@ final readonly class FlashcardService implements FlashcardServiceInterface
 
     /**
      * Update a flashcard for a user.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(int $userId, int $flashcardId, array $data): bool
     {
@@ -99,7 +112,7 @@ final readonly class FlashcardService implements FlashcardServiceInterface
         $this->logService->logFlashcardDeletion($userId, $flashcard);
 
         // Delete the flashcard
-        return $flashcard->delete();
+        return (bool) $flashcard->delete();
     }
 
     /**
@@ -147,7 +160,7 @@ final readonly class FlashcardService implements FlashcardServiceInterface
             $this->logService->logFlashcardForceDelete($userId, $flashcardId, $flashcardQuestion);
         }
 
-        return $result;
+        return (bool) $result;
     }
 
     /**

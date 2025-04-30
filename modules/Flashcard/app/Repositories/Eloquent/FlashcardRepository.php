@@ -67,7 +67,7 @@ final class FlashcardRepository implements FlashcardRepositoryInterface
      */
     public function delete(Flashcard $flashcard): bool
     {
-        return $flashcard->delete();
+        return (bool) $flashcard->delete();
     }
 
     /**
@@ -83,7 +83,7 @@ final class FlashcardRepository implements FlashcardRepositoryInterface
      */
     public function forceDelete(Flashcard $flashcard): bool
     {
-        return $flashcard->forceDelete();
+        return (bool) $flashcard->forceDelete();
     }
 
     /**

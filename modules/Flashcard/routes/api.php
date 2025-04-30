@@ -22,9 +22,9 @@ use Modules\Flashcard\app\Http\Controllers\Api\V1\StudySessionController;
 // API v1 routes
 Route::prefix('v1')
     ->group(function (): void {
-        Route::apiResource('flashcards', FlashcardController::class)->name('api.flashcards');
-        Route::apiResource('study-sessions', StudySessionController::class)->name('api.study-sessions');
-        Route::apiResource('statistics', StatisticController::class)->name('api.statistics');
-        Route::apiResource('logs', LogController::class)->name('api.logs');
+        Route::apiResource('flashcards', FlashcardController::class);
+        Route::apiResource('study-sessions', StudySessionController::class);
+        Route::apiResource('statistics', StatisticController::class);
+        Route::apiResource('logs', LogController::class);
     })
     ->middleware(['auth:sanctum']);

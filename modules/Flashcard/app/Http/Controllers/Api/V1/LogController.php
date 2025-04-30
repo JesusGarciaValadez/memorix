@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Flashcard\app\Services\LogService;
+use Symfony\Component\HttpFoundation\Response;
 
 final class LogController extends Controller
 {
@@ -20,8 +21,11 @@ final class LogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-        $limit = (int) $request->input('limit', 50);
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
+        $limit = $request->integer('limit', 50);
 
         $logs = $this->logService->getLogsForUser($userId, $limit);
 
@@ -33,8 +37,11 @@ final class LogController extends Controller
      */
     public function latest(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
-        $limit = (int) $request->input('limit', 10);
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
+        $limit = $request->integer('limit', 10);
 
         $activities = $this->logService->getLatestActivityForUser($userId, $limit);
 

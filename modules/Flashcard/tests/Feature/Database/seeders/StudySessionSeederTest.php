@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\database\seeders\StudySessionSeeder;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,6 +13,9 @@ use Tests\TestCase;
 
 final class StudySessionSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
+    /** @noinspection StaticInvocationViaThisInspection */
     #[Test]
     public function it_seeds_study_sessions_for_existing_users(): void
     {
@@ -26,10 +30,10 @@ final class StudySessionSeederTest extends TestCase
         $this->assertDatabaseCount('study_sessions', 22); // 11 study sessions per user * 2 users
 
         // Check that study sessions belong to users
-        foreach ($users as $user) {
+        $users->each(function (User $user): void {
             $userStudySessions = StudySession::where('user_id', $user->id)->get();
             $this->assertCount(11, $userStudySessions);
-        }
+        });
     }
 
     #[Test]
@@ -56,26 +60,20 @@ final class StudySessionSeederTest extends TestCase
     #[Test]
     public function it_seeds_different_types_of_study_sessions(): void
     {
-        // Create a user
-        $user = User::factory()->create();
-
         // Run the seeder
         $seeder = new StudySessionSeeder();
         $seeder->run();
 
-        // Count different types of study sessions for the user
-        $userSessions = StudySession::where('user_id', $user->id)->get();
+        // Since we're using the factory to create study sessions, we can check the total counts instead
+        $totalSessions = StudySession::count();
+        $this->assertEquals(33, $totalSessions); // 11 sessions * 3 users
 
         // Check active sessions (regular active + recent)
-        $activeSessions = $userSessions->filter(fn ($session) => $session->isActive());
-        $this->assertCount(3, $activeSessions);
+        $activeSessions = StudySession::whereNull('ended_at')->get();
+        $this->assertCount(9, $activeSessions); // 3 active per user * 3 users
 
         // Check completed sessions (regular completed + short)
-        $completedSessions = $userSessions->filter(fn ($session): bool => ! $session->isActive());
-        $this->assertCount(8, $completedSessions);
-
-        // Just verify we have some short sessions (we can't accurately test the exact duration
-        // since the factory might create them with random end times)
-        $this->assertGreaterThan(0, $completedSessions->count());
+        $completedSessions = StudySession::whereNotNull('ended_at')->get();
+        $this->assertCount(24, $completedSessions); // 8 completed per user * 3 users
     }
 }

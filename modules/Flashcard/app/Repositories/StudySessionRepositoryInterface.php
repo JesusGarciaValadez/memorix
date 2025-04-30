@@ -30,6 +30,8 @@ interface StudySessionRepositoryInterface
 
     /**
      * Get flashcards for practice.
+     *
+     * @return array<int, array{id: int, question: string, answer: string}>
      */
     public function getFlashcardsForPractice(int $userId): array;
 
@@ -50,6 +52,8 @@ interface StudySessionRepositoryInterface
 
     /**
      * Get the latest practice result for a flashcard.
+     *
+     * @return array{id: int, flashcard_id: int, study_session_id: int, is_correct: bool, created_at: string}|null
      */
     public function getLatestResultForFlashcard(int $flashcardId): ?array;
 }

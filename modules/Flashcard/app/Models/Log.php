@@ -5,18 +5,49 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Models;
 
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use JsonException;
 use Modules\Flashcard\database\factories\LogFactory;
 
 /**
+ * @property int $id
+ * @property int $user_id
+ * @property string $action
+ * @property string $level
+ * @property string|null $description
+ * @property Collection<int, mixed>|null $details
+ * @property Carbon|CarbonImmutable|null $created_at
+ * @property Carbon|CarbonImmutable|null $updated_at
+ * @property-read User $user
+ * @property array<string, mixed> $attributes
+ *
+ * @method static LogFactory factory($count = null, $state = [])
+ * @method static Builder<Log> newModelQuery()
+ * @method static Builder<Log> newQuery()
+ * @method static Builder<Log> query()
+ * @method static Builder<Log> whereAction($value)
+ * @method static Builder<Log> whereCreatedAt($value)
+ * @method static Builder<Log> whereDescription($value)
+ * @method static Builder<Log> whereDetails($value)
+ * @method static Builder<Log> whereId($value)
+ * @method static Builder<Log> whereLevel($value)
+ * @method static Builder<Log> whereUpdatedAt($value)
+ * @method static Builder<Log> whereUserId($value)
+ *
+ * @mixin Model
  * @mixin IdeHelperLog
  */
 final class Log extends Model
 {
-    /** @use HasFactory<LogFactory> */
+    /** @use HasFactory<\Modules\Flashcard\database\factories\LogFactory> */
     use HasFactory;
 
     public const string LEVEL_DEBUG = 'debug';
@@ -35,16 +66,45 @@ final class Log extends Model
     public $timestamps = false;
 
     /**
-     * The attributes that are mass assignable.
+     * The columns that should be returned.
      *
      * @var array<int, string>
+     */
+    protected static $columns = [
+        'id',
+        'user_id',
+        'action',
+        'level',
+        'description',
+        'details',
+        'created_at',
+    ];
+
+    /**
+     * The model's attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'user_id' => null,
+        'action' => '',
+        'level' => self::LEVEL_INFO,
+        'description' => null,
+        'details' => null,
+        'created_at' => null,
+    ];
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
      */
     protected $fillable = [
         'user_id',
         'action',
         'level',
+        'description',
         'details',
-        'created_at',
     ];
 
     /**
@@ -53,6 +113,7 @@ final class Log extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'details' => AsCollection::class,
         'created_at' => 'datetime',
     ];
 
@@ -62,13 +123,15 @@ final class Log extends Model
     public static function createEntry(
         User $user,
         string $action,
-        string $level = self::LEVEL_INFO,
+        string $level,
+        string $description,
         ?string $details = null
     ): self {
         return self::create([
             'user_id' => $user->id,
             'action' => $action,
             'level' => $level,
+            'description' => $description,
             'details' => $details,
             'created_at' => now(),
         ]);
@@ -89,6 +152,8 @@ final class Log extends Model
 
     /**
      * Log a flashcard creation.
+     *
+     * @throws JsonException
      */
     public static function logFlashcardCreation(User $user, Flashcard $flashcard): self
     {
@@ -96,7 +161,8 @@ final class Log extends Model
             $user,
             'created_flashcard',
             self::LEVEL_INFO,
-            "Created flashcard ID: {$flashcard->id}, Question: {$flashcard->question}"
+            "Created flashcard ID: {$flashcard->id}, Question: {$flashcard->question}",
+            json_encode(['flashcard_id' => $flashcard->id], JSON_THROW_ON_ERROR),
         );
     }
 
@@ -192,28 +258,20 @@ final class Log extends Model
     }
 
     /**
-     * Log user exit.
-     */
-    public static function logUserExit(User $user): self
-    {
-        return self::createEntry(
-            $user,
-            'user_exit',
-            self::LEVEL_INFO,
-            "User {$user->name} exited the application"
-        );
-    }
-
-    /**
-     * Get the user that owns the log entry.
+     * Get the user that owns the log.
+     *
+     * @return BelongsTo<User, Log>
      */
     public function user(): BelongsTo
     {
+        // @phpstan-ignore-next-line return.type
         return $this->belongsTo(User::class);
     }
 
     /**
      * Create a new factory instance for the model.
+     *
+     * @return LogFactory
      */
     protected static function newFactory(): Factory
     {

@@ -11,11 +11,15 @@ interface FlashcardRepositoryInterface
 {
     /**
      * Get all flashcards for a user.
+     *
+     * @return LengthAwarePaginator<int, Flashcard>
      */
     public function getAllForUser(int $userId, int $perPage = 15): LengthAwarePaginator;
 
     /**
      * Get all deleted flashcards for a user.
+     *
+     * @return LengthAwarePaginator<int, Flashcard>
      */
     public function getAllDeletedForUser(int $userId, int $perPage = 15): LengthAwarePaginator;
 
@@ -26,11 +30,15 @@ interface FlashcardRepositoryInterface
 
     /**
      * Create a new flashcard.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Flashcard;
 
     /**
      * Update a flashcard.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(Flashcard $flashcard, array $data): bool;
 

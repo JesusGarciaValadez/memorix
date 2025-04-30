@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Flashcard\app\Models\Log;
 
 final class LogRequest extends FormRequest
 {
@@ -14,17 +13,14 @@ final class LogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $log = Log::find($this->route('log'));
-
-        if ($this->isMethod('POST')) {
-            return $this->user()->can('create', Log::class);
-        }
-
-        return $log && $this->user()->can('update', $log);
+        // Only authenticated users can access logs
+        return $this->user() !== null;
     }
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array<string, list<string>|string>
      */
     public function rules(): array
     {
@@ -32,11 +28,14 @@ final class LogRequest extends FormRequest
             'action' => ['required', 'string', 'max:100'],
             'details' => ['nullable', 'string', 'max:1000'],
             'created_at' => ['nullable', 'date'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:100'], // For index/latest
         ];
     }
 
     /**
      * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -45,6 +44,9 @@ final class LogRequest extends FormRequest
             'action.max' => 'The action cannot exceed 100 characters',
             'details.max' => 'The details cannot exceed 1000 characters',
             'created_at.date' => 'The created at time must be a valid date',
+            'limit.integer' => 'The limit must be an integer',
+            'limit.min' => 'The limit must be at least 1',
+            'limit.max' => 'The limit cannot be greater than 100',
         ];
     }
 

@@ -6,6 +6,7 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\StudySessionRequest;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
@@ -13,6 +14,8 @@ use Tests\TestCase;
 
 final class StudySessionRequestTest extends TestCase
 {
+    use RefreshDatabase;
+
     private StudySessionRequest $request;
 
     protected function setUp(): void
@@ -24,22 +27,15 @@ final class StudySessionRequestTest extends TestCase
     }
 
     #[Test]
-    public function it_has_date_validation_rules(): void
+    public function it_has_boolean_validation_rule_for_is_correct(): void
     {
         $rules = $this->request->rules();
 
-        $this->assertArrayHasKey('started_at', $rules);
-        $this->assertArrayHasKey('ended_at', $rules);
-        $this->assertContains('date', $rules['started_at']);
-        $this->assertContains('date', $rules['ended_at']);
-    }
-
-    #[Test]
-    public function it_has_after_or_equal_validation_rule_for_ended_at(): void
-    {
-        $rules = $this->request->rules();
-
-        $this->assertContains('after_or_equal:started_at', $rules['ended_at']);
+        $this->assertArrayHasKey('is_correct', $rules);
+        $isCorrectRule = $rules['is_correct'];
+        $this->assertIsString($isCorrectRule); // Ensure it's a string
+        $this->assertStringContainsString('boolean', $isCorrectRule);
+        $this->assertStringContainsString('sometimes', $isCorrectRule);
     }
 
     #[Test]
@@ -47,9 +43,7 @@ final class StudySessionRequestTest extends TestCase
     {
         $messages = $this->request->messages();
 
-        $this->assertArrayHasKey('started_at.date', $messages);
-        $this->assertArrayHasKey('ended_at.date', $messages);
-        $this->assertArrayHasKey('ended_at.after_or_equal', $messages);
+        $this->assertArrayHasKey('is_correct.boolean', $messages);
     }
 
     #[Test]

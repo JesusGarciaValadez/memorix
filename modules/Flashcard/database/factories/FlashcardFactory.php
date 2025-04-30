@@ -11,13 +11,15 @@ use Random\RandomException;
 
 /**
  * @extends Factory<Flashcard>
+ *
+ * @mixin \Illuminate\Database\Eloquent\Factories\Factory<Flashcard>
  */
 final class FlashcardFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Flashcard>
      */
     protected $model = Flashcard::class;
 
@@ -42,7 +44,7 @@ final class FlashcardFactory extends Factory
     /**
      * Define a state for flashcards with short answers.
      */
-    public function shortAnswer(): Factory
+    public function shortAnswer(): static
     {
         return $this->state(fn (array $attributes): array => [
             'answer' => fake()->sentence(random_int(1, 5)),
@@ -52,7 +54,7 @@ final class FlashcardFactory extends Factory
     /**
      * Define a state for recently created flashcards.
      */
-    public function recent(): Factory
+    public function recent(): static
     {
         return $this->state(fn (array $attributes): array => [
             'created_at' => fake()->dateTimeBetween('-1 week', 'now'),

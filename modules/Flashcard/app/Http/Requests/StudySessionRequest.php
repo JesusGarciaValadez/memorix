@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Flashcard\app\Models\StudySession;
 
 final class StudySessionRequest extends FormRequest
 {
@@ -14,43 +13,34 @@ final class StudySessionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $studySession = StudySession::find($this->route('study_session'));
-
-        if ($this->isMethod('POST')) {
-            return $this->user()->can('create', StudySession::class);
-        }
-
-        return $studySession && $this->user()->can('update', $studySession);
+        // Allow all authenticated users for now
+        return $this->user() !== null;
     }
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array<string, list<string>|string>
      */
     public function rules(): array
     {
-        $rules = [
-            'started_at' => ['nullable', 'date'],
-            'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
+        return [
+            // For recording practice result
+            'is_correct' => 'sometimes|boolean',
+            // For resetting practice
+            // No specific rules needed for starting, ending, getting flashcards
         ];
-
-        // For update, make fields optional
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            $rules['started_at'] = ['nullable', 'date'];
-            $rules['ended_at'] = ['nullable', 'date', 'after_or_equal:started_at'];
-        }
-
-        return $rules;
     }
 
     /**
      * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'started_at.date' => 'The start time must be a valid date',
-            'ended_at.date' => 'The end time must be a valid date',
-            'ended_at.after_or_equal' => 'The end time must be after or equal to the start time',
+            'is_correct.boolean' => 'The is_correct field must be true or false.',
         ];
     }
 

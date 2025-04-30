@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Flashcard\app\Services\StatisticServiceInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 final class StatisticController extends Controller
 {
@@ -20,7 +21,10 @@ final class StatisticController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $statistics = $this->statisticService->getStatisticsForUser($userId);
 
@@ -32,7 +36,10 @@ final class StatisticController extends Controller
      */
     public function successRate(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $successRate = $this->statisticService->getPracticeSuccessRate($userId);
 
@@ -46,7 +53,10 @@ final class StatisticController extends Controller
      */
     public function averageDuration(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $averageDuration = $this->statisticService->getAverageStudySessionDuration($userId);
 
@@ -60,7 +70,10 @@ final class StatisticController extends Controller
      */
     public function totalTime(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $userId = $request->user()?->id;
+        if ($userId === null) {
+            return response()->json(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+        }
 
         $totalTime = $this->statisticService->getTotalStudyTime($userId);
 

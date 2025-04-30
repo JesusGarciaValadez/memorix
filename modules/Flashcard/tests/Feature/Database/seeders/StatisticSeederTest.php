@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Statistic;
 use Modules\Flashcard\database\seeders\StatisticSeeder;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,9 +13,14 @@ use Tests\TestCase;
 
 final class StatisticSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_seeds_statistics_for_existing_users(): void
     {
+        // Migrate the database
+        $this->artisan('migrate');
+
         // Create users
         $users = User::factory()->count(3)->create();
 
@@ -34,6 +40,9 @@ final class StatisticSeederTest extends TestCase
     #[Test]
     public function it_creates_users_if_none_exist_and_seeds_statistics(): void
     {
+        // Migrate the database
+        $this->artisan('migrate');
+
         // Run the seeder
         $seeder = new StatisticSeeder();
         $seeder->run();
@@ -48,6 +57,9 @@ final class StatisticSeederTest extends TestCase
     #[Test]
     public function it_creates_statistics_with_different_profiles(): void
     {
+        // Migrate the database
+        $this->artisan('migrate');
+
         // Run the seeder
         $seeder = new StatisticSeeder();
         $seeder->run();

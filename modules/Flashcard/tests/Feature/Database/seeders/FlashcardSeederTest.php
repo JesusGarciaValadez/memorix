@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\database\seeders\FlashcardSeeder;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 
 final class FlashcardSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_creates_flashcards_for_existing_users(): void
     {
@@ -70,7 +73,11 @@ final class FlashcardSeederTest extends TestCase
         $flashcards = Flashcard::where('user_id', $user->id)->get();
 
         // Check for recent flashcards (created within the last week)
-        $recentFlashcards = $flashcards->filter(fn ($flashcard) => $flashcard->created_at->isAfter(now()->subWeek()));
+        $recentFlashcards = $flashcards->filter(function ($flashcard) { // Use a closure
+            $this->assertNotNull($flashcard->created_at); // Add assertion inside closure
+
+            return $flashcard->created_at->isAfter(now()->subWeek());
+        });
         $this->assertGreaterThanOrEqual(3, $recentFlashcards->count());
 
         // We can't directly test for short answers since that's in the factory state

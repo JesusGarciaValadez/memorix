@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\StatisticRequest;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 
 final class StatisticRequestTest extends TestCase
 {
+    use RefreshDatabase;
+
     private StatisticRequest $request;
 
     protected function setUp(): void
@@ -23,48 +26,11 @@ final class StatisticRequestTest extends TestCase
     }
 
     #[Test]
-    public function it_has_integer_validation_rules(): void
-    {
-        $rules = $this->request->rules();
-
-        $this->assertContains('integer', $rules['total_flashcards']);
-        $this->assertContains('integer', $rules['total_study_sessions']);
-        $this->assertContains('integer', $rules['total_correct_answers']);
-        $this->assertContains('integer', $rules['total_incorrect_answers']);
-    }
-
-    #[Test]
-    public function it_has_min_validation_rules(): void
-    {
-        $rules = $this->request->rules();
-
-        $this->assertContains('min:0', $rules['total_flashcards']);
-        $this->assertContains('min:0', $rules['total_study_sessions']);
-        $this->assertContains('min:0', $rules['total_correct_answers']);
-        $this->assertContains('min:0', $rules['total_incorrect_answers']);
-    }
-
-    #[Test]
-    public function it_has_boolean_validation_rule_for_reset(): void
-    {
-        $rules = $this->request->rules();
-
-        $this->assertContains('boolean', $rules['reset']);
-    }
-
-    #[Test]
     public function it_has_custom_validation_messages(): void
     {
         $messages = $this->request->messages();
 
-        $this->assertArrayHasKey('total_flashcards.integer', $messages);
-        $this->assertArrayHasKey('total_flashcards.min', $messages);
-        $this->assertArrayHasKey('total_study_sessions.integer', $messages);
-        $this->assertArrayHasKey('total_study_sessions.min', $messages);
-        $this->assertArrayHasKey('total_correct_answers.integer', $messages);
-        $this->assertArrayHasKey('total_correct_answers.min', $messages);
-        $this->assertArrayHasKey('total_incorrect_answers.integer', $messages);
-        $this->assertArrayHasKey('total_incorrect_answers.min', $messages);
+        $this->assertEmpty($messages);
     }
 
     #[Test]

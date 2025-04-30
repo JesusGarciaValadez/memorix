@@ -6,6 +6,7 @@ namespace Modules\Flashcard\tests\Feature\app\Http\Requests;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Http\Requests\LogRequest;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
@@ -13,6 +14,8 @@ use Tests\TestCase;
 
 final class LogRequestTest extends TestCase
 {
+    use RefreshDatabase;
+
     private LogRequest $request;
 
     protected function setUp(): void
@@ -28,16 +31,22 @@ final class LogRequestTest extends TestCase
     {
         $rules = $this->request->rules();
 
-        $this->assertArrayHasKey('action', $rules);
-        $this->assertContains('required', $rules['action']);
+        $this->assertArrayHasKey('limit', $rules); // Check if 'limit' key exists
+        $limitRules = $rules['limit'];
+        $this->assertIsArray($limitRules);
+        $this->assertContains('sometimes', $limitRules);
+        $this->assertContains('integer', $limitRules);
+        $this->assertContains('min:1', $limitRules);
+        $this->assertContains('max:100', $limitRules);
     }
 
     #[Test]
     public function it_has_string_validation_rules(): void
     {
         $rules = $this->request->rules();
-
+        $this->assertIsArray($rules['action']); // Ensure it's an array
         $this->assertContains('string', $rules['action']);
+        $this->assertIsArray($rules['details']); // Ensure it's an array
         $this->assertContains('string', $rules['details']);
     }
 
@@ -45,8 +54,9 @@ final class LogRequestTest extends TestCase
     public function it_has_max_validation_rules(): void
     {
         $rules = $this->request->rules();
-
+        $this->assertIsArray($rules['action']); // Ensure it's an array
         $this->assertContains('max:100', $rules['action']);
+        $this->assertIsArray($rules['details']); // Ensure it's an array
         $this->assertContains('max:1000', $rules['details']);
     }
 
@@ -54,7 +64,7 @@ final class LogRequestTest extends TestCase
     public function it_has_date_validation_rule_for_created_at(): void
     {
         $rules = $this->request->rules();
-
+        $this->assertIsArray($rules['created_at']); // Ensure it's an array
         $this->assertContains('date', $rules['created_at']);
     }
 
@@ -67,6 +77,9 @@ final class LogRequestTest extends TestCase
         $this->assertArrayHasKey('action.max', $messages);
         $this->assertArrayHasKey('details.max', $messages);
         $this->assertArrayHasKey('created_at.date', $messages);
+        $this->assertArrayHasKey('limit.integer', $messages); // Add check for limit messages
+        $this->assertArrayHasKey('limit.min', $messages);
+        $this->assertArrayHasKey('limit.max', $messages);
     }
 
     #[Test]

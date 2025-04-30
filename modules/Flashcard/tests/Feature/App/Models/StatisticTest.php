@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\tests\Feature\app\Models;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\Statistic;
@@ -14,6 +15,8 @@ use Tests\TestCase;
 
 final class StatisticTest extends TestCase
 {
+    use RefreshDatabase;
+
     private User $user;
 
     private Statistic $statistic;
@@ -46,11 +49,13 @@ final class StatisticTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
+        $this->assertNotNull($flashcards, 'Flashcards should be created successfully.');
+
         // Practice some flashcards correctly
         foreach ([0, 1, 2, 3, 4] as $index) {
             PracticeResult::factory()->create([
                 'user_id' => $this->user->id,
-                'flashcard_id' => $flashcards[$index]->id,
+                'flashcard_id' => $flashcards[$index]?->id,
                 'study_session_id' => $studySession->id,
                 'is_correct' => true,
             ]);
@@ -61,7 +66,7 @@ final class StatisticTest extends TestCase
         foreach ([5, 6] as $index) {
             PracticeResult::factory()->create([
                 'user_id' => $this->user->id,
-                'flashcard_id' => $flashcards[$index]->id,
+                'flashcard_id' => $flashcards[$index]?->id,
                 'study_session_id' => $studySession->id,
                 'is_correct' => false,
             ]);
@@ -135,6 +140,8 @@ final class StatisticTest extends TestCase
         // Simulate concurrent updates
         $statistic1 = $this->statistic;
         $statistic2 = Statistic::find($this->statistic->id);
+
+        $this->assertNotNull($statistic2, 'Statistic record should be found for concurrent update test.');
 
         // First update
         $statistic1->incrementTotalCorrectAnswers();

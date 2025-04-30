@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\factories;
 
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class FlashcardFactoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_can_create_a_flashcard(): void
     {
@@ -74,6 +78,7 @@ final class FlashcardFactoryTest extends TestCase
 
         // A recent flashcard should be created within the last week
         $oneWeekAgo = now()->subWeek();
+        $this->assertNotNull($flashcard->created_at);
         $this->assertTrue($flashcard->created_at->isAfter($oneWeekAgo));
     }
 
@@ -88,5 +93,13 @@ final class FlashcardFactoryTest extends TestCase
 
         $this->assertCount($count, $flashcards);
         $this->assertDatabaseCount('flashcards', $count);
+    }
+
+    public function test_created_at_is_recent(): void
+    {
+        $flashcard = Flashcard::factory()->create();
+        $this->assertNotNull($flashcard->created_at);
+        // @phpstan-ignore-next-line class.notFound
+        $this->assertTrue($flashcard->created_at->isAfter(Carbon::now()->subYears(1)));
     }
 }

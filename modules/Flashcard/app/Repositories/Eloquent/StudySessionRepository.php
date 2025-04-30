@@ -9,6 +9,7 @@ use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\PracticeResultRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
+use stdClass;
 
 final readonly class StudySessionRepository implements StudySessionRepositoryInterface
 {
@@ -60,48 +61,39 @@ final readonly class StudySessionRepository implements StudySessionRepositoryInt
     }
 
     /**
-     * Get flashcards for practice.
+     * Fetch flashcards for a practice session, prioritizing those answered incorrectly.
+     *
+     * @return array<int, array{id: int, question: string, answer: string}>
      */
-    public function getFlashcardsForPractice(int $userId): array
+    public function getFlashcardsForPractice(int $userId, int $limit = 10): array
     {
-        // First get recently incorrect answers
-        $incorrectFlashcards = $this->practiceResultRepository->getRecentlyIncorrectFlashcards($userId);
-
-        $incorrectIds = array_column($incorrectFlashcards, 'id');
-
-        // Then get cards that haven't been practiced recently
-        $unpracticedFlashcards = Flashcard::where('user_id', $userId)
-            ->whereNotIn('id', $incorrectIds)
-            ->whereNot(function ($query): void {
-                $query->whereHas('practiceResults', function ($query): void {
-                    $query->where('created_at', '>', now()->subDays(7));
-                });
+        $results = Flashcard::query()
+            ->select('flashcards.id', 'flashcards.question', 'flashcards.answer')
+            ->leftJoin('practice_results', function ($join) use ($userId): void {
+                $join->on('flashcards.id', '=', 'practice_results.flashcard_id')
+                    ->where('practice_results.user_id', '=', $userId)
+                    ->whereRaw('practice_results.id = (select max(id) from practice_results where flashcard_id = flashcards.id and user_id = ?)', [$userId]);
             })
-            ->inRandomOrder()
-            ->limit(10)
+            ->where('flashcards.user_id', $userId)
+            ->orderByRaw('CASE WHEN practice_results.is_correct = 0 THEN 0 ELSE 1 END ASC')
+            ->orderBy('practice_results.created_at', 'asc')
+            ->orderBy('flashcards.created_at', 'asc')
+            ->limit($limit)
+            ->distinct('flashcards.id')
             ->get()
-            ->map(fn ($flashcard): array => [
-                'id' => $flashcard->id,
-                'question' => $flashcard->question,
-                'answer' => $flashcard->answer,
-            ])
-            ->toArray();
+            ->all(); // Get results as an array
 
-        // Combine both sets
-        $flashcards = array_merge($incorrectFlashcards, $unpracticedFlashcards);
-
-        if ($flashcards === []) {
-            // If no specific cards to practice, get 10 random cards
-            return Flashcard::where('user_id', $userId)
-                ->inRandomOrder()
-                ->limit(10)
-                ->get()
-                ->map(fn ($flashcard): array => [
-                    'id' => $flashcard->id,
-                    'question' => $flashcard->question,
-                    'answer' => $flashcard->answer,
-                ])
-                ->toArray();
+        $flashcards = [];
+        foreach ($results as $result) {
+            // Check if properties exist and add type hint
+            if (isset($result->id, $result->question, $result->answer)) {
+                /** @var object{id: int, question: string, answer: string} $result */
+                $flashcards[] = [
+                    'id' => $result->id,
+                    'question' => $result->question,
+                    'answer' => $result->answer,
+                ];
+            }
         }
 
         return $flashcards;
@@ -153,12 +145,16 @@ final readonly class StudySessionRepository implements StudySessionRepositoryInt
 
     /**
      * Get the latest practice result for a flashcard.
+     *
+     * @return array{id: int, flashcard_id: int, study_session_id: int, is_correct: bool, created_at: string}|null
      */
     public function getLatestResultForFlashcard(int $flashcardId): ?array
     {
+        /** @var stdClass|null $result */
         $result = DB::table('practice_results')
             ->where('flashcard_id', $flashcardId)
             ->orderBy('created_at', 'desc')
+            ->select(['id', 'flashcard_id', 'study_session_id', 'is_correct', 'created_at'])
             ->first();
 
         if (! $result) {

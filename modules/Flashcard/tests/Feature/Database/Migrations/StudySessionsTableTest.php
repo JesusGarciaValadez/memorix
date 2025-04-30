@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\Tests\Feature\database\migrations;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 
 final class StudySessionsTableTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function study_sessions_table_exists(): void
     {

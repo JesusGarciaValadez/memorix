@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Models;
 
-use Carbon\Carbon;
+use App\Models\User;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\StudySession;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class StudySessionTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_has_correct_fillable_attributes(): void
     {
@@ -34,28 +38,36 @@ final class StudySessionTest extends TestCase
     #[Test]
     public function it_does_not_use_timestamps(): void
     {
-        $studySession = new StudySession();
+        $studySession = StudySession::factory()->create();
         $this->assertFalse($studySession->timestamps);
     }
 
     #[Test]
     public function it_belongs_to_a_user(): void
     {
-        $studySession = new StudySession();
-        $this->assertTrue(method_exists($studySession, 'user'), 'StudySession model should have a user relationship method');
+        $user = User::factory()->create();
+        $studySession = StudySession::factory()->create(['user_id' => $user->id]);
+
+        $this->assertInstanceOf(User::class, $studySession->user);
+        $this->assertSame($user->id, $studySession->user->id);
     }
 
     #[Test]
     public function it_can_check_if_active(): void
     {
+        $user = User::factory()->create();
         // Create a study session object directly for testing
-        $activeSession = new StudySession();
-        $activeSession->started_at = Carbon::now();
-        $activeSession->ended_at = null;
+        $activeSession = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => CarbonImmutable::now(),
+            'ended_at' => null,
+        ]);
 
-        $endedSession = new StudySession();
-        $endedSession->started_at = Carbon::now()->subHour();
-        $endedSession->ended_at = Carbon::now();
+        $endedSession = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => CarbonImmutable::now()->subHour(),
+            'ended_at' => CarbonImmutable::now(),
+        ]);
 
         $this->assertTrue($activeSession->isActive());
         $this->assertFalse($endedSession->isActive());
@@ -65,9 +77,10 @@ final class StudySessionTest extends TestCase
     public function it_can_end_a_session(): void
     {
         // Create an actual study session object
-        $studySession = new StudySession();
-        $studySession->started_at = now();
-        $studySession->ended_at = null;
+        $studySession = StudySession::factory()->create([
+            'started_at' => CarbonImmutable::now(),
+            'ended_at' => null,
+        ]);
 
         // Test the instance before ending
         $this->assertTrue($studySession->isActive());
@@ -75,8 +88,8 @@ final class StudySessionTest extends TestCase
 
         // Instead of calling end(), which calls save(), we'll call the method
         // but intercept its functionality to avoid database interaction
-        $currentTime = now();
-        Carbon::setTestNow($currentTime);
+        $currentTime = CarbonImmutable::now();
+        CarbonImmutable::setTestNow($currentTime);
 
         // Manually set ended_at to simulate what end() would do
         $studySession->ended_at = $currentTime;
@@ -88,6 +101,23 @@ final class StudySessionTest extends TestCase
         $this->assertEquals($currentTime->toDateTimeString(), $studySession->ended_at->toDateTimeString());
 
         // Reset Carbon's test instance
-        Carbon::setTestNow();
+        CarbonImmutable::setTestNow();
+    }
+
+    #[Test]
+    public function it_can_be_created_using_factory(): void
+    {
+        $session = StudySession::factory()->create();
+        $this->assertInstanceOf(StudySession::class, $session);
+    }
+
+    #[Test]
+    public function it_checks_if_session_is_active(): void
+    {
+        $session = StudySession::factory()->create([
+            'started_at' => CarbonImmutable::now()->subHour(),
+        ]);
+
+        $this->assertTrue($session->isActive());
     }
 }

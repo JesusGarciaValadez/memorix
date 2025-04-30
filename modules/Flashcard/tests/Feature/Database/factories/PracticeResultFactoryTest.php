@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\factories;
 
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
@@ -13,6 +17,8 @@ use Tests\TestCase;
 
 final class PracticeResultFactoryTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_can_create_a_practice_result(): void
     {
@@ -107,7 +113,11 @@ final class PracticeResultFactoryTest extends TestCase
 
         // A recent practice result should be created within the last week
         $oneWeekAgo = now()->subWeek();
-        $this->assertTrue($practiceResult->created_at->isAfter($oneWeekAgo));
+        $this->assertNotNull($practiceResult->created_at);
+        /* @var CarbonInterface|Carbon|CarbonImmutable $createdAt */
+        $createdAt = $practiceResult->created_at;
+        $this->assertInstanceOf(CarbonInterface::class, $createdAt);
+        $this->assertTrue($createdAt->isAfter($oneWeekAgo));
     }
 
     #[Test]
@@ -121,5 +131,19 @@ final class PracticeResultFactoryTest extends TestCase
 
         $this->assertCount($count, $practiceResults);
         $this->assertDatabaseCount('practice_results', $count);
+    }
+
+    public function test_timestamps_are_recent(): void
+    {
+        $practiceResult = PracticeResult::factory()->create([
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+        $this->assertNotNull($practiceResult->created_at);
+        $this->assertNotNull($practiceResult->updated_at);
+        /* @var CarbonInterface|Carbon|CarbonImmutable $createdAt */
+        $createdAt = $practiceResult->created_at;
+        $this->assertInstanceOf(CarbonInterface::class, $createdAt);
+        $this->assertTrue($createdAt->isAfter(Carbon::now()->subMinutes(5)));
     }
 }

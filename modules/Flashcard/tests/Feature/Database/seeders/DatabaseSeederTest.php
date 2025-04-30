@@ -55,9 +55,9 @@ final class DatabaseSeederTest extends TestCase
         $log = Log::first();
 
         // Verify user relationships
-        $this->assertNotNull($flashcard->user);
-        $this->assertNotNull($studySession->user);
-        $this->assertNotNull($statistic->user);
-        $this->assertNotNull($log->user);
+        $this->assertNotNull($flashcard?->user);
+        $this->assertNotNull($studySession?->user);
+        $this->assertNotNull($statistic?->user);
+        $this->assertNotNull($log?->user);
     }
 }

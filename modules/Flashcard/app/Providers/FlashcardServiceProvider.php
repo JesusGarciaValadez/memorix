@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Modules\Flashcard\app\Helpers\ConsoleRenderer;
-use Modules\Flashcard\app\Helpers\ConsoleRendererInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\Statistic;
@@ -35,11 +33,13 @@ use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
 use Modules\Flashcard\app\Services\FlashcardCommandService;
 use Modules\Flashcard\app\Services\FlashcardCommandServiceInterface;
 use Modules\Flashcard\app\Services\FlashcardService;
+use Modules\Flashcard\app\Services\FlashcardServiceInterface;
 use Modules\Flashcard\app\Services\LogService;
 use Modules\Flashcard\app\Services\LogServiceInterface;
 use Modules\Flashcard\app\Services\StatisticService;
 use Modules\Flashcard\app\Services\StatisticServiceInterface;
 use Modules\Flashcard\app\Services\StudySessionService;
+use Modules\Flashcard\app\Services\StudySessionServiceInterface;
 
 final class FlashcardServiceProvider extends BaseServiceProvider
 {
@@ -49,13 +49,13 @@ final class FlashcardServiceProvider extends BaseServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../../Resources/views', 'flashcard');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->commands([
             \Modules\Flashcard\app\Console\Commands\FlashcardInteractiveCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardRegisterCommand::class,
             \Modules\Flashcard\app\Console\Commands\FlashcardImportCommand::class,
         ]);
-        $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang');
-        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+        $this->loadTranslationsFrom(__DIR__.'/../../Resources/lang', 'flashcard');
         $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
         $this->registerPolicies();
     }
@@ -67,7 +67,6 @@ final class FlashcardServiceProvider extends BaseServiceProvider
     {
         $this->registerRepositories();
         $this->registerServices();
-        $this->registerHelpers();
         $this->configureCommands();
         $this->configureModels();
         $this->configureDates();
@@ -147,21 +146,13 @@ final class FlashcardServiceProvider extends BaseServiceProvider
      */
     private function registerServices(): void
     {
-        $this->app->singleton(FlashcardService::class);
-        $this->app->singleton(StudySessionService::class);
-        $this->app->singleton(LogService::class);
+        // Base services
         $this->app->singleton(LogServiceInterface::class, LogService::class);
-        $this->app->singleton(StatisticService::class);
         $this->app->singleton(StatisticServiceInterface::class, StatisticService::class);
-        $this->app->singleton(FlashcardCommandService::class);
-        $this->app->singleton(FlashcardCommandServiceInterface::class, FlashcardCommandService::class);
-    }
 
-    /**
-     * Register helpers.
-     */
-    private function registerHelpers(): void
-    {
-        $this->app->singleton(ConsoleRendererInterface::class, ConsoleRenderer::class);
+        // Higher-level services
+        $this->app->singleton(FlashcardServiceInterface::class, FlashcardService::class);
+        $this->app->singleton(FlashcardCommandServiceInterface::class, FlashcardCommandService::class);
+        $this->app->singleton(StudySessionServiceInterface::class, StudySessionService::class);
     }
 }

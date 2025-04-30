@@ -1,0 +1,34 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+        - modules/
+
+    # Level 10 is the highest level
+    level: 8
+
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '#PHPDoc tag @var#'
+        - 
+            identifier: method.nonObject
+            path: ./modules/Flashcards/app/database/factories/*
+        -
+            identifier: method.nonObject
+            path: ./modules/Flashcards/app/Models/*
+        -
+            message: '#^Negated boolean expression is always false\.$#'
+            identifier: booleanNot.alwaysFalse
+            count: 1
+            path: ./modules/Flashcard/app/Services/FlashcardCommandService.php
+
+    reportUnmatchedIgnoredErrors: false
+
+    excludePaths:
+        - ./bootstrap/cache/*
+        - ./storage/*

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Services;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
+use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
 use Modules\Flashcard\app\Repositories\FlashcardRepositoryInterface;
 use Modules\Flashcard\app\Repositories\StudySessionRepositoryInterface;
@@ -20,15 +22,15 @@ use Tests\TestCase;
 
 final class StudySessionServiceTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
-    private MockInterface $studySessionRepository;
+    private MockInterface&StudySessionRepositoryInterface $studySessionRepository;
 
-    private MockInterface $flashcardRepository;
+    private MockInterface&FlashcardRepositoryInterface $flashcardRepository;
 
-    private MockInterface $logService;
+    private MockInterface&LogServiceInterface $logService;
 
-    private MockInterface $statisticService;
+    private MockInterface&StatisticServiceInterface $statisticService;
 
     private StudySessionService $service;
 
@@ -36,10 +38,21 @@ final class StudySessionServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->studySessionRepository = Mockery::mock(StudySessionRepositoryInterface::class);
-        $this->flashcardRepository = Mockery::mock(FlashcardRepositoryInterface::class);
-        $this->logService = Mockery::mock(LogServiceInterface::class);
-        $this->statisticService = Mockery::mock(StatisticServiceInterface::class);
+        /** @var MockInterface&StudySessionRepositoryInterface $studySessionRepository */
+        $studySessionRepository = Mockery::mock(StudySessionRepositoryInterface::class);
+        $this->studySessionRepository = $studySessionRepository;
+
+        /** @var MockInterface&FlashcardRepositoryInterface $flashcardRepository */
+        $flashcardRepository = Mockery::mock(FlashcardRepositoryInterface::class);
+        $this->flashcardRepository = $flashcardRepository;
+
+        /** @var MockInterface&LogServiceInterface $logService */
+        $logService = Mockery::mock(LogServiceInterface::class);
+        $this->logService = $logService;
+
+        /** @var MockInterface&StatisticServiceInterface $statisticService */
+        $statisticService = Mockery::mock(StatisticServiceInterface::class);
+        $this->statisticService = $statisticService;
 
         $this->service = new StudySessionService(
             $this->studySessionRepository,
@@ -59,32 +72,40 @@ final class StudySessionServiceTest extends TestCase
     public function it_starts_session_creates_session_and_updates_logs_and_statistics(): void
     {
         // Arrange
-        $userId = 1;
-        $session = new StudySession();
-        $session->user_id = $userId;
-        $session->started_at = now();
+        $user = User::factory()->create();
+        $session = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
 
-        $log = new Log();
-        $log->action = 'started_study_session';
+        $log = Log::factory()->create([
+            'user_id' => $user->id,
+            'action' => 'started_study_session',
+            'details' => [
+                'session_id' => $session->id,
+            ],
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('startSession')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn($session);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logStudySessionStart')
             ->once()
-            ->with($userId, $session)
+            ->with($user->id, $session)
             ->andReturn($log);
 
+        // @phpstan-ignore-next-line
         $this->statisticService->shouldReceive('incrementStudySessions')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
         // Act
-        $result = $this->service->startSession($userId);
+        $result = $this->service->startSession($user->id);
 
         // Assert
         $this->assertSame($session, $result);
@@ -94,17 +115,20 @@ final class StudySessionServiceTest extends TestCase
     public function it_ends_session_returns_false_when_session_not_found(): void
     {
         // Arrange
-        $userId = 1;
-        $sessionId = 5;
+        $user = User::factory()->create();
+        $session = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('findForUser')
             ->once()
-            ->with($sessionId, $userId)
+            ->with($session->id, $user->id)
             ->andReturn(null);
 
         // Act
-        $result = $this->service->endSession($userId, $sessionId);
+        $result = $this->service->endSession($user->id, $session->id);
 
         // Assert
         $this->assertFalse($result);
@@ -114,22 +138,21 @@ final class StudySessionServiceTest extends TestCase
     public function it_ends_session_returns_false_when_session_already_ended(): void
     {
         // Arrange
-        $userId = 1;
-        $sessionId = 5;
-        $session = new StudySession();
-        $session->id = $sessionId;
-        $session->user_id = $userId;
-        $session->started_at = now()->subHour();
-        $session->ended_at = now();
+        $user = User::factory()->create();
+        $session = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now()->subHour(),
+            'ended_at' => now(),
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('findForUser')
             ->once()
-            ->with($sessionId, $userId)
+            ->with($session->id, $user->id)
             ->andReturn($session);
 
         // Act
-        $result = $this->service->endSession($userId, $sessionId);
+        $result = $this->service->endSession($user->id, $session->id);
 
         // Assert
         $this->assertFalse($result);
@@ -139,35 +162,37 @@ final class StudySessionServiceTest extends TestCase
     public function it_ends_session_ends_session_and_logs_when_active(): void
     {
         // Arrange
-        $userId = 1;
-        $sessionId = 5;
-        $session = new StudySession();
-        $session->id = $sessionId;
-        $session->user_id = $userId;
-        $session->started_at = now()->subHour();
-        $session->ended_at = null;
+        $user = User::factory()->create();
+        $session = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now()->subHour(),
+            'ended_at' => null,
+        ]);
 
         $log = new Log();
         $log->action = 'ended_study_session';
 
         // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('findForUser')
             ->once()
-            ->with($sessionId, $userId)
+            ->with($session->id, $user->id)
             ->andReturn($session);
 
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('endSession')
             ->once()
             ->with($session)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logStudySessionEnd')
             ->once()
-            ->with($userId, $session)
+            ->with($user->id, $session)
             ->andReturn($log);
 
         // Act
-        $result = $this->service->endSession($userId, $sessionId);
+        $result = $this->service->endSession($user->id, $session->id);
 
         // Assert
         $this->assertTrue($result);
@@ -177,47 +202,54 @@ final class StudySessionServiceTest extends TestCase
     public function it_gets_flashcards_for_practice_ensures_active_session_exists(): void
     {
         // Arrange
-        $userId = 1;
-        $session = new StudySession();
-        $session->user_id = $userId;
-        $session->started_at = now();
+        $user = User::factory()->create();
+        $session = StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
 
-        $log = new Log();
-        $log->action = 'started_study_session';
+        $log = Log::factory()->create([
+            'user_id' => $user->id,
+            'action' => 'started_study_session',
+        ]);
 
         $flashcards = [
             ['id' => 1, 'question' => 'Q1', 'answer' => 'A1'],
             ['id' => 2, 'question' => 'Q2', 'answer' => 'A2'],
         ];
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('getActiveSessionForUser')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(null);
 
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('startSession')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn($session);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logStudySessionStart')
             ->once()
-            ->with($userId, $session)
+            ->with($user->id, $session)
             ->andReturn($log);
 
+        // @phpstan-ignore-next-line
         $this->statisticService->shouldReceive('incrementStudySessions')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('getFlashcardsForPractice')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn($flashcards);
 
         // Act
-        $result = $this->service->getFlashcardsForPractice($userId);
+        $result = $this->service->getFlashcardsForPractice($user->id);
 
         // Assert
         $this->assertEquals($flashcards, $result);
@@ -227,18 +259,31 @@ final class StudySessionServiceTest extends TestCase
     public function it_records_practice_result_returns_false_when_flashcard_not_found(): void
     {
         // Arrange
-        $userId = 1;
-        $flashcardId = 5;
-        $isCorrect = true;
+        $user = User::factory()->create();
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $user->id,
+            'question' => 'Test question?',
+            'answer' => 'Test answer?',
+            'created_at' => now(),
+        ]);
+        StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
+        $practiceResult = PracticeResult::factory()->create([
+            'user_id' => $user->id,
+            'flashcard_id' => $flashcard->id,
+            'is_correct' => true,
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->flashcardRepository->shouldReceive('findForUser')
             ->once()
-            ->with($flashcardId, $userId)
+            ->with($flashcard->id, $user->id)
             ->andReturn(null);
 
         // Act
-        $result = $this->service->recordPracticeResult($userId, $flashcardId, $isCorrect);
+        $result = $this->service->recordPracticeResult($user->id, $flashcard->id, $practiceResult->is_correct);
 
         // Assert
         $this->assertFalse($result);
@@ -248,40 +293,53 @@ final class StudySessionServiceTest extends TestCase
     public function it_records_practice_result_records_result_and_updates_logs_and_statistics(): void
     {
         // Arrange
-        $userId = 1;
-        $flashcardId = 5;
-        $isCorrect = true;
-        $flashcard = new Flashcard();
-        $flashcard->id = $flashcardId;
-        $flashcard->user_id = $userId;
-        $flashcard->question = 'Test question?';
+        $user = User::factory()->create();
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $user->id,
+            'question' => 'Test question?',
+            'answer' => 'Test answer?',
+            'created_at' => now(),
+        ]);
+        StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
+        $practiceResult = PracticeResult::factory()->create([
+            'user_id' => $user->id,
+            'flashcard_id' => $flashcard->id,
+            'is_correct' => true,
+        ]);
 
-        $log = new Log();
-        $log->action = 'practiced_flashcard';
+        $log = Log::factory()->create([
+            'action' => 'practiced_flashcard',
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->flashcardRepository->shouldReceive('findForUser')
             ->once()
-            ->with($flashcardId, $userId)
+            ->with($flashcard->id, $user->id)
             ->andReturn($flashcard);
 
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('recordPracticeResult')
             ->once()
-            ->with($userId, $flashcardId, $isCorrect)
+            ->with($user->id, $flashcard->id, $practiceResult->is_correct)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logFlashcardPractice')
             ->once()
-            ->with($userId, $flashcard, $isCorrect)
+            ->with($user->id, $flashcard, $practiceResult->is_correct)
             ->andReturn($log);
 
+        // @phpstan-ignore-next-line
         $this->statisticService->shouldReceive('incrementCorrectAnswers')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
         // Act
-        $result = $this->service->recordPracticeResult($userId, $flashcardId, $isCorrect);
+        $result = $this->service->recordPracticeResult($user->id, $flashcard->id, $practiceResult->is_correct);
 
         // Assert
         $this->assertTrue($result);
@@ -291,40 +349,53 @@ final class StudySessionServiceTest extends TestCase
     public function it_records_practice_result_increments_incorrect_answers_when_wrong(): void
     {
         // Arrange
-        $userId = 1;
-        $flashcardId = 5;
-        $isCorrect = false;
-        $flashcard = new Flashcard();
-        $flashcard->id = $flashcardId;
-        $flashcard->user_id = $userId;
-        $flashcard->question = 'Test question?';
+        $user = User::factory()->create();
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $user->id,
+            'question' => 'Test question?',
+            'answer' => 'Test answer?',
+            'created_at' => now(),
+        ]);
+        StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
+        $practiceResult = PracticeResult::factory()->create([
+            'user_id' => $user->id,
+            'flashcard_id' => $flashcard->id,
+            'is_correct' => true,
+        ]);
 
-        $log = new Log();
-        $log->action = 'practiced_flashcard';
+        $log = Log::factory()->create([
+            'action' => 'practiced_flashcard',
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->flashcardRepository->shouldReceive('findForUser')
             ->once()
-            ->with($flashcardId, $userId)
+            ->with($flashcard->id, $user->id)
             ->andReturn($flashcard);
 
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('recordPracticeResult')
             ->once()
-            ->with($userId, $flashcardId, $isCorrect)
+            ->with($user->id, $flashcard->id, $practiceResult->is_correct)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logFlashcardPractice')
             ->once()
-            ->with($userId, $flashcard, $isCorrect)
+            ->with($user->id, $flashcard, $practiceResult->is_correct)
             ->andReturn($log);
 
+        // @phpstan-ignore-next-line
         $this->statisticService->shouldReceive('incrementIncorrectAnswers')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
         // Act
-        $result = $this->service->recordPracticeResult($userId, $flashcardId, $isCorrect);
+        $result = $this->service->recordPracticeResult($user->id, $flashcard->id, $practiceResult->is_correct);
 
         // Assert
         $this->assertTrue($result);
@@ -334,28 +405,46 @@ final class StudySessionServiceTest extends TestCase
     public function it_resets_practice_progress_performs_reset_and_updates_logs_and_statistics(): void
     {
         // Arrange
-        $userId = 1;
-        $log = new Log();
-        $log->action = 'reset_practice_progress';
+        $user = User::factory()->create();
+        $flashcard = Flashcard::factory()->create([
+            'user_id' => $user->id,
+            'question' => 'Test question?',
+            'answer' => 'Test answer?',
+            'created_at' => now(),
+        ]);
+        StudySession::factory()->create([
+            'user_id' => $user->id,
+            'started_at' => now(),
+        ]);
+        PracticeResult::factory()->create([
+            'user_id' => $user->id,
+            'flashcard_id' => $flashcard->id,
+            'is_correct' => true,
+        ]);
+        $log = Log::factory()->create([
+            'action' => 'reset_practice_progress',
+        ]);
 
-        // Expect
+        // @phpstan-ignore-next-line
         $this->studySessionRepository->shouldReceive('resetPracticeProgress')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->statisticService->shouldReceive('resetPracticeStatistics')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn(true);
 
+        // @phpstan-ignore-next-line
         $this->logService->shouldReceive('logPracticeReset')
             ->once()
-            ->with($userId)
+            ->with($user->id)
             ->andReturn($log);
 
         // Act
-        $result = $this->service->resetPracticeProgress($userId);
+        $result = $this->service->resetPracticeProgress($user->id);
 
         // Assert
         $this->assertTrue($result);

@@ -16,7 +16,7 @@ final class LogFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<Log>
      */
     protected $model = Log::class;
 
@@ -29,70 +29,96 @@ final class LogFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'action' => fake()->randomElement([
-                'created_flashcard',
-                'deleted_flashcard',
-                'started_study_session',
-                'ended_study_session',
-                'viewed_flashcard',
-                'edited_flashcard',
-            ]),
-            'level' => fake()->randomElement(['info', 'warning', 'error']),
-            'details' => fake()->sentence(10),
-            'created_at' => fake()->dateTimeBetween('-30 days', 'now'),
+            'action' => $this->faker->word(),
+            'level' => $this->faker->randomElement([Log::LEVEL_INFO, Log::LEVEL_WARNING, Log::LEVEL_ERROR, Log::LEVEL_DEBUG]),
+            'description' => $this->faker->sentence(),
+            'details' => null,
+            'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];
+    }
+
+    public function info(): self
+    {
+        return $this->state(['level' => Log::LEVEL_INFO]);
+    }
+
+    public function warning(): self
+    {
+        return $this->state(['level' => Log::LEVEL_WARNING]);
+    }
+
+    public function error(): self
+    {
+        return $this->state(['level' => Log::LEVEL_ERROR]);
+    }
+
+    public function debug(): self
+    {
+        return $this->state(['level' => Log::LEVEL_DEBUG]);
+    }
+
+    /**
+     * @param  array<mixed>|null  $details
+     */
+    public function withDetails(?array $details): self
+    {
+        return $this->state(['details' => $details !== null && $details !== [] ? json_encode($details, JSON_THROW_ON_ERROR) : null]);
     }
 
     /**
      * Define a state for flashcard creation logs.
      */
-    public function flashcardCreation(): Factory
+    public function flashcardCreation(): static
     {
         return $this->state(fn (): array => [
             'action' => 'created_flashcard',
-            'details' => 'Created flashcard ID: '.fake()->numberBetween(1, 100).
+            'description' => 'Created flashcard ID: '.fake()->numberBetween(1, 100).
                 ', Question: '.fake()->sentence(6).'?',
+            'details' => null,
         ]);
     }
 
     /**
      * Define a state for flashcard deletion logs.
      */
-    public function flashcardDeletion(): Factory
+    public function flashcardDeletion(): static
     {
         return $this->state(fn (): array => [
             'action' => 'deleted_flashcard',
-            'details' => 'Deleted flashcard ID: '.fake()->numberBetween(1, 100).
+            'description' => 'Deleted flashcard ID: '.fake()->numberBetween(1, 100).
                 ', Question: '.fake()->sentence(6).'?',
+            'details' => [
+                'flashcard_id' => fake()->numberBetween(1, 100),
+            ],
         ]);
     }
 
     /**
      * Define a state for study session start logs.
      */
-    public function studySessionStart(): Factory
+    public function studySessionStart(): static
     {
         return $this->state(fn (): array => [
             'action' => 'started_study_session',
-            'details' => 'Started study session ID: '.fake()->numberBetween(1, 50),
+            'description' => 'Started study session ID: '.fake()->numberBetween(1, 50),
         ]);
     }
 
     /**
      * Define a state for study session end logs.
      */
-    public function studySessionEnd(): Factory
+    public function studySessionEnd(): static
     {
         return $this->state(fn (): array => [
             'action' => 'ended_study_session',
-            'details' => 'Ended study session ID: '.fake()->numberBetween(1, 50),
+            'description' => 'Ended study session ID: '.fake()->numberBetween(1, 50),
         ]);
     }
 
     /**
      * Define a state for recent logs.
      */
-    public function recent(): Factory
+    public function recent(): static
     {
         return $this->state(fn (): array => [
             'created_at' => fake()->dateTimeBetween('-1 day', 'now'),

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
 use App\Models\User;
+use Carbon\CarbonInterface;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
 use Modules\Flashcard\app\Models\StudySession;
@@ -14,6 +16,8 @@ use Tests\TestCase;
 
 final class PracticeResultSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_creates_practice_results_for_existing_users(): void
     {
@@ -40,7 +44,7 @@ final class PracticeResultSeederTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_all_necessary_dependencies_if_they_dont_exist(): void
+    public function it_creates_all_necessary_dependencies_if_they_do_not_exist(): void
     {
         // Ensure no records exist
         $this->assertDatabaseCount('users', 0);
@@ -84,7 +88,14 @@ final class PracticeResultSeederTest extends TestCase
         $this->assertNotEmpty($incorrectResults);
 
         // Assert we have recent practice results
-        $recentResults = $practiceResults->filter(fn ($result) => $result->created_at->isAfter(now()->subWeek()));
+        $recentResults = $practiceResults->filter(function ($result): bool { // Use a closure
+            $this->assertNotNull($result->created_at); // Add assertion inside closure
+            /* var CarbonInterface $createdAt */
+            $createdAt = $result->created_at;
+            $this->assertInstanceOf(CarbonInterface::class, $createdAt);
+
+            return $createdAt->isAfter(now()->subWeek());
+        });
 
         $this->assertNotEmpty($recentResults);
     }
@@ -94,8 +105,8 @@ final class PracticeResultSeederTest extends TestCase
     {
         // Create a user
         $user = User::factory()->create();
-        Flashcard::factory()->count(3)->for($user)->create();
-        StudySession::factory()->for($user)->create([
+        Flashcard::factory()->count(3)->for($user)->make();
+        StudySession::factory()->for($user)->make([
             'ended_at' => null,
         ]);
 

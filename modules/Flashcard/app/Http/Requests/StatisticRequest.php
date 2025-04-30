@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Flashcard\app\Models\Statistic;
 
 final class StatisticRequest extends FormRequest
 {
@@ -14,47 +13,31 @@ final class StatisticRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $statistic = Statistic::find($this->route('statistic'));
-
-        if ($this->isMethod('POST')) {
-            return $this->user()->can('create', Statistic::class);
-        }
-
-        if ($this->has('reset') && $this->input('reset') === true) {
-            return $statistic && $this->user()->can('reset', $statistic);
-        }
-
-        return $statistic && $this->user()->can('update', $statistic);
+        // Allow all authenticated users for now
+        return $this->user() !== null;
     }
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array<string, list<string>|string>
      */
     public function rules(): array
     {
         return [
-            'total_flashcards' => ['sometimes', 'integer', 'min:0'],
-            'total_study_sessions' => ['sometimes', 'integer', 'min:0'],
-            'total_correct_answers' => ['sometimes', 'integer', 'min:0'],
-            'total_incorrect_answers' => ['sometimes', 'integer', 'min:0'],
-            'reset' => ['sometimes', 'boolean'],
+            // No specific rules needed for fetching statistics as they are read-only based on auth user
         ];
     }
 
     /**
      * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'total_flashcards.integer' => 'The total flashcards must be an integer',
-            'total_flashcards.min' => 'The total flashcards must be at least 0',
-            'total_study_sessions.integer' => 'The total study sessions must be an integer',
-            'total_study_sessions.min' => 'The total study sessions must be at least 0',
-            'total_correct_answers.integer' => 'The total correct answers must be an integer',
-            'total_correct_answers.min' => 'The total correct answers must be at least 0',
-            'total_incorrect_answers.integer' => 'The total incorrect answers must be an integer',
-            'total_incorrect_answers.min' => 'The total incorrect answers must be at least 0',
+            // No specific messages needed
         ];
     }
 

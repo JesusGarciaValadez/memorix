@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\app\Services;
 
 use App\Models\User;
+use JsonException;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
@@ -46,49 +47,42 @@ final readonly class LogService implements LogServiceInterface
 
     /**
      * Create a log entry
+     *
+     * @throws JsonException
      */
-    public function createLog(int $userId, string $action, string $description, array $details = []): Log
+    public function createLog(int $userId, Flashcard $flashcard): Log
     {
-        return $this->logRepository->createLog($userId, $action, $description, $details);
+        return $this->logRepository->logFlashcardCreation($userId, $flashcard);
     }
 
     /**
      * Log a flashcard creation event
+     *
+     * @throws JsonException
      */
     public function logFlashcardCreation(int $userId, Flashcard $flashcard): Log
     {
-        return $this->createLog(
-            $userId,
-            'flashcard_created',
-            'Created a new flashcard',
-            ['flashcard_id' => $flashcard->id]
-        );
+        return $this->logRepository->logFlashcardCreation($userId, $flashcard);
     }
 
     /**
      * Log a flashcard update event
+     *
+     * @throws JsonException
      */
     public function logFlashcardUpdate(int $userId, Flashcard $flashcard): Log
     {
-        return $this->createLog(
-            $userId,
-            'flashcard_updated',
-            'Updated a flashcard',
-            ['flashcard_id' => $flashcard->id]
-        );
+        return $this->logRepository->logFlashcardUpdate($userId, $flashcard);
     }
 
     /**
      * Log a flashcard deletion event
+     *
+     * @throws JsonException
      */
     public function logFlashcardDeletion(int $userId, Flashcard $flashcard): Log
     {
-        return $this->createLog(
-            $userId,
-            'flashcard_deleted',
-            'Deleted a flashcard',
-            ['flashcard_id' => $flashcard->id]
-        );
+        return $this->logRepository->logFlashcardDeletion($userId, $flashcard);
     }
 
     /**
@@ -109,47 +103,32 @@ final readonly class LogService implements LogServiceInterface
 
     /**
      * Log a flashcard practice event
+     *
+     * @throws JsonException
      */
     public function logFlashcardPractice(int $userId, Flashcard $flashcard, bool $isCorrect): Log
     {
-        return $this->createLog(
-            $userId,
-            'flashcard_practiced',
-            'Practiced a flashcard',
-            [
-                'flashcard_id' => $flashcard->id,
-                'result' => $isCorrect ? 'correct' : 'incorrect',
-            ]
-        );
+        return $this->logRepository->logFlashcardPractice($userId, $flashcard, $isCorrect);
     }
 
     /**
      * Log a study session start event
+     *
+     * @throws JsonException
      */
     public function logStudySessionStart(int $userId, StudySession $studySession): Log
     {
-        return $this->createLog(
-            $userId,
-            'study_session_started',
-            'Started a study session',
-            ['session_id' => $studySession->id]
-        );
+        return $this->logRepository->logStudySessionStart($userId, $studySession);
     }
 
     /**
      * Log a study session end event
+     *
+     * @throws JsonException
      */
     public function logStudySessionEnd(int $userId, StudySession $studySession): Log
     {
-        return $this->createLog(
-            $userId,
-            'study_session_ended',
-            'Ended a study session',
-            [
-                'session_id' => $studySession->id,
-                'duration' => $studySession->duration,
-            ]
-        );
+        return $this->logRepository->logStudySessionEnd($userId, $studySession);
     }
 
     /**
@@ -162,26 +141,12 @@ final readonly class LogService implements LogServiceInterface
 
     /**
      * Log a practice reset event
+     *
+     * @throws JsonException
      */
     public function logPracticeReset(int $userId): Log
     {
-        return $this->createLog(
-            $userId,
-            'practice_reset',
-            'Reset practice progress'
-        );
-    }
-
-    /**
-     * Log an exit from the interactive command
-     */
-    public function logExit(User $user): Log
-    {
-        return $this->createLog(
-            $user->id,
-            'command_exit',
-            'Exited interactive flashcard command'
-        );
+        return $this->logRepository->logPracticeReset($userId);
     }
 
     /**
@@ -209,18 +174,18 @@ final readonly class LogService implements LogServiceInterface
     }
 
     /**
-     * Log flashcard force delete
-     */
-    public function logFlashcardForceDelete(int $userId, int $flashcardId, string $flashcardQuestion): Log
-    {
-        return $this->logRepository->logFlashcardForceDelete($userId, $flashcardId, $flashcardQuestion);
-    }
-
-    /**
      * Log import of flashcards from file.
      */
     public function logFlashcardImport(int $userId, int $importCount): Log
     {
         return $this->logRepository->logFlashcardImport($userId, $importCount);
+    }
+
+    /**
+     * Log permanent deletion of a single flashcard.
+     */
+    public function logFlashcardForceDelete(int $userId, int $flashcardId, string $flashcardQuestion): Log
+    {
+        return $this->logRepository->logFlashcardForceDelete($userId, $flashcardId, $flashcardQuestion);
     }
 }

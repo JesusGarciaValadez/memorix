@@ -4,55 +4,47 @@ declare(strict_types=1);
 
 namespace Modules\Flashcard\tests\Feature\app\Models;
 
+use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\PracticeResult;
+use Modules\Flashcard\app\Models\StudySession;
+use Modules\Flashcard\database\factories\PracticeResultFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class PracticeResultTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
-    public function it_has_correct_fillable_attributes(): void
+    public function test_user_relationship_exists(): void
     {
-        $practiceResult = new PracticeResult();
-        $this->assertEquals(
-            ['user_id', 'flashcard_id', 'study_session_id', 'is_correct'],
-            $practiceResult->getFillable()
-        );
+        $result = PracticeResult::factory()->create();
+        $this->assertInstanceOf(BelongsTo::class, $result->user());
+        $this->assertInstanceOf(User::class, $result->user()->getRelated());
     }
 
     #[Test]
-    public function it_has_correct_casts(): void
+    public function test_flashcard_relationship_exists(): void
     {
-        $practiceResult = new PracticeResult();
-        $this->assertArrayHasKey('is_correct', $practiceResult->getCasts());
-        $this->assertEquals('boolean', $practiceResult->getCasts()['is_correct']);
+        $result = PracticeResult::factory()->create();
+        $this->assertInstanceOf(BelongsTo::class, $result->flashcard());
+        $this->assertInstanceOf(Flashcard::class, $result->flashcard()->getRelated());
     }
 
     #[Test]
-    public function it_belongs_to_a_user(): void
+    public function test_study_session_relationship_exists(): void
     {
-        $practiceResult = new PracticeResult();
-        $this->assertTrue(method_exists($practiceResult, 'user'), 'PracticeResult model should have a user relationship method');
+        $result = PracticeResult::factory()->create();
+        $this->assertInstanceOf(BelongsTo::class, $result->studySession());
+        $this->assertInstanceOf(StudySession::class, $result->studySession()->getRelated());
     }
 
     #[Test]
-    public function it_belongs_to_a_flashcard(): void
+    public function test_factory_exists(): void
     {
-        $practiceResult = new PracticeResult();
-        $this->assertTrue(method_exists($practiceResult, 'flashcard'), 'PracticeResult model should have a flashcard relationship method');
-    }
-
-    #[Test]
-    public function it_belongs_to_a_study_session(): void
-    {
-        $practiceResult = new PracticeResult();
-        $this->assertTrue(method_exists($practiceResult, 'studySession'), 'PracticeResult model should have a studySession relationship method');
-    }
-
-    #[Test]
-    public function it_can_be_created_through_factory(): void
-    {
-        // For unit tests, we verify that the factory method exists on the model
-        $this->assertTrue(method_exists(PracticeResult::class, 'factory'), 'PracticeResult model should have a factory method');
+        $this->assertInstanceOf(PracticeResultFactory::class, PracticeResult::factory());
     }
 }

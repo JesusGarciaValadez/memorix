@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Flashcard\Tests\Feature\database\seeders;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Flashcard\app\Models\Flashcard;
 use Modules\Flashcard\app\Models\Log;
 use Modules\Flashcard\app\Models\StudySession;
@@ -14,6 +15,8 @@ use Tests\TestCase;
 
 final class LogSeederTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[Test]
     public function it_seeds_logs_for_existing_users(): void
     {
@@ -101,19 +104,19 @@ final class LogSeederTest extends TestCase
         $this->assertDatabaseHas('logs', [
             'user_id' => $user->id,
             'action' => 'created_flashcard',
-            'details' => "Created flashcard ID: $flashcard->id, Question: $flashcard->question",
+            'description' => "Created flashcard ID: $flashcard->id, Question: $flashcard->question",
         ]);
 
         $this->assertDatabaseHas('logs', [
             'user_id' => $user->id,
             'action' => 'started_study_session',
-            'details' => "Started study session ID: $studySession->id",
+            'description' => "Started study session ID: $studySession->id",
         ]);
 
         $this->assertDatabaseHas('logs', [
             'user_id' => $user->id,
             'action' => 'ended_study_session',
-            'details' => "Ended study session ID: $studySession->id",
+            'description' => "Ended study session ID: $studySession->id",
         ]);
     }
 }
